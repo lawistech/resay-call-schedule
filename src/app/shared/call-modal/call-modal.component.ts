@@ -20,6 +20,7 @@ export class CallModalComponent implements OnInit {
 
   callForm!: FormGroup;
   isLoading = false;
+  isFirstCall: boolean = false;
   callMethods = [
     { value: 'webex', label: 'Open Webex' },
     { value: 'phone', label: 'Phone Dialer' },
@@ -35,12 +36,18 @@ export class CallModalComponent implements OnInit {
     private notificationService: NotificationService
   ) {}
 
-  ngOnInit(): void {
+   ngOnInit(): void {
     // Set minDate to the current date and time in the required format
     const currentDate = new Date();
     this.minDate = currentDate.toISOString().slice(0, 16); // This ensures it includes both date and time in ISO format (YYYY-MM-DDTHH:mm)
     this.initForm();
+    this.setIsFirstCall()
   }
+
+    async setIsFirstCall() {
+    this.isFirstCall =  await this.checkIsFirstCall(this.contact!.id);
+  }
+
   
 
   initForm(): void {
@@ -84,6 +91,9 @@ export class CallModalComponent implements OnInit {
 
   async checkIsFirstCall(contactId: string): Promise<boolean> {
     try {
+      // Only proceed if we have a valid contact ID
+      if (!contactId) return false;
+      
       const { data, error } = await this.supabaseService.supabaseClient
         .from('calls')
         .select('id')
@@ -91,10 +101,11 @@ export class CallModalComponent implements OnInit {
         .limit(1);
         
       if (error) {
-        throw error;
+        console.error('Error checking first call status:', error);
+        return false;
       }
       
-      // If no calls found for this contact, it's the first call
+      // If no calls are found for this contact, it's the first call
       return !data || data.length === 0;
     } catch (error) {
       console.error('Error checking if first call:', error);
@@ -119,10 +130,10 @@ export class CallModalComponent implements OnInit {
       const formValues = this.callForm.value;
       let scheduledAt = formValues.scheduled_at;
       let followUpDate = formValues.follow_up_date || null;
-      const isFirstCall = await this.checkIsFirstCall(this.contact.id);
+      console.log("Contact has first call:", this.isFirstCall);
       
       console.log("find first call");
-      console.log(isFirstCall);
+      console.log( this.isFirstCall);
       const callData = {
         contact_id: this.contact.id,
         scheduled_at: scheduledAt,
@@ -133,7 +144,7 @@ export class CallModalComponent implements OnInit {
         follow_up_date: followUpDate,
         status: 'scheduled',
         importance: formValues.importance,
-        is_first_call: isFirstCall
+        is_first_call: this.isFirstCall
       };
 
       let result: { data: any; error: any; } | null = null;
