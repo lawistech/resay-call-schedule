@@ -119,6 +119,17 @@ export class CallDetailComponent implements OnInit {
     }
   }
 
+  // Add this method to the component class
+  getImportanceLabel(value: number | undefined): string {
+    switch(value) {
+      case 1: return 'Very Low';
+      case 2: return 'Low';
+      case 3: return 'Medium';
+      case 4: return 'High';
+      case 5: return 'Critical';
+      default: return 'Medium';
+    }
+  }
   goBack(): void {
     this.router.navigate(['/call-history']);
   }

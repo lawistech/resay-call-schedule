@@ -49,7 +49,37 @@
                       <option *ngFor="let method of callMethods" [value]="method.value">{{ method.label }}</option>
                     </select>
                   </div>
-                  
+                  <!-- src/app/shared/call-modal/call-modal.component.html -->
+                  <div class="space-y-4">
+                    <!-- Importance indicator (5 dots) -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Importance</label>
+                      <div class="flex items-center space-x-2 mt-2">
+                        <ng-container *ngFor="let dot of [1, 2, 3, 4, 5]">
+                          <button 
+                            type="button" 
+                            (click)="setImportance(dot)" 
+                            class="w-6 h-6 rounded-full border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500"
+                            [ngClass]="{
+                              'bg-red-500 border-red-500': callForm.get('importance')?.value >= dot,
+                              'bg-white border-gray-300': callForm.get('importance')?.value < dot
+                            }">
+                          </button>
+                        </ng-container>
+                        <span class="text-sm text-gray-500 ml-2">
+                          {{ getImportanceLabel(callForm.get('importance')?.value) }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <!-- First call indicator -->
+                    <div *ngIf="call && call.is_first_call" class="flex items-center bg-yellow-50 p-2 rounded-md border border-yellow-200 mt-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-yellow-400" fill="currentColor" viewBox="0 0 24 24" stroke="none">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                      <span class="text-gray-700 font-medium">First call with this contact</span>
+                    </div>
+                  </div>
                   <!-- Lead source dropdown -->
                   <div>
                     <label for="lead_source" class="block text-sm font-medium text-gray-700">Lead Source</label>

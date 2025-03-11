@@ -17,4 +17,6 @@ export interface Call {
     follow_up_date?: string;
     created_at?: string;
     updated_at?: string;
+    importance?: number;
+    is_first_call?: boolean;
 }

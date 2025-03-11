@@ -127,7 +127,7 @@ export class SupabaseService {
   }
 
   async createCall(callData: Partial<Call>) {
-    return this.supabaseClient
+      return this.supabaseClient
       .from('calls')
       .insert(callData)
       .select(`
@@ -138,13 +138,13 @@ export class SupabaseService {
 
   async updateCall(id: string, callData: Partial<Call>) {
     return this.supabaseClient
-      .from('calls')
-      .update(callData)
-      .eq('id', id)
-      .select(`
-        *,
-        contacts(*)
-      `);
+    .from('calls')
+    .update(callData)
+    .eq('id', id)
+    .select(`
+      *,
+      contacts(*)
+    `);
   }
 
   async deleteCall(id: string) {

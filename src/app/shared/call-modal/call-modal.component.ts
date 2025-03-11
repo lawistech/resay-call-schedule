@@ -51,9 +51,10 @@ export class CallModalComponent implements OnInit {
       notes: [''],
       // Add lead source field with default from contact if available
       lead_source: [this.contact?.lead_source || '', Validators.required],
-      follow_up_date: ['']
+      follow_up_date: [''],
+      importance: [3] // Default to medium importance (3)
     });
-
+  
     if (this.isEditing && this.call) {
       // Format the date for the datetime-local input
       const scheduledAt = this.call.scheduled_at 
@@ -63,14 +64,15 @@ export class CallModalComponent implements OnInit {
       const followUpDate = this.call.follow_up_date 
         ? new Date(this.call.follow_up_date).toISOString().slice(0, 16) 
         : '';
-
+  
       this.callForm.patchValue({
         scheduled_at: scheduledAt,
         reason: this.call.reason,
         method: this.call.method || 'phone',
         notes: this.call.notes || '',
         lead_source: this.call.lead_source || this.contact?.lead_source || '',
-        follow_up_date: followUpDate
+        follow_up_date: followUpDate,
+        importance: this.call.importance || 3 // Use existing importance or default to 3
       });
     }
   }
@@ -80,6 +82,27 @@ export class CallModalComponent implements OnInit {
     this.closed.emit(false);
   }
 
+  async checkIsFirstCall(contactId: string): Promise<boolean> {
+    try {
+      const { data, error } = await this.supabaseService.supabaseClient
+        .from('calls')
+        .select('id')
+        .eq('contact_id', contactId)
+        .limit(1);
+        
+      if (error) {
+        throw error;
+      }
+      
+      // If no calls found for this contact, it's the first call
+      return !data || data.length === 0;
+    } catch (error) {
+      console.error('Error checking if first call:', error);
+      return false; // Default to false if there's an error
+    }
+  }
+
+  
   async saveCall(): Promise<void> {
     if (this.callForm.invalid) {
       return;
@@ -94,15 +117,12 @@ export class CallModalComponent implements OnInit {
     
     try {
       const formValues = this.callForm.value;
-      
-      // Ensure the scheduled_at time is stored in UTC/ISO format
-      // The database should always store times in UTC
-      // When it's displayed, we'll convert to the user's preferred timezone
       let scheduledAt = formValues.scheduled_at;
-      
-      // If follow_up_date is provided, ensure it's also in UTC/ISO format
       let followUpDate = formValues.follow_up_date || null;
+      const isFirstCall = await this.checkIsFirstCall(this.contact.id);
       
+      console.log("find first call");
+      console.log(isFirstCall);
       const callData = {
         contact_id: this.contact.id,
         scheduled_at: scheduledAt,
@@ -111,7 +131,9 @@ export class CallModalComponent implements OnInit {
         notes: formValues.notes,
         lead_source: formValues.lead_source,
         follow_up_date: followUpDate,
-        status: 'scheduled'
+        status: 'scheduled',
+        importance: formValues.importance,
+        is_first_call: isFirstCall
       };
 
       let result: { data: any; error: any; } | null = null;
@@ -174,6 +196,21 @@ export class CallModalComponent implements OnInit {
         } else {
           this.notificationService.warning('No phone number available for this contact');
         }
+    }
+  }
+
+  setImportance(value: number): void {
+    this.callForm.patchValue({ importance: value });
+  }
+  
+  getImportanceLabel(value: number | undefined): string {
+    switch(value) {
+      case 1: return 'Very Low';
+      case 2: return 'Low';
+      case 3: return 'Medium';
+      case 4: return 'High';
+      case 5: return 'Critical';
+      default: return 'Medium';
     }
   }
 }
