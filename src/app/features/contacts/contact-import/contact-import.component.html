@@ -11,7 +11,7 @@
       <div>
         <label for="file" class="block text-sm font-medium text-gray-700">CSV File</label>
         <input type="file" id="file" (change)="onFileChange($event)" accept=".csv" 
-               class="mt-1 block w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-md shadow-sm">
+               class="mt-1 block w-full px-3 py-2 bg-stone-100 border border-stone-300 rounded-md shadow-sm">
         <p class="mt-1 text-sm text-gray-500">Upload a CSV file with contact data</p>
       </div>
       
@@ -26,7 +26,7 @@
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label for="delimiter" class="block text-sm font-medium text-gray-700">Delimiter</label>
-          <select id="delimiter" formControlName="delimiter" class="form-input mt-1 w-full bg-stone-50 border border-stone-300 rounded-md shadow-sm">
+          <select id="delimiter" formControlName="delimiter" class="form-input mt-1 w-full bg-stone-100 border border-stone-300 rounded-md shadow-sm">
             <option value=",">Comma (,)</option>
             <option value=";">Semicolon (;)</option>
             <option value="\t">Tab</option>
@@ -36,7 +36,7 @@
         <div>
           <label for="defaultTime" class="block text-sm font-medium text-gray-700">Default Time</label>
           <input type="time" id="defaultTime" formControlName="defaultTime" 
-                 class="form-input mt-1 w-full bg-stone-50 border border-stone-300 rounded-md shadow-sm">
+                 class="form-input mt-1 w-full bg-stone-100 border border-stone-300 rounded-md shadow-sm">
           <p class="mt-1 text-xs text-gray-500">For scheduling contacts (if date has no time)</p>
         </div>
       </div>

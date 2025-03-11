@@ -1,5 +1,5 @@
 <!-- src/app/features/contacts/contacts-list/contacts-list.component.html -->
-<div class="container mx-auto p-6 bg-stone-50 min-h-screen">
+<div class="container mx-auto p-6 bg-stone-100 min-h-screen">
   <!-- Loading State -->
   <div *ngIf="isLoading" class="flex justify-center items-center h-64">
     <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-stone-800"></div>
@@ -18,7 +18,7 @@
             </svg>
             Import
           </button>
-          <button (click)="exportContacts()" class="bg-stone-600 text-white px-4 py-2 rounded-lg flex items-center shadow-md hover:bg-stone-500">
+          <button (click)="exportContacts()" class="bg-stone-600 text-white px-4 py-2 rounded-lg flex items-center shadow-md hover:bg-stone-1000">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -179,7 +179,7 @@
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             <tr *ngFor="let contact of filteredContacts" 
-    class="hover:bg-stone-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0">
+    class="hover:bg-stone-100 transition-colors duration-150 border-b border-gray-100 last:border-b-0">
       <!-- Contact info with improved visual hierarchy -->
       <td class="px-6 py-4">
         <div class="flex items-center">

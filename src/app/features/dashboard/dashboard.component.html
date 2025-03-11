@@ -65,14 +65,14 @@
     </div>
 
     <!-- Schedule Row -->
-    <div class="grid grid-cols-1 shadow-md lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Contact Schedule -->
       <app-contact-schedule
         [contacts]="scheduledContacts"
         [maxContacts]="5"
         (viewContact)="viewContact($event)"
         (scheduleCall)="scheduleCall($event)"
-        class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition">
+        class="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition">
       </app-contact-schedule>
       
       <!-- Schedule Overview -->
@@ -106,7 +106,7 @@
     </div>
 
     <!-- Activity Feed -->
-    <div class="grid grid-cols-1 shadow-md lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 shadow-mlg lg:grid-cols-2 gap-6">
       <!-- Recent Calls -->
       <app-recent-calls 
         [calls]="calls" 

@@ -1,5 +1,5 @@
 <!-- src/app/features/schedule/schedule.component.html -->
-<div class="container mx-auto px-4 py-6 bg-stone-50">
+<div class="container mx-auto px-4 py-6 bg-stone-100">
   <!-- Loading State -->
   <div *ngIf="isLoading" class="flex justify-center items-center h-64">
     <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-stone-800"></div>
@@ -81,13 +81,13 @@
         
         <!-- Events List -->
         <div class="space-y-4">
-          <div *ngFor="let event of groupedEvents[dateKey]" class="flex px-4 py-3 border-l-4 rounded-r-lg hover:bg-stone-50 transition-colors" 
+          <div *ngFor="let event of groupedEvents[dateKey]" class="flex px-4 py-3 border-l-4 rounded-r-lg hover:bg-stone-100 transition-colors" 
               [ngClass]="{
                 'border-green-500 bg-green-50 hover:bg-green-100': event.type === 'call' && getMethodFromEvent(event) === 'phone',
                 'border-blue-500 bg-blue-50 hover:bg-blue-100': event.type === 'call' && getMethodFromEvent(event) === 'webex',
                 'border-purple-500 bg-purple-50 hover:bg-purple-100': event.type === 'call' && getMethodFromEvent(event) === 'teams',
                 'border-yellow-500 bg-yellow-50 hover:bg-yellow-100': event.type === 'call' && getMethodFromEvent(event) === 'zoom',
-                'border-stone-500 bg-stone-50 hover:bg-stone-100': event.type === 'contact' || !getMethodFromEvent(event)
+                'border-stone-500 bg-stone-100 hover:bg-stone-100': event.type === 'contact' || !getMethodFromEvent(event)
               }">
             <!-- Event Time -->
             <div class="w-24 flex-shrink-0">
