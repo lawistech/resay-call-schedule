@@ -3,7 +3,8 @@ import { Contact } from "./contact.model";
 export interface Call {
     id: string;
     contact_id: string;
-    contact?: Contact;  // Make sure this is properly defined
+    contact?: Contact;
+    lead_source?: string;
     user_id?: string;
     scheduled_at: string;
     completed_at?: string;

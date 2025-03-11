@@ -23,6 +23,8 @@ export class CallModalComponent implements OnInit {
   callMethods = [
     { value: 'webex', label: 'Open Webex' },
     { value: 'phone', label: 'Phone Dialer' },
+    { value: 'teams', label: 'Microsoft Teams' },
+    { value: 'zoom', label: 'Zoom Call' }
   ];
 
   minDate: string = '';
@@ -47,6 +49,8 @@ export class CallModalComponent implements OnInit {
       reason: ['', Validators.required],
       method: ['webex', Validators.required],
       notes: [''],
+      // Add lead source field with default from contact if available
+      lead_source: [this.contact?.lead_source || '', Validators.required],
       follow_up_date: ['']
     });
 
@@ -65,6 +69,7 @@ export class CallModalComponent implements OnInit {
         reason: this.call.reason,
         method: this.call.method || 'phone',
         notes: this.call.notes || '',
+        lead_source: this.call.lead_source || this.contact?.lead_source || '',
         follow_up_date: followUpDate
       });
     }
@@ -74,9 +79,6 @@ export class CallModalComponent implements OnInit {
     this.isOpen = false;
     this.closed.emit(false);
   }
-
-  // src/app/shared/call-modal/call-modal.component.ts
-// In the saveCall method:
 
   async saveCall(): Promise<void> {
     if (this.callForm.invalid) {
@@ -107,6 +109,7 @@ export class CallModalComponent implements OnInit {
         reason: formValues.reason,
         method: formValues.method,
         notes: formValues.notes,
+        lead_source: formValues.lead_source,
         follow_up_date: followUpDate,
         status: 'scheduled'
       };

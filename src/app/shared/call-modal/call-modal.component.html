@@ -49,6 +49,21 @@
                       <option *ngFor="let method of callMethods" [value]="method.value">{{ method.label }}</option>
                     </select>
                   </div>
+                  
+                  <!-- Lead source dropdown -->
+                  <div>
+                    <label for="lead_source" class="block text-sm font-medium text-gray-700">Lead Source</label>
+                    <select id="lead_source" formControlName="lead_source" class="mt-1 w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400">
+                      <option value="">-- Select Lead Source --</option>
+                      <option value="resay">Resay</option>
+                      <option value="barcodesforbusiness">Barcodes For Business</option>
+                      <option value="androidepos">Android EPOS</option>
+                    </select>
+                    <div *ngIf="callForm.get('lead_source')?.touched && callForm.get('lead_source')?.invalid" class="text-red-500 text-sm mt-1">
+                      Please select a lead source
+                    </div>
+                  </div>
+                  
                   <div>
                     <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
                     <textarea id="notes" formControlName="notes" rows="3" class="mt-1 w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400" placeholder="Add any additional notes about this call"></textarea>
