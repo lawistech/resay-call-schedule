@@ -11,6 +11,7 @@ export interface Contact {
     company_id?: string;
     company?: Company;
     schedule?: string;
+    lead_source?: string;
     
     // Additional fields
     chased_date?: string;

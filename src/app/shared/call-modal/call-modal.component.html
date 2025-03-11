@@ -75,9 +75,6 @@
           </span>
           {{ isEditing ? 'Update Call' : 'Schedule Call' }}
         </button>
-        <button *ngIf="contact?.phone" (click)="startCall()" type="button" class="mt-3 sm:mt-0 sm:mr-3 flex justify-center w-full sm:w-auto sm:text-sm py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-500 focus:outline-none">
-          Start Call Now
-        </button>
         <button (click)="close()" type="button" class="mt-3 sm:mt-0 sm:mr-3 flex justify-center w-full sm:w-auto sm:text-sm py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-300 hover:bg-gray-200 focus:outline-none">
           Cancel
         </button>

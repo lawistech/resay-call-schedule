@@ -61,6 +61,7 @@
                     </div>
                   </div>
                   
+
                   <!-- Company Info -->
                   <div>
                     <div class="flex justify-between">
@@ -118,25 +119,21 @@
                       </form>
                     </div>
                   </div>
+
                   
-                  <!-- Job Title -->
+                  <!-- Lead Source Dropdown -->
                   <div>
-                    <label for="job_title" class="block text-sm font-medium text-gray-700">Job Title</label>
-                    <input type="text" id="job_title" formControlName="job_title"
-                           class="form-input mt-1 w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
+                    <label for="lead_source" class="block text-sm font-medium text-gray-700">Leads</label>
+                    <select id="lead_source" formControlName="lead_source" 
+                            class="form-input mt-1 w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
+                      <option value="">-- Select Lead Source --</option>
+                      <option value="resay">Resay</option>
+                      <option value="barcodesforbusiness">Barcodes For Business</option>
+                      <option value="androidepos">Android EPOS</option>
+                    </select>
                   </div>
-                  <!-- Schedule (Date Picker) -->
-                  <div>
-                    <label for="scheduleDate" class="block text-sm font-medium text-gray-700">Schedule Date & Time</label>
-                    <input type="datetime-local" id="scheduleDate" formControlName="scheduleDate"
-                          class="form-input mt-1 w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
-                    <div *ngIf="contactForm.get('scheduleDate')?.touched && contactForm.get('scheduleDate')?.invalid" class="text-red-500 text-sm mt-1">
-                      Please select a valid date and time
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1">
-                      Select when you want to schedule this contact
-                    </div>
-                  </div>
+                  
+                  
                   <!-- Notes -->
                   <div>
                     <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>

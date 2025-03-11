@@ -5,9 +5,6 @@ import { Contact } from '../../../core/models/contact.model';
 import { Company } from '../../../core/models/company.model';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { ReminderService } from '../../../core/services/reminder.service';
-import { parseISO, format } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
 
 @Component({
   selector: 'app-contact-form',
@@ -29,8 +26,7 @@ export class ContactFormComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private supabaseService: SupabaseService,
-    private notificationService: NotificationService,
-    private reminderService: ReminderService
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -39,60 +35,27 @@ export class ContactFormComponent implements OnInit {
   }
 
   initContactForm(): void {
-    // Get tomorrow's date as the default, adjusted for the selected timezone
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    // Format the date according to the selected timezone
-    const tomorrowInSelectedTimezone = this.formatDateForInput(tomorrow);
-
     this.contactForm = this.formBuilder.group({
       first_name: ['', Validators.required],
       last_name: ['', Validators.required],
       email: ['', [Validators.email]],
       phone: [''],
-      job_title: [''],
       company_id: [''],
       notes: [''],
-      scheduleDate: [tomorrowInSelectedTimezone, Validators.required]
+      lead_source: [''] // New field for lead source
     });
 
     if (this.isEditing && this.contact) {
-      // If editing an existing contact, format the stored schedule date according to the timezone
-      const scheduleDate = this.contact.schedule 
-        ? this.formatDateForInput(new Date(this.contact.schedule))
-        : tomorrowInSelectedTimezone;
-
       this.contactForm.patchValue({
         first_name: this.contact.first_name,
         last_name: this.contact.last_name,
         email: this.contact.email || '',
         phone: this.contact.phone || '',
-        job_title: this.contact.job_title || '',
         company_id: this.contact.company_id || '',
         notes: this.contact.notes || '',
-        scheduleDate: scheduleDate
+        lead_source: this.contact.lead_source || ''
       });
     }
-  }
-
-  // Format date for datetime-local input in the selected timezone
-  formatDateForInput(date: Date): string {
-    // Get the current timezone from the reminder service
-    const timezone = this.reminderService.getTimezone();
-    
-    // Format the date in the specified timezone - this returns a string like "2023-10-15T14:30:00"
-    // which is what a datetime-local input expects
-    return formatInTimeZone(date, timezone, "yyyy-MM-dd'T'HH:mm");
-  }
-
-  // Convert a local datetime input value to UTC for storage
-  convertToUTC(localDateTimeString: string): string {
-    // Parse the local datetime string to a Date object
-    const date = new Date(localDateTimeString);
-    
-    // Convert to UTC ISO string
-    return date.toISOString();
   }
 
   initCompanyForm(): void {
@@ -157,12 +120,6 @@ export class ContactFormComponent implements OnInit {
 
     try {
       const formValues = { ...this.contactForm.value };
-      
-      // Convert the scheduleDate from local timezone to UTC for storage
-      formValues.schedule = this.convertToUTC(formValues.scheduleDate);
-      
-      // Remove the scheduleDate as it's not part of the contact model
-      delete formValues.scheduleDate;
 
       let result: { data: any; error: any; } | null = null;
 
