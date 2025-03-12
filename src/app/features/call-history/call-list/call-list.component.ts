@@ -4,6 +4,7 @@ import { formatDistance } from 'date-fns';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Call } from '../../../core/models/call.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-call-list',
@@ -11,6 +12,7 @@ import { Call } from '../../../core/models/call.model';
  // styleUrls: ['./call-list.component.css']
 })
 export class CallListComponent implements OnInit {
+  showRescheduleCallModal = false;
   calls: Call[] = [];
   filteredCalls: Call[] = [];
   isLoading = true;
@@ -31,7 +33,8 @@ export class CallListComponent implements OnInit {
 
   constructor(
     private supabaseService: SupabaseService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -159,5 +162,59 @@ export class CallListComponent implements OnInit {
     } catch (error: any) {
       this.notificationService.error('Failed to delete call: ' + error.message);
     }
+  }
+
+  onViewCallDetails(callId: string): void {
+    console.log(callId);
+    console.log("test");
+    this.router.navigate(['/call-history', callId]);
+  }
+
+  closePostCallModal(): void {
+    this.showRescheduleCallModal = false;
+    this.selectedCall = null;
+  }  
+
+  async handleCallCompleted(data: {callId: string, notes: string}): Promise<void> {
+    try {
+      const { error } = await this.supabaseService.updateCall(data.callId, {
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        notes: data.notes
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      this.notificationService.success('Call marked as completed');
+    } catch (error: any) {
+      this.notificationService.error('Failed to update call: ' + error.message);
+    } finally {
+      this.closePostCallModal();
+    }
+  }
+
+  async handleCallRescheduled(data: {callId: string, scheduledAt: string, notes: string}): Promise<void> {
+    try {
+      const { error } = await this.supabaseService.updateCall(data.callId, {
+        scheduled_at: data.scheduledAt,
+        notes: data.notes
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      this.notificationService.success('Call rescheduled successfully');
+    } catch (error: any) {
+      this.notificationService.error('Failed to reschedule call: ' + error.message);
+    } finally {
+      this.closePostCallModal();
+    }
+  }
+
+  openRescheduleModal(){
+    this.showRescheduleCallModal = true;
   }
 }

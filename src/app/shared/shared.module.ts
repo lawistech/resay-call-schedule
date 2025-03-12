@@ -5,12 +5,14 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CallModalComponent } from './call-modal/call-modal.component';
 import { PostCallModalComponent } from './post-call-modal/post-call-modal.component';
+import { RescheduleModal } from './reschedule/reschedule-modal.component';
 
 @NgModule({
   declarations: [
     // Other shared components
     CallModalComponent,
-    PostCallModalComponent
+    PostCallModalComponent,
+    RescheduleModal
   ],
   imports: [
     CommonModule,
@@ -24,7 +26,8 @@ import { PostCallModalComponent } from './post-call-modal/post-call-modal.compon
     ReactiveFormsModule,
     RouterModule,
     CallModalComponent,
-    PostCallModalComponent
+    PostCallModalComponent,
+    RescheduleModal
   ]
 })
 export class SharedModule { }
