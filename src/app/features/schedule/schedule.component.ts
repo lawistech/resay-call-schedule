@@ -98,7 +98,7 @@ export class ScheduleComponent implements OnInit {
   combineEvents(): void {
     // Clear the existing combined events
     this.combinedEvents = [];
-
+  
     // Add upcoming calls to combined events
     for (const call of this.upcomingCalls) {
       try {
@@ -106,24 +106,20 @@ export class ScheduleComponent implements OnInit {
         
         // Only include calls with valid dates
         if (!isNaN(callDate.getTime())) {
-          // Make sure contact and company are properly loaded
+          // Ensure all call data is correctly passed to the event, including importance and is_first_call
           this.combinedEvents.push({
             type: 'call',
             title: call.reason || 'Call',
             date: callDate,
-            data: call,
+            data: call,  // Pass the entire call object to ensure importance and is_first_call are available
             contact: call.contact
           });
-          
-          // For debugging - check if contact and company exist
-          console.log('Call contact:', call.contact);
-          console.log('Company:', call.contact?.company);
         }
       } catch (e) {
         console.error('Error processing call:', e, call);
       }
     }
-
+  
     // Sort all events by date
     this.combinedEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
   }

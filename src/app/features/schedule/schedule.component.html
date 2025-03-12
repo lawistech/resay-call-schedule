@@ -93,14 +93,22 @@
             <div class="flex-grow ml-4">
               <div class="flex justify-between items-start">
                 <div class="flex-grow">
-                  <!-- Contact Name Badge -->
-                  <div *ngIf="event.contact" class="mb-1.5">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-stone-100 text-stone-800">
+                  <!-- Contact Name Badge with First Call Indicator -->
+                  <div class="flex items-center mb-1.5">
+                    <span *ngIf="event.contact" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-stone-100 text-stone-800">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                       {{ event.contact.first_name }} {{ event.contact.last_name }}
-                    </span>              
+                    </span>
+                    
+                    <!-- First Call Indicator -->
+                    <span *ngIf="event.data?.is_first_call" class="inline-flex items-center px-2.5 py-0.5 ml-2 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" fill="currentColor" viewBox="0 0 24 24" stroke="none">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                      First Call
+                    </span>
                   </div>
                   
                   <!-- Company Name - Explicitly displayed -->
@@ -110,6 +118,7 @@
                     </svg>
                     {{ event.contact?.company?.name }}
                   </div>
+                  
                   <!-- Opportunity Name if available -->
                   <div *ngIf="event.contact?.opportunity_name" class="mt-1 text-sm text-stone-600">
                     <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -125,9 +134,24 @@
                     </svg>
                     {{ event.contact?.phone }}
                   </div>
+                  
                   <!-- Display Event Title (Reason) -->
                   <h3 class="font-semibold text-stone-900">{{ event.title }}</h3>
                   
+                  <!-- Importance Indicator -->
+                  <div *ngIf="event.data?.importance" class="flex items-center mt-1">
+                    <div class="flex space-x-1 items-center">
+                      <div class="text-xs text-stone-500 mr-1">Importance:</div>
+                      <ng-container *ngFor="let dot of [1, 2, 3, 4, 5]">
+                        <div [ngClass]="{
+                          'w-2 h-2 rounded-full': true,
+                          'bg-red-500': event.data.importance >= dot,
+                          'bg-gray-200': !event.data.importance || event.data.importance < dot
+                        }"></div>
+                      </ng-container>
+                      <span class="ml-1 text-xs">{{ getImportanceLabel(event.data.importance) }}</span>
+                    </div>
+                  </div>
 
                   <!-- Event Notes -->
                   <div *ngIf="getEventNotes(event)" class="mt-2 text-sm text-stone-600 bg-stone-100 p-2 rounded-md">
