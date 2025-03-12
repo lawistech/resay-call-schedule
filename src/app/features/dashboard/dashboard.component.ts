@@ -7,16 +7,17 @@ import { Call } from '../../core/models/call.model';
 import { Contact } from '../../core/models/contact.model';
 import { CallStats } from '../../core/models/call-stats.model';
 import { CallStateService } from '../../core/services/call-state.service';
+import { format, isToday } from 'date-fns';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'] // Add this if you decide to use SCSS styling
+  styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
   isLoading = true;
   calls: Call[] = [];
-  scheduledContacts: Contact[] = [];
+  scheduledCalls: Call[] = []; // Changed from scheduledContacts to scheduledCalls
   callStats: CallStats = {
     todayCalls: 0,
     completedCalls: 0,
@@ -48,79 +49,6 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-
-  // Modify the initiateCall method
-  initiateCall(call: Call): void {
-    this.notificationService.info('Initiating call... (Demo feature)');
-    
-    // In a real implementation, this would use a native dialer or VoIP service
-    if (call.contact?.phone) {
-      if (call.method === 'webex') {
-        window.open('https://web.webex.com', '_blank');
-      } else if (call.method === 'teams') {
-        window.open('https://teams.microsoft.com', '_blank');
-      } else if (call.method === 'zoom') {
-        window.open('https://zoom.us/start', '_blank');
-      } else {
-        window.location.href = `tel:${call.contact.phone}`;
-      }
-      
-      // After initiating the call, open the post-call modal
-      this.selectedCall = call;
-      this.showPostCallModal = true;
-    } else {
-      this.notificationService.warning('No phone number available for this contact');
-    }
-  }
-
-  // Add these methods to handle the post-call modal
-  closePostCallModal(): void {
-    this.showPostCallModal = false;
-    this.selectedCall = null;
-    this.callStateService.clearActiveCall();
-  }  
-
-  async handleCallCompleted(data: {callId: string, notes: string}): Promise<void> {
-    try {
-      const { error } = await this.supabaseService.updateCall(data.callId, {
-        status: 'completed',
-        completed_at: new Date().toISOString(),
-        notes: data.notes
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      this.notificationService.success('Call marked as completed');
-      this.loadDashboardData(); // Refresh the data
-    } catch (error: any) {
-      this.notificationService.error('Failed to update call: ' + error.message);
-    } finally {
-      this.closePostCallModal();
-    }
-  }
-
-  async handleCallRescheduled(data: {callId: string, scheduledAt: string, notes: string}): Promise<void> {
-    try {
-      const { error } = await this.supabaseService.updateCall(data.callId, {
-        scheduled_at: data.scheduledAt,
-        notes: data.notes
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      this.notificationService.success('Call rescheduled successfully');
-      this.loadDashboardData(); // Refresh the data
-    } catch (error: any) {
-      this.notificationService.error('Failed to reschedule call: ' + error.message);
-    } finally {
-      this.closePostCallModal();
-    }
-  }
-
   async loadDashboardData(): Promise<void> {
     try {
       this.isLoading = true;
@@ -137,18 +65,16 @@ export class DashboardComponent implements OnInit {
       // Calculate call stats
       this.calculateCallStats();
       
-      // Load scheduled contacts for today and upcoming days
-      const today = new Date();
-      const dateStr = today.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+      // Filter calls for today's scheduled calls
+      const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
       
-      const { data: contacts, error: contactsError } = 
-        await this.supabaseService.getContactsWithScheduleForDate(dateStr);
-      
-      if (contactsError) {
-        throw contactsError;
-      }
-      
-      this.scheduledContacts = contacts || [];
+      this.scheduledCalls = this.calls.filter(call => {
+        // Check if the call is scheduled for today and has status 'scheduled'
+        return call.scheduled_at.startsWith(today) && call.status === 'scheduled';
+      }).sort((a, b) => {
+        // Sort by scheduled time
+        return new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
+      });
       
     } catch (error: any) {
       this.notificationService.error('Failed to load dashboard data: ' + error.message);
@@ -203,7 +129,12 @@ export class DashboardComponent implements OnInit {
       .sort((a, b) => b.count - a.count);
   }
 
-  // Added helper method to safely get the count of scheduled calls
+  // Format time helper for scheduled calls
+  formatTime(dateString: string): string {
+    return format(new Date(dateString), 'h:mm a');
+  }
+
+  // Get scheduled calls count
   getScheduledCallsCount(): number {
     if (!this.calls) return 0;
     return this.calls.filter(call => call.status === 'scheduled').length;
@@ -229,6 +160,84 @@ export class DashboardComponent implements OnInit {
     
     // Show a notification
     this.notificationService.success('Call marked as completed');
+  }
+
+  // Now this will open the call detail view
+  viewCallDetails(callId: string): void {
+    this.router.navigate(['/call-history', callId]);
+  }
+
+  // For initiating calls
+  initiateCall(call: Call): void {
+    this.notificationService.info('Initiating call... (Demo feature)');
+    
+    // In a real implementation, this would use a native dialer or VoIP service
+    if (call.contact?.phone) {
+      if (call.method === 'webex') {
+        window.open('https://web.webex.com', '_blank');
+      } else if (call.method === 'teams') {
+        window.open('https://teams.microsoft.com', '_blank');
+      } else if (call.method === 'zoom') {
+        window.open('https://zoom.us/start', '_blank');
+      } else {
+        window.location.href = `tel:${call.contact.phone}`;
+      }
+      
+      // After initiating the call, open the post-call modal
+      this.selectedCall = call;
+      this.showPostCallModal = true;
+      this.callStateService.setActiveCall(call);
+    } else {
+      this.notificationService.warning('No phone number available for this contact');
+    }
+  }
+
+  // Add these methods to handle the post-call modal
+  closePostCallModal(): void {
+    this.showPostCallModal = false;
+    this.selectedCall = null;
+    this.callStateService.clearActiveCall();
+  }  
+
+  async handleCallCompleted(data: {callId: string, notes: string}): Promise<void> {
+    try {
+      const { error } = await this.supabaseService.updateCall(data.callId, {
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        notes: data.notes
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      this.notificationService.success('Call marked as completed');
+      this.loadDashboardData(); // Refresh the data
+    } catch (error: any) {
+      this.notificationService.error('Failed to update call: ' + error.message);
+    } finally {
+      this.closePostCallModal();
+    }
+  }
+
+  async handleCallRescheduled(data: {callId: string, scheduledAt: string, notes: string}): Promise<void> {
+    try {
+      const { error } = await this.supabaseService.updateCall(data.callId, {
+        scheduled_at: data.scheduledAt,
+        notes: data.notes
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      this.notificationService.success('Call rescheduled successfully');
+      this.loadDashboardData(); // Refresh the data
+    } catch (error: any) {
+      this.notificationService.error('Failed to reschedule call: ' + error.message);
+    } finally {
+      this.closePostCallModal();
+    }
   }
 
   // Handle contact schedule actions

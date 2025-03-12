@@ -9,6 +9,7 @@ import { CallStatsComponent } from './components/call-stats/call-stats.component
 import { RecentCallsComponent } from './components/recent-calls/recent-calls.component';
 import { UpcomingCallsComponent } from './components/upcoming-calls/upcoming-calls.component';
 import { ContactScheduleComponent } from './components/contact-schedule/contact-schedule.component';
+import { TodaysScheduledCallsComponent } from './components/todays-scheduled-calls/todays-scheduled-calls.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent }
@@ -20,7 +21,8 @@ const routes: Routes = [
     CallStatsComponent,
     RecentCallsComponent,
     UpcomingCallsComponent,
-    ContactScheduleComponent
+    ContactScheduleComponent,
+    TodaysScheduledCallsComponent
   ],
   imports: [
     CommonModule,

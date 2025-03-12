@@ -66,14 +66,14 @@
 
     <!-- Schedule Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Contact Schedule -->
-      <app-contact-schedule
-        [contacts]="scheduledContacts"
-        [maxContacts]="5"
-        (viewContact)="viewContact($event)"
-        (scheduleCall)="scheduleCall($event)"
+      <!-- Today's Scheduled Calls (NEW COMPONENT) -->
+      <app-todays-scheduled-calls
+        [calls]="scheduledCalls"
+        [maxCalls]="5"
+        (viewCallDetails)="viewCallDetails($event)"
+        (initiateCall)="initiateCall($event)"
         class="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition">
-      </app-contact-schedule>
+      </app-todays-scheduled-calls>
       
       <!-- Schedule Overview -->
       <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition">
@@ -91,8 +91,8 @@
           </div>
           
           <div class="bg-gray-50 rounded-lg p-4 text-center">
-            <div class="text-3xl font-bold text-primary mb-1">{{ scheduledContacts.length }}</div>
-            <div class="text-sm text-gray-600">Scheduled contacts</div>
+            <div class="text-3xl font-bold text-primary mb-1">{{ scheduledCalls.length }}</div>
+            <div class="text-sm text-gray-600">Today's scheduled calls</div>
           </div>
         </div>
         
@@ -143,11 +143,11 @@
 
   <!-- Post-Call Modal -->
   <app-post-call-modal
-  *ngIf="showPostCallModal && selectedCall"
-  [isOpen]="showPostCallModal"
-  [call]="selectedCall"
-  (closed)="closePostCallModal()"
-  (completed)="handleCallCompleted($event)"
-  (rescheduled)="handleCallRescheduled($event)"
+    *ngIf="showPostCallModal && selectedCall"
+    [isOpen]="showPostCallModal"
+    [call]="selectedCall"
+    (closed)="closePostCallModal()"
+    (completed)="handleCallCompleted($event)"
+    (rescheduled)="handleCallRescheduled($event)"
   ></app-post-call-modal>
 </div>
