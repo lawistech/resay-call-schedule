@@ -106,7 +106,10 @@ export class SupabaseService {
       .from('calls')
       .select(`
         *,
-        contact:contacts(*)
+        contact:contacts(
+          *,
+          company:companies(*)
+        )
       `)
       .order('scheduled_at', { ascending: false });
   }

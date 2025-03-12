@@ -81,11 +81,10 @@
         
         <!-- Events List -->
         <div class="space-y-4">
-          <div *ngFor="let event of groupedEvents[dateKey]" class="flex px-4 py-3 border-l-4 rounded-r-lg hover:bg-stone-100 transition-colors border-blue-500 bg-blue-50 hover:bg-blue-100" 
-              >
+          <div *ngFor="let event of groupedEvents[dateKey]" class="flex px-4 py-3 border-l-4 rounded-r-lg hover:bg-stone-100 transition-colors border-blue-500 bg-blue-50 hover:bg-blue-100">
             <!-- Event Time -->
             <div class="w-24 flex-shrink-0">
-              <h3 class="font-semibold text-stone-900 uppercase">{{ event.contact.lead_source }}</h3>
+              <h3 class="font-semibold text-stone-900 uppercase">{{ event.contact?.lead_source || 'CALL' }}</h3>
               <div class="text-stone-900 font-semibold">{{ formatEventTime(event.date) }}</div>
               <div class="text-xs text-stone-500 mt-1">{{ event.type === 'call' ? 'Call' : 'Meeting' }}</div>
             </div>
@@ -94,7 +93,7 @@
             <div class="flex-grow ml-4">
               <div class="flex justify-between items-start">
                 <div class="flex-grow">
-                  <!-- Contact Name Badge - NEW ADDITION -->
+                  <!-- Contact Name Badge -->
                   <div *ngIf="event.contact" class="mb-1.5">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-stone-100 text-stone-800">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -104,14 +103,33 @@
                     </span>              
                   </div>
                   
-                  <h3 class="font-semibold text-stone-900">{{ event.title }}</h3>
-                  
-                  <div *ngIf="event.contact" class="text-sm text-stone-700 mt-1">
-                    <span *ngIf="event.contact.company?.name">{{ event.contact.company?.name }}</span>
-                    <span *ngIf="event.contact.company?.name && event.contact.phone"> • </span>
-                    <span *ngIf="event.contact.phone">{{ event.contact.phone }}</span>
+                  <!-- Company Name - Explicitly displayed -->
+                  <div *ngIf="event.contact?.company?.name" class="mb-1.5 text-sm font-medium text-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    {{ event.contact?.company?.name }}
+                  </div>
+                  <!-- Opportunity Name if available -->
+                  <div *ngIf="event.contact?.opportunity_name" class="mt-1 text-sm text-stone-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    Opportunity: {{ event.contact?.opportunity_name }}
                   </div>
                   
+                  <!-- Contact Details (Phone) -->
+                  <div *ngIf="event.contact?.phone" class="text-sm text-stone-700 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    {{ event.contact?.phone }}
+                  </div>
+                  <!-- Display Event Title (Reason) -->
+                  <h3 class="font-semibold text-stone-900">{{ event.title }}</h3>
+                  
+
+                  <!-- Event Notes -->
                   <div *ngIf="getEventNotes(event)" class="mt-2 text-sm text-stone-600 bg-stone-100 p-2 rounded-md">
                     {{ getEventNotes(event) }}
                   </div>

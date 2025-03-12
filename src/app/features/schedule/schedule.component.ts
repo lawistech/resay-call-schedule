@@ -93,7 +93,8 @@ export class ScheduleComponent implements OnInit {
     }
   }
 
-  // New method to properly combine events from both calls and contacts
+  
+  // In your combineEvents() method in schedule.component.ts
   combineEvents(): void {
     // Clear the existing combined events
     this.combinedEvents = [];
@@ -105,6 +106,7 @@ export class ScheduleComponent implements OnInit {
         
         // Only include calls with valid dates
         if (!isNaN(callDate.getTime())) {
+          // Make sure contact and company are properly loaded
           this.combinedEvents.push({
             type: 'call',
             title: call.reason || 'Call',
@@ -112,12 +114,15 @@ export class ScheduleComponent implements OnInit {
             data: call,
             contact: call.contact
           });
+          
+          // For debugging - check if contact and company exist
+          console.log('Call contact:', call.contact);
+          console.log('Company:', call.contact?.company);
         }
       } catch (e) {
         console.error('Error processing call:', e, call);
       }
     }
-
 
     // Sort all events by date
     this.combinedEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -333,4 +338,17 @@ initiateCall(call: Call, event?: MouseEvent): void {
   getEventNotes(event: any): string {
     return event.data?.notes || '';
   }
+  
+  // Helper method to get importance label
+  getImportanceLabel(value: number | undefined): string {
+    switch(value) {
+      case 1: return 'Very Low';
+      case 2: return 'Low';
+      case 3: return 'Medium';
+      case 4: return 'High';
+      case 5: return 'Critical';
+      default: return 'Medium';
+    }
+  }
+
 }
