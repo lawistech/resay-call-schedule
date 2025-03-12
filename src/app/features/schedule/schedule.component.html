@@ -85,6 +85,7 @@
               >
             <!-- Event Time -->
             <div class="w-24 flex-shrink-0">
+              <h3 class="font-semibold text-stone-900 uppercase">{{ event.contact.lead_source }}</h3>
               <div class="text-stone-900 font-semibold">{{ formatEventTime(event.date) }}</div>
               <div class="text-xs text-stone-500 mt-1">{{ event.type === 'call' ? 'Call' : 'Meeting' }}</div>
             </div>
