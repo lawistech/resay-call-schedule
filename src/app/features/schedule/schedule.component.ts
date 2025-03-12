@@ -4,12 +4,24 @@ import { SupabaseService } from '../../core/services/supabase.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Call } from '../../core/models/call.model';
 import { Contact } from '../../core/models/contact.model';
-import { format, isToday, isTomorrow, startOfToday, endOfToday, startOfTomorrow, endOfTomorrow, startOfWeek, endOfWeek, parseISO } from 'date-fns';
+import { 
+  format, 
+  isToday, 
+  isTomorrow, 
+  startOfToday, 
+  endOfToday, 
+  startOfTomorrow, 
+  endOfTomorrow, 
+  startOfWeek, 
+  endOfWeek, 
+  parseISO 
+} from 'date-fns';
 import { CallStateService } from '../../core/services/call-state.service';
 
 @Component({
   selector: 'app-schedule',
-  templateUrl: './schedule.component.html'
+  templateUrl: './schedule.component.html',
+  styleUrls: ['./schedule.component.scss'] // You may need to create this file
 })
 export class ScheduleComponent implements OnInit {
   upcomingCalls: Call[] = [];
@@ -20,7 +32,7 @@ export class ScheduleComponent implements OnInit {
   showPostCallModal = false;
   selectedCall: Call | null = null;
   selectedContact: Contact | null = null;
-  filterView: 'all' | 'today' | 'tomorrow' | 'week' = 'all';
+  filterView: 'all' | 'today' | 'tomorrow' | 'week' = 'today'; // Default to today's view
   
   // Grouping
   groupedEvents: { [key: string]: any[] } = {};
@@ -40,14 +52,13 @@ export class ScheduleComponent implements OnInit {
   ngOnInit(): void {
     this.loadScheduleData();
     
-      // Check if there's an active call that needs a post-call modal
-      const activeCall = this.callStateService.getActiveCall();
-      if (activeCall && this.callStateService.shouldShowPostCallModal()) {
-        this.selectedCall = activeCall;
-        this.showPostCallModal = true;
-      }
+    // Check if there's an active call that needs a post-call modal
+    const activeCall = this.callStateService.getActiveCall();
+    if (activeCall && this.callStateService.shouldShowPostCallModal()) {
+      this.selectedCall = activeCall;
+      this.showPostCallModal = true;
     }
-  
+  }
 
   async loadScheduleData(): Promise<void> {
     try {
@@ -61,7 +72,6 @@ export class ScheduleComponent implements OnInit {
       }
       
       // Filter for upcoming calls (status = scheduled)
-      // Important: Ensure we're properly filtering for scheduled calls
       this.upcomingCalls = (calls || [])
         .filter(call => call.status === 'scheduled')
         .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
@@ -93,8 +103,6 @@ export class ScheduleComponent implements OnInit {
     }
   }
 
-  
-  // In your combineEvents() method in schedule.component.ts
   combineEvents(): void {
     // Clear the existing combined events
     this.combinedEvents = [];
@@ -106,7 +114,7 @@ export class ScheduleComponent implements OnInit {
         
         // Only include calls with valid dates
         if (!isNaN(callDate.getTime())) {
-          // Ensure all call data is correctly passed to the event, including importance and is_first_call
+          // Ensure all call data is correctly passed to the event
           this.combinedEvents.push({
             type: 'call',
             title: call.reason || 'Call',
@@ -210,12 +218,17 @@ export class ScheduleComponent implements OnInit {
     } else if (isTomorrow(date)) {
       return 'Tomorrow';
     } else {
-      return format(date, 'EEEE, MMM d');
+      return format(date, 'EEEE, MMMM d');
     }
   }
 
   formatEventTime(date: Date): string {
     return format(date, 'h:mm a');
+  }
+  
+  // New method to format the short month name for date badges
+  formatShortMonth(dateKey: string): string {
+    return format(new Date(dateKey), 'MMM');
   }
 
   openCallModal(contact: Contact): void {
@@ -238,7 +251,6 @@ export class ScheduleComponent implements OnInit {
     this.selectedCall = null;
     this.callStateService.clearActiveCall();
   }
-  
 
   async handleCallCompleted(data: {callId: string, notes: string}): Promise<void> {
     try {
@@ -287,42 +299,36 @@ export class ScheduleComponent implements OnInit {
   }
 
   // Update initiateCall method with optional event parameter
-initiateCall(call: Call, event?: MouseEvent): void {
-  if (!call.contact?.phone) {
-    this.notificationService.warning('No phone number available for this contact');
-    return;
+  initiateCall(call: Call, event?: MouseEvent): void {
+    if (!call.contact?.phone) {
+      this.notificationService.warning('No phone number available for this contact');
+      return;
+    }
+    
+    // Save call state in the service before any navigation
+    this.callStateService.setActiveCall(call);
+    
+    // Set local component state
+    this.selectedCall = call;
+    this.showPostCallModal = true;
+    
+    // If we have an event, prevent default behavior
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    // For phone calls, use a different approach
+    window.location.href = `tel:${call.contact.phone}`;
   }
-  
-  // Save call state in the service before any navigation
-  this.callStateService.setActiveCall(call);
-  
-  // Set local component state
-  this.selectedCall = call;
-  this.showPostCallModal = true;
-  
-  // If we have an event, prevent default behavior
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-  
-   // For phone calls, use a different approach
-   window.location.href = `tel:${call.contact.phone}`;
-}
 
-  
-
-  // Add these methods to your ScheduleComponent class
+  // Get date from key for date badge
   getDateFromKey(dateKey: string): number {
     return new Date(dateKey).getDate();
   }
 
   getFormattedEventDate(dateKey: string): string {
     return this.formatEventDate(new Date(dateKey));
-  }
-
-  getMethodFromEvent(event: any): string {
-    return event.data?.method || '';
   }
 
   // Helper method to safely get method from event data
@@ -346,5 +352,4 @@ initiateCall(call: Call, event?: MouseEvent): void {
       default: return 'Medium';
     }
   }
-
 }
