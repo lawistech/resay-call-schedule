@@ -81,14 +81,8 @@
         
         <!-- Events List -->
         <div class="space-y-4">
-          <div *ngFor="let event of groupedEvents[dateKey]" class="flex px-4 py-3 border-l-4 rounded-r-lg hover:bg-stone-100 transition-colors" 
-              [ngClass]="{
-                'border-green-500 bg-green-50 hover:bg-green-100': event.type === 'call' && getMethodFromEvent(event) === 'phone',
-                'border-blue-500 bg-blue-50 hover:bg-blue-100': event.type === 'call' && getMethodFromEvent(event) === 'webex',
-                'border-purple-500 bg-purple-50 hover:bg-purple-100': event.type === 'call' && getMethodFromEvent(event) === 'teams',
-                'border-yellow-500 bg-yellow-50 hover:bg-yellow-100': event.type === 'call' && getMethodFromEvent(event) === 'zoom',
-                'border-stone-500 bg-stone-100 hover:bg-stone-100': event.type === 'contact' || !getMethodFromEvent(event)
-              }">
+          <div *ngFor="let event of groupedEvents[dateKey]" class="flex px-4 py-3 border-l-4 rounded-r-lg hover:bg-stone-100 transition-colors border-blue-500 bg-blue-50 hover:bg-blue-100" 
+              >
             <!-- Event Time -->
             <div class="w-24 flex-shrink-0">
               <div class="text-stone-900 font-semibold">{{ formatEventTime(event.date) }}</div>

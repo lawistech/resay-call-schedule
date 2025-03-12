@@ -173,16 +173,7 @@ export class DashboardComponent implements OnInit {
     
     // In a real implementation, this would use a native dialer or VoIP service
     if (call.contact?.phone) {
-      if (call.method === 'webex') {
-        window.open('https://web.webex.com', '_blank');
-      } else if (call.method === 'teams') {
-        window.open('https://teams.microsoft.com', '_blank');
-      } else if (call.method === 'zoom') {
-        window.open('https://zoom.us/start', '_blank');
-      } else {
-        window.location.href = `tel:${call.contact.phone}`;
-      }
-      
+      window.location.href = `tel:${call.contact.phone}`;
       // After initiating the call, open the post-call modal
       this.selectedCall = call;
       this.showPostCallModal = true;

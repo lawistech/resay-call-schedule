@@ -305,22 +305,8 @@ initiateCall(call: Call, event?: MouseEvent): void {
     event.stopPropagation();
   }
   
-  // Navigate to appropriate calling app
-  if (call.method === 'webex') {
-    window.open('https://web.webex.com', '_blank');
-  } else if (call.method === 'teams') {
-    window.open('https://teams.microsoft.com', '_blank');
-  } else if (call.method === 'zoom') {
-    window.open('https://zoom.us/start', '_blank');
-  } else {
-    // For phone calls, use a different approach
-    const a = document.createElement('a');
-    a.href = `tel:${call.contact.phone}`;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
+   // For phone calls, use a different approach
+   window.location.href = `tel:${call.contact.phone}`;
 }
 
   
