@@ -5,6 +5,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { Call } from '../../core/models/call.model';
 import { Contact } from '../../core/models/contact.model';
 import { format, isToday, isTomorrow, startOfToday, endOfToday, startOfTomorrow, endOfTomorrow, startOfWeek, endOfWeek, parseISO } from 'date-fns';
+import { CallStateService } from '../../core/services/call-state.service';
 
 @Component({
   selector: 'app-schedule',
@@ -32,12 +33,21 @@ export class ScheduleComponent implements OnInit {
 
   constructor(
     private supabaseService: SupabaseService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private callStateService: CallStateService
   ) {}
 
   ngOnInit(): void {
     this.loadScheduleData();
-  }
+    
+      // Check if there's an active call that needs a post-call modal
+      const activeCall = this.callStateService.getActiveCall();
+      if (activeCall && this.callStateService.shouldShowPostCallModal()) {
+        this.selectedCall = activeCall;
+        this.showPostCallModal = true;
+      }
+    }
+  
 
   async loadScheduleData(): Promise<void> {
     try {
@@ -225,7 +235,9 @@ export class ScheduleComponent implements OnInit {
   closePostCallModal(): void {
     this.showPostCallModal = false;
     this.selectedCall = null;
+    this.callStateService.clearActiveCall();
   }
+  
 
   async handleCallCompleted(data: {callId: string, notes: string}): Promise<void> {
     try {
@@ -273,25 +285,45 @@ export class ScheduleComponent implements OnInit {
     this.closeCallModal();
   }
 
-  initiateCall(call: Call): void {
-    if (call.contact?.phone) {
-      if (call.method === 'webex') {
-        window.open('https://web.webex.com', '_blank');
-      } else if (call.method === 'teams') {
-        window.open('https://teams.microsoft.com', '_blank');
-      } else if (call.method === 'zoom') {
-        window.open('https://zoom.us/start', '_blank');
-      } else {
-        window.location.href = `tel:${call.contact.phone}`;
-      }
-      
-      // After initiating the call, open the post-call modal
-      this.selectedCall = call;
-      this.showPostCallModal = true;
-    } else {
-      this.notificationService.warning('No phone number available for this contact');
-    }
+  // Update initiateCall method with optional event parameter
+initiateCall(call: Call, event?: MouseEvent): void {
+  if (!call.contact?.phone) {
+    this.notificationService.warning('No phone number available for this contact');
+    return;
   }
+  
+  // Save call state in the service before any navigation
+  this.callStateService.setActiveCall(call);
+  
+  // Set local component state
+  this.selectedCall = call;
+  this.showPostCallModal = true;
+  
+  // If we have an event, prevent default behavior
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  
+  // Navigate to appropriate calling app
+  if (call.method === 'webex') {
+    window.open('https://web.webex.com', '_blank');
+  } else if (call.method === 'teams') {
+    window.open('https://teams.microsoft.com', '_blank');
+  } else if (call.method === 'zoom') {
+    window.open('https://zoom.us/start', '_blank');
+  } else {
+    // For phone calls, use a different approach
+    const a = document.createElement('a');
+    a.href = `tel:${call.contact.phone}`;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+}
+
+  
 
   // Add these methods to your ScheduleComponent class
   getDateFromKey(dateKey: string): number {

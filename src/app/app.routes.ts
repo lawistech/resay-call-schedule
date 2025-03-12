@@ -1,6 +1,7 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
+import { CallActiveGuard } from './core/guards/call-active.guard';
 
 export const routes: Routes = [
   {
@@ -29,7 +30,7 @@ export const routes: Routes = [
   },
   {
     path: 'schedule',
-    canActivate: [AuthGuard],
+    canDeactivate: [CallActiveGuard],
     loadChildren: () => import('./features/schedule/schedule.module').then(m => m.ScheduleModule)
   },
   {

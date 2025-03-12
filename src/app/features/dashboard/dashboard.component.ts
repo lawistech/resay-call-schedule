@@ -6,6 +6,7 @@ import { NotificationService } from '../../core/services/notification.service';
 import { Call } from '../../core/models/call.model';
 import { Contact } from '../../core/models/contact.model';
 import { CallStats } from '../../core/models/call-stats.model';
+import { CallStateService } from '../../core/services/call-state.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -32,11 +33,19 @@ export class DashboardComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
+    private callStateService: CallStateService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadDashboardData();
+    
+    // Check if there's an active call that needs a post-call modal
+    const activeCall = this.callStateService.getActiveCall();
+    if (activeCall && this.callStateService.shouldShowPostCallModal()) {
+      this.selectedCall = activeCall;
+      this.showPostCallModal = true;
+    }
   }
 
 
@@ -68,7 +77,8 @@ export class DashboardComponent implements OnInit {
   closePostCallModal(): void {
     this.showPostCallModal = false;
     this.selectedCall = null;
-  }
+    this.callStateService.clearActiveCall();
+  }  
 
   async handleCallCompleted(data: {callId: string, notes: string}): Promise<void> {
     try {

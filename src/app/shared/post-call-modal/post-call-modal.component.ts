@@ -27,6 +27,15 @@ export class PostCallModalComponent implements OnInit {
   
   ngOnInit(): void {
     this.initForm();
+    
+    // Watch for changes to the call input
+    if (this.call) {
+      // Initialize the form with existing call data
+      this.postCallForm.patchValue({
+        notes: this.call.notes || '',
+        scheduledAt: new Date().toISOString().slice(0, 16) // Default to current time
+      });
+    }
   }
   
   initForm(): void {
