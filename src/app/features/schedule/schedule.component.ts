@@ -103,31 +103,74 @@ export class ScheduleComponent implements OnInit {
     }
   }
 
+  // In the combineEvents() method in schedule.component.ts
   combineEvents(): void {
     // Clear the existing combined events
     this.combinedEvents = [];
-  
+
     // Add upcoming calls to combined events
     for (const call of this.upcomingCalls) {
       try {
         const callDate = new Date(call.scheduled_at);
         
+        // Check if the call date is in the past (overdue)
+        const now = new Date();
+        const isOverdue = callDate < now && call.status === 'scheduled';
+        
+        // If overdue, set the date to today
+        if (isOverdue) {
+          callDate.setFullYear(now.getFullYear(), now.getMonth(), now.getDate());
+          callDate.setHours(now.getHours() + 1); // Set to 1 hour from now
+        }
+        
         // Only include calls with valid dates
         if (!isNaN(callDate.getTime())) {
-          // Ensure all call data is correctly passed to the event
           this.combinedEvents.push({
             type: 'call',
-            title: call.reason || 'Call',
+            title: isOverdue ? `[OVERDUE] ${call.reason || 'Call'}` : (call.reason || 'Call'),
             date: callDate,
-            data: call,  // Pass the entire call object to ensure importance and is_first_call are available
-            contact: call.contact
+            data: call,
+            contact: call.contact,
+            isOverdue: isOverdue
           });
         }
       } catch (e) {
         console.error('Error processing call:', e, call);
       }
     }
-  
+
+    // Add scheduled contacts
+    for (const contact of this.scheduledContacts) {
+      if (contact.schedule) {
+        try {
+          const contactDate = new Date(contact.schedule);
+          
+          // Check if the contact schedule is in the past (overdue)
+          const now = new Date();
+          const isOverdue = contactDate < now;
+          
+          // If overdue, set the date to today
+          if (isOverdue) {
+            contactDate.setFullYear(now.getFullYear(), now.getMonth(), now.getDate());
+            contactDate.setHours(now.getHours() + 1); // Set to 1 hour from now
+          }
+          
+          if (!isNaN(contactDate.getTime())) {
+            this.combinedEvents.push({
+              type: 'contact',
+              title: isOverdue ? '[OVERDUE] Meeting with contact' : 'Meeting with contact',
+              date: contactDate,
+              data: contact,
+              contact: contact,
+              isOverdue: isOverdue
+            });
+          }
+        } catch (e) {
+          console.error('Error processing contact schedule:', e, contact);
+        }
+      }
+    }
+
     // Sort all events by date
     this.combinedEvents.sort((a, b) => a.date.getTime() - b.date.getTime());
   }

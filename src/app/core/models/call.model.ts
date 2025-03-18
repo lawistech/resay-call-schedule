@@ -19,4 +19,5 @@ export interface Call {
     updated_at?: string;
     importance?: number;
     is_first_call?: boolean;
+    isOverdue?: boolean; 
 }

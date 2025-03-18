@@ -49,6 +49,7 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  // In dashboard.component.ts
   async loadDashboardData(): Promise<void> {
     try {
       this.isLoading = true;
@@ -65,15 +66,33 @@ export class DashboardComponent implements OnInit {
       // Calculate call stats
       this.calculateCallStats();
       
-      // Filter calls for today's scheduled calls
-      const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
+      // Get today's date as string (YYYY-MM-DD)
+      const today = new Date().toISOString().split('T')[0];
       
+      // Filter for today's scheduled calls and overdue calls
       this.scheduledCalls = this.calls.filter(call => {
-        // Check if the call is scheduled for today and has status 'scheduled'
-        return call.scheduled_at.startsWith(today) && call.status === 'scheduled';
+        const callDate = new Date(call.scheduled_at);
+        const now = new Date();
+        
+        // Include if: 
+        // 1. Scheduled for today
+        // 2. Status is 'scheduled'
+        // 3. OR it's overdue (past date with status still 'scheduled')
+        const isForToday = call.scheduled_at.startsWith(today);
+        const isOverdue = callDate < now && call.status === 'scheduled';
+        
+        return (isForToday || isOverdue) && call.status === 'scheduled';
       }).sort((a, b) => {
         // Sort by scheduled time
         return new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
+      });
+      
+      // Add an 'isOverdue' property to identify overdue calls
+      this.scheduledCalls = this.scheduledCalls.map(call => {
+        const callDate = new Date(call.scheduled_at);
+        const now = new Date();
+        call.isOverdue = callDate < now;
+        return call;
       });
       
     } catch (error: any) {

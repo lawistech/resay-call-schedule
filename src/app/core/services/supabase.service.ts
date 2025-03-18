@@ -217,4 +217,58 @@ export class SupabaseService {
       contactsError: contactsResponse.error
     };
   }
+
+  async updateOverdueStatus(): Promise<void> {
+    try {
+      // Get all scheduled calls
+      const { data, error } = await this.supabaseClient
+        .from('calls')
+        .select('id, scheduled_at')
+        .eq('status', 'scheduled');
+      
+      if (error) throw error;
+      
+      // For each call, check if it's overdue
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Beginning of today
+      
+      const updates = data.map(async (call) => {
+        const scheduledDate = new Date(call.scheduled_at);
+        const isOverdue = scheduledDate < today;
+        
+        // Update the is_overdue field
+        return this.supabaseClient
+          .from('calls')
+          .update({ is_overdue: isOverdue })
+          .eq('id', call.id);
+      });
+      
+      // Execute all updates
+      await Promise.all(updates);
+      
+    } catch (error) {
+      console.error('Failed to update overdue status:', error);
+      throw error;
+    }
+  }
+
+  // src/app/core/services/supabase.service.ts
+  // Add this method with your other call-related methods
+
+  async getOverdueCalls() {
+    const now = new Date().toISOString();
+    
+    return this.supabaseClient
+      .from('calls')
+      .select(`
+        *,
+        contact:contacts(
+          *,
+          company:companies(*)
+        )
+      `)
+      .eq('status', 'scheduled')
+      .lt('scheduled_at', now) // scheduled_at less than current time
+      .order('scheduled_at', { ascending: true });
+  }
 }
