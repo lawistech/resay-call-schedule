@@ -100,19 +100,6 @@ export class SupabaseService {
       .select();
   }
 
-  // Call Methods
-  async getCalls() {
-    return this.supabaseClient
-      .from('calls')
-      .select(`
-        *,
-        contact:contacts(
-          *,
-          company:companies(*)
-        )
-      `)
-      .order('scheduled_at', { ascending: false });
-  }
 
   async getCallsByDate(date: string) {
     const startOfDay = `${date}T00:00:00`;
@@ -129,15 +116,7 @@ export class SupabaseService {
       .order('scheduled_at', { ascending: true });
   }
 
-  async createCall(callData: Partial<Call>) {
-      return this.supabaseClient
-      .from('calls')
-      .insert(callData)
-      .select(`
-        *,
-        contacts(*)
-      `);
-  }
+  
 
   async updateCall(id: string, callData: Partial<Call>) {
     return this.supabaseClient
@@ -270,5 +249,43 @@ export class SupabaseService {
       .eq('status', 'scheduled')
       .lt('scheduled_at', now) // scheduled_at less than current time
       .order('scheduled_at', { ascending: true });
+  }
+
+  async createCall(callData: Partial<Call>) {
+    // Get current user
+    const { data: { user } } = await this.supabaseClient.auth.getUser();
+    
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+    
+    // Always set the user_id to the current user
+    const callWithUserId = {
+      ...callData,
+      user_id: user.id
+    };
+    
+    return this.supabaseClient
+      .from('calls')
+      .insert(callWithUserId)
+      .select(`
+        *,
+        contacts(*)
+      `);
+  }
+
+  // When retrieving calls, let RLS handle filtering
+  async getCalls() {
+    // With RLS, this will automatically only return calls owned by the current user
+    return this.supabaseClient
+      .from('calls')
+      .select(`
+        *,
+        contact:contacts(
+          *,
+          company:companies(*)
+        )
+      `)
+      .order('scheduled_at', { ascending: false });
   }
 }

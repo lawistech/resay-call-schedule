@@ -118,70 +118,82 @@ export class CallModalComponent implements OnInit {
     if (this.callForm.invalid) {
       return;
     }
-
-    if (!this.contact) {
-      this.notificationService.error('Contact information is missing');
-      return;
-    }
-
+  
     this.isLoading = true;
     
     try {
-      const formValues = this.callForm.value;
-      let scheduledAt = formValues.scheduled_at;
-      let followUpDate = formValues.follow_up_date || null;
-      console.log("Contact has first call:", this.isFirstCall);
+      const formValues = { ...this.callForm.value };
       
-      console.log("find first call");
-      console.log( this.isFirstCall);
-      const callData = {
-        contact_id: this.contact.id,
-        scheduled_at: scheduledAt,
-        reason: formValues.reason,
-        method: formValues.method,
-        notes: formValues.notes,
-        lead_source: formValues.lead_source,
-        follow_up_date: followUpDate,
-        status: 'scheduled',
-        importance: formValues.importance,
-        is_first_call: this.isFirstCall
-      };
-
-      let result: { data: any; error: any; } | null = null;
+      // Convert date inputs from local timezone to UTC for storage
+      if (formValues.scheduled_at) {
+        formValues.scheduled_at = this.convertToUTC(formValues.scheduled_at);
+      }
       
-      if (this.isEditing && this.call) {
+      if (formValues.completed_at) {
+        formValues.completed_at = this.convertToUTC(formValues.completed_at);
+      }
+      
+      if (formValues.follow_up_date) {
+        formValues.follow_up_date = this.convertToUTC(formValues.follow_up_date);
+      }
+      
+      // Get current user ID from auth service
+      const currentUser = await this.supabaseService.supabaseClient.auth.getUser();
+      if (currentUser.data && currentUser.data.user) {
+        // Add user_id to ensure call is owned by current user
+        formValues.user_id = currentUser.data.user.id;
+      }
+      
+      let result;
+      
+      if (this.call) {
         // Update existing call
-        result = await this.supabaseService.updateCall(this.call.id, callData);
+        result = await this.supabaseService.updateCall(this.call.id, formValues);
       } else {
         // Create new call
-        result = await this.supabaseService.createCall(callData);
+        result = await this.supabaseService.createCall(formValues);
       }
-
-      if (result?.error) {
-        throw new Error(result.error.message);
+  
+      if (result.error) {
+        throw result.error;
       }
-
+  
       this.notificationService.success(
-        this.isEditing ? 'Call updated successfully' : 'Call scheduled successfully'
+        this.call ? 'Call updated successfully' : 'Call created successfully'
       );
       
-      // Check if result.data exists and has at least one item before accessing it
-      if (result?.data && Array.isArray(result.data) && result.data.length > 0) {
-        this.saved.emit(result.data[0] as Call);
+      // Check if data exists and has at least one element before accessing it
+      if (result.data && Array.isArray(result.data) && result.data.length > 0) {
+        this.saved.emit(result.data[0]);
       } else {
-        // If no data is returned, emit a constructed call object
-        const callToEmit = this.isEditing && this.call
-          ? { ...this.call, ...callData }
-          : { ...callData, id: 'temp_id' } as Call;
-        this.saved.emit(callToEmit);
+        // If no data returned, emit the original call or create a basic response
+        this.saved.emit(this.call || { 
+          id: 'temp-id', 
+          contact_id: formValues.contact_id,
+          user_id: formValues.user_id,
+          status: formValues.status,
+          reason: formValues.reason,
+          scheduled_at: formValues.scheduled_at
+        } as Call);
       }
-      
+  
       this.close();
     } catch (error: any) {
       this.notificationService.error('Failed to save call: ' + error.message);
     } finally {
       this.isLoading = false;
     }
+  }
+  
+  // Convert a local datetime input value to UTC for storage
+  convertToUTC(localDateTimeString: string): string {
+    if (!localDateTimeString) return '';
+    
+    // Parse the local datetime string to a Date object
+    const date = new Date(localDateTimeString);
+    
+    // Convert to UTC ISO string
+    return date.toISOString();
   }
 
   startCall(): void {
