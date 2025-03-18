@@ -118,17 +118,6 @@ export class SupabaseService {
 
   
 
-  async updateCall(id: string, callData: Partial<Call>) {
-    return this.supabaseClient
-    .from('calls')
-    .update(callData)
-    .eq('id', id)
-    .select(`
-      *,
-      contacts(*)
-    `);
-  }
-
   async deleteCall(id: string) {
     return this.supabaseClient
       .from('calls')
@@ -273,7 +262,7 @@ export class SupabaseService {
       .order('scheduled_at', { ascending: true });
   }
 
-  // In the createCall method of supabase.service.ts
+
   async createCall(callData: Partial<Call>) {
     // Get current user
     const { data: { user } } = await this.supabaseClient.auth.getUser();
@@ -282,18 +271,48 @@ export class SupabaseService {
       throw new Error('User not authenticated');
     }
     
-    // Always set the user_id to the current user
-    const callWithUserId = {
+    // Format the timestamp properly with timezone
+    const formattedData = {
       ...callData,
-      user_id: user.id
+      scheduled_at: callData.scheduled_at ? new Date(callData.scheduled_at).toISOString() : null,
+      follow_up_date: callData.follow_up_date && callData.follow_up_date !== '' ? 
+        new Date(callData.follow_up_date).toISOString() : null
     };
     
+    // Always set the user_id to the current user
+    const callWithUserId = {
+      ...formattedData,
+      user_id: user.id,
+      status: 'scheduled' // Default status for new calls
+    };
+    
+    console.log('Sending to Supabase:', callWithUserId);
+    
+    try {
+      const { data, error } = await this.supabaseClient
+        .from('calls')
+        .insert(callWithUserId)
+        .select(`
+          *,
+          contact:contacts(*)
+        `);
+        
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error creating call:', error);
+      return { data: null, error };
+    }
+  }
+
+  async updateCall(id: string, callData: Partial<Call>) {
     return this.supabaseClient
       .from('calls')
-      .insert(callWithUserId)
+      .update(callData)
+      .eq('id', id)
       .select(`
         *,
-        contacts(*)
+        contact:contacts(*)
       `);
   }
 }

@@ -1,3 +1,5 @@
+// src/app/shared/call-modal/call-modal.component.ts
+
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Contact } from '../../core/models/contact.model';
@@ -7,8 +9,7 @@ import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-call-modal',
-  templateUrl: './call-modal.component.html',
-  // styleUrls: ['./call-modal.component.css']
+  templateUrl: './call-modal.component.html'
 })
 export class CallModalComponent implements OnInit {
   @Input() isOpen: boolean = false;
@@ -20,12 +21,11 @@ export class CallModalComponent implements OnInit {
 
   callForm!: FormGroup;
   isLoading = false;
-  isFirstCall: boolean = false;
   callMethods = [
-    { value: 'webex', label: 'Open Webex' },
-    { value: 'phone', label: 'Phone Dialer' },
+    { value: 'webex', label: 'Webex' },
+    { value: 'phone', label: 'Phone' },
     { value: 'teams', label: 'Microsoft Teams' },
-    { value: 'zoom', label: 'Zoom Call' }
+    { value: 'zoom', label: 'Zoom' }
   ];
 
   minDate: string = '';
@@ -36,50 +36,44 @@ export class CallModalComponent implements OnInit {
     private notificationService: NotificationService
   ) {}
 
-   ngOnInit(): void {
-    // Set minDate to the current date and time in the required format
-    const currentDate = new Date();
-    this.minDate = currentDate.toISOString().slice(0, 16); // This ensures it includes both date and time in ISO format (YYYY-MM-DDTHH:mm)
+  ngOnInit(): void {
+    // Set minDate to current date/time for the datetime-local input
+    const now = new Date();
+    this.minDate = now.toISOString().slice(0, 16);
+    
     this.initForm();
-    this.setIsFirstCall()
   }
-
-    async setIsFirstCall() {
-    this.isFirstCall =  await this.checkIsFirstCall(this.contact!.id);
-  }
-
-  
 
   initForm(): void {
     this.callForm = this.formBuilder.group({
-      scheduled_at: [this.minDate, Validators.required], // Default to the current date and time
+      contact_id: [this.contact?.id || '', Validators.required],
+      scheduled_at: [this.minDate, Validators.required],
+      method: ['phone', Validators.required],
       reason: ['', Validators.required],
-      method: ['webex', Validators.required],
       notes: [''],
-      // Add lead source field with default from contact if available
-      lead_source: [this.contact?.lead_source || '', Validators.required],
-      follow_up_date: [''],
-      importance: [3] // Default to medium importance (3)
+      importance: [3], // Medium importance by default
+      lead_source: [this.contact?.lead_source || ''],
+      follow_up_date: ['']
     });
-  
+
     if (this.isEditing && this.call) {
-      // Format the date for the datetime-local input
+      // Format dates for the form
       const scheduledAt = this.call.scheduled_at 
-        ? new Date(this.call.scheduled_at).toISOString().slice(0, 16) 
+        ? new Date(this.call.scheduled_at).toISOString().slice(0, 16)
         : '';
       
       const followUpDate = this.call.follow_up_date 
-        ? new Date(this.call.follow_up_date).toISOString().slice(0, 16) 
+        ? new Date(this.call.follow_up_date).toISOString().slice(0, 16)
         : '';
-  
+
       this.callForm.patchValue({
         scheduled_at: scheduledAt,
-        reason: this.call.reason,
         method: this.call.method || 'phone',
+        reason: this.call.reason,
         notes: this.call.notes || '',
-        lead_source: this.call.lead_source || this.contact?.lead_source || '',
-        follow_up_date: followUpDate,
-        importance: this.call.importance || 3 // Use existing importance or default to 3
+        importance: this.call.importance || 3,
+        lead_source: this.call.lead_source || '',
+        follow_up_date: followUpDate
       });
     }
   }
@@ -89,10 +83,75 @@ export class CallModalComponent implements OnInit {
     this.closed.emit(false);
   }
 
+  async saveCall(): Promise<void> {
+    if (this.callForm.invalid) {
+      return;
+    }
+
+    this.isLoading = true;
+    
+    try {
+      const formValues = { ...this.callForm.value };
+      
+      // Always set the status to scheduled for new calls
+      if (!this.isEditing) {
+        formValues.status = 'scheduled';
+      }
+      
+      // Set contact_id if we have a contact
+      if (this.contact && !formValues.contact_id) {
+        formValues.contact_id = this.contact.id;
+      }
+      
+      // Check if this is the first call for the contact
+      const isFirstCall = await this.checkIsFirstCall(formValues.contact_id);
+      formValues.is_first_call = isFirstCall;
+      
+      let result;
+      
+      if (this.isEditing && this.call) {
+        // Update existing call
+        result = await this.supabaseService.updateCall(this.call.id, formValues);
+      } else {
+        // Create new call
+        result = await this.supabaseService.createCall(formValues);
+      }
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      this.notificationService.success(
+        this.isEditing ? 'Call updated successfully' : 'Call scheduled successfully'
+      );
+      
+      // Check if data exists and has at least one element before accessing it
+      if (result.data && Array.isArray(result.data) && result.data.length > 0) {
+        this.saved.emit(result.data[0]);
+      } else {
+        // If no data returned, emit a basic response
+        this.saved.emit({
+          id: this.call?.id || 'temp-id',
+          contact_id: formValues.contact_id,
+          status: 'scheduled',
+          reason: formValues.reason,
+          scheduled_at: formValues.scheduled_at,
+          method: formValues.method
+        } as Call);
+      }
+
+      this.close();
+    } catch (error: any) {
+      this.notificationService.error('Failed to schedule call: ' + error.message);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
   async checkIsFirstCall(contactId: string): Promise<boolean> {
     try {
-      // Only proceed if we have a valid contact ID
-      if (!contactId) return false;
+      // Only check if this is a new call (not editing)
+      if (this.isEditing) return false;
       
       const { data, error } = await this.supabaseService.supabaseClient
         .from('calls')
@@ -105,120 +164,11 @@ export class CallModalComponent implements OnInit {
         return false;
       }
       
-      // If no calls are found for this contact, it's the first call
+      // If no calls found, it's the first call
       return !data || data.length === 0;
     } catch (error) {
-      console.error('Error checking if first call:', error);
-      return false; // Default to false if there's an error
-    }
-  }
-
-  
-  async saveCall(): Promise<void> {
-    if (this.callForm.invalid) {
-      return;
-    }
-  
-    this.isLoading = true;
-    
-    try {
-      const formValues = { ...this.callForm.value };
-      
-      // Convert date inputs from local timezone to UTC for storage
-      if (formValues.scheduled_at) {
-        formValues.scheduled_at = this.convertToUTC(formValues.scheduled_at);
-      }
-      
-      if (formValues.completed_at) {
-        formValues.completed_at = this.convertToUTC(formValues.completed_at);
-      }
-      
-      if (formValues.follow_up_date) {
-        formValues.follow_up_date = this.convertToUTC(formValues.follow_up_date);
-      }
-      
-      // Get current user ID from auth service
-      const currentUser = await this.supabaseService.supabaseClient.auth.getUser();
-      if (currentUser.data && currentUser.data.user) {
-        // Add user_id to ensure call is owned by current user
-        formValues.user_id = currentUser.data.user.id;
-      }
-      
-      let result;
-      
-      if (this.call) {
-        // Update existing call
-        result = await this.supabaseService.updateCall(this.call.id, formValues);
-      } else {
-        // Create new call
-        result = await this.supabaseService.createCall(formValues);
-      }
-  
-      if (result.error) {
-        throw result.error;
-      }
-  
-      this.notificationService.success(
-        this.call ? 'Call updated successfully' : 'Call created successfully'
-      );
-      
-      // Check if data exists and has at least one element before accessing it
-      if (result.data && Array.isArray(result.data) && result.data.length > 0) {
-        this.saved.emit(result.data[0]);
-      } else {
-        // If no data returned, emit the original call or create a basic response
-        this.saved.emit(this.call || { 
-          id: 'temp-id', 
-          contact_id: formValues.contact_id,
-          user_id: formValues.user_id,
-          status: formValues.status,
-          reason: formValues.reason,
-          scheduled_at: formValues.scheduled_at
-        } as Call);
-      }
-  
-      this.close();
-    } catch (error: any) {
-      this.notificationService.error('Failed to save call: ' + error.message);
-    } finally {
-      this.isLoading = false;
-    }
-  }
-  
-  // Convert a local datetime input value to UTC for storage
-  convertToUTC(localDateTimeString: string): string {
-    if (!localDateTimeString) return '';
-    
-    // Parse the local datetime string to a Date object
-    const date = new Date(localDateTimeString);
-    
-    // Convert to UTC ISO string
-    return date.toISOString();
-  }
-
-  startCall(): void {
-    const method = this.callForm.get('method')?.value;
-    
-    switch (method) {
-      case 'webex':
-        // Logic to open Webex
-        window.open('https://web.webex.com', '_blank');
-        break;
-      case 'teams':
-        // Logic to open Microsoft Teams
-        window.open('https://teams.microsoft.com', '_blank');
-        break;
-      case 'zoom':
-        // Logic to open Zoom
-        window.open('https://zoom.us/start', '_blank');
-        break;
-      default:
-        // Default to phone dialer
-        if (this.contact?.phone) {
-          window.location.href = `tel:${this.contact.phone}`;
-        } else {
-          this.notificationService.warning('No phone number available for this contact');
-        }
+      console.error('Error checking first call status:', error);
+      return false;
     }
   }
 
