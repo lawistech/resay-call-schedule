@@ -136,20 +136,6 @@ export class SupabaseService {
       .eq('id', id);
   }
 
-  // Schedule-specific methods
-  async getUpcomingCalls() {
-    const now = new Date().toISOString();
-    
-    return this.supabaseClient
-      .from('calls')
-      .select(`
-        *,
-        contact:contacts(*)
-      `)
-      .eq('status', 'scheduled')
-      .gte('scheduled_at', now)
-      .order('scheduled_at', { ascending: true });
-  }
 
   async getContactsWithScheduleForDate(date: string) {
     return this.supabaseClient
@@ -251,6 +237,43 @@ export class SupabaseService {
       .order('scheduled_at', { ascending: true });
   }
 
+
+    // In the getCalls() method in supabase.service.ts
+  async getCalls() {
+    // Get current user
+    const { data: { user } } = await this.supabaseClient.auth.getUser();
+    
+    return this.supabaseClient
+      .from('calls')
+      .select(`
+        *,
+        contact:contacts(
+          *,
+          company:companies(*)
+        )
+      `)
+      .eq('user_id', user?.id) // Filter calls by the logged-in user's ID
+      .order('scheduled_at', { ascending: false });
+  }
+
+  // Similarly, update getUpcomingCalls() method
+  async getUpcomingCalls() {
+    const now = new Date().toISOString();
+    const { data: { user } } = await this.supabaseClient.auth.getUser();
+    
+    return this.supabaseClient
+      .from('calls')
+      .select(`
+        *,
+        contact:contacts(*)
+      `)
+      .eq('status', 'scheduled')
+      .eq('user_id', user?.id) // Filter by user ID
+      .gte('scheduled_at', now)
+      .order('scheduled_at', { ascending: true });
+  }
+
+  // In the createCall method of supabase.service.ts
   async createCall(callData: Partial<Call>) {
     // Get current user
     const { data: { user } } = await this.supabaseClient.auth.getUser();
@@ -272,20 +295,5 @@ export class SupabaseService {
         *,
         contacts(*)
       `);
-  }
-
-  // When retrieving calls, let RLS handle filtering
-  async getCalls() {
-    // With RLS, this will automatically only return calls owned by the current user
-    return this.supabaseClient
-      .from('calls')
-      .select(`
-        *,
-        contact:contacts(
-          *,
-          company:companies(*)
-        )
-      `)
-      .order('scheduled_at', { ascending: false });
   }
 }
