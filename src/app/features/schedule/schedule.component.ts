@@ -30,6 +30,7 @@ export class ScheduleComponent implements OnInit {
   isLoading = true;
   showCallModal = false;
   showPostCallModal = false;
+  showRescheduleCallModal = false;
   selectedCall: Call | null = null;
   selectedContact: Contact | null = null;
   filterView: 'all' | 'today' | 'tomorrow' | 'week' = 'today'; // Default to today's view
@@ -337,7 +338,6 @@ export class ScheduleComponent implements OnInit {
       }
       
       this.notificationService.success('Call rescheduled successfully');
-      this.loadScheduleData(); // Refresh the data
     } catch (error: any) {
       this.notificationService.error('Failed to reschedule call: ' + error.message);
     } finally {
@@ -403,5 +403,9 @@ export class ScheduleComponent implements OnInit {
       case 5: return 'Critical';
       default: return 'Medium';
     }
+  }
+
+  openRescheduleModal(){
+    this.showRescheduleCallModal = true;
   }
 }

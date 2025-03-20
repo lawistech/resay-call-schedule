@@ -11,6 +11,7 @@ import { NotificationService } from '../../core/services/notification.service';
 })
 export class RescheduleModal implements OnInit {
   @Input() isOpen = false;
+  @Input() isReschedule? = false;
   @Input() call: Call | null = null;
   @Output() closed = new EventEmitter<void>();
   @Output() completed = new EventEmitter<{callId: string, notes: string}>();
@@ -28,6 +29,9 @@ export class RescheduleModal implements OnInit {
   ngOnInit(): void {
     this.initForm();
     
+    if(this.isReschedule ==true){
+      this.selectedAction = 'reschedule';
+    }
     // Watch for changes to the call input
     if (this.call) {
       // Initialize the form with existing call data
