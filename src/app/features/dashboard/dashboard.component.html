@@ -66,12 +66,13 @@
 
     <!-- Schedule Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Today's Scheduled Calls (NEW COMPONENT) -->
+      <!-- Today's Scheduled Calls -->
       <app-todays-scheduled-calls
         [calls]="scheduledCalls"
         [maxCalls]="5"
         (viewCallDetails)="viewCallDetails($event)"
         (initiateCall)="initiateCall($event)"
+        (rescheduleCall)="openRescheduleModal($event)"
         class="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition">
       </app-todays-scheduled-calls>
       

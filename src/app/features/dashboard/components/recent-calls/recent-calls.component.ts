@@ -12,6 +12,7 @@ export class RecentCallsComponent implements OnInit {
   @Input() maxCalls: number = 5;
   // Changed to emit a string to match the markCallAsCompleted parameter type
   @Output() completeCall = new EventEmitter<string>();
+  @Output() makeCallEvent = new EventEmitter<Call>(); // New output for making calls
   
   constructor() {}
 
@@ -32,5 +33,10 @@ export class RecentCallsComponent implements OnInit {
   // Method for marking a call as complete
   markAsCompleted(callId: string): void {
     this.completeCall.emit(callId);
+  }
+
+  // New method for making a call
+  makeCall(call: Call): void {
+    this.makeCallEvent.emit(call);
   }
 }

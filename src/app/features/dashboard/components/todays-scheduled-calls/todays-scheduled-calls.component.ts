@@ -12,6 +12,7 @@ export class TodaysScheduledCallsComponent implements OnInit {
   @Input() maxCalls: number = 5;
   @Output() viewCallDetails = new EventEmitter<string>();
   @Output() initiateCall = new EventEmitter<Call>();
+  @Output() rescheduleCall = new EventEmitter<Call>(); // New output for rescheduling
   
   constructor() {}
 
@@ -36,5 +37,12 @@ export class TodaysScheduledCallsComponent implements OnInit {
     event.preventDefault();
     event.stopPropagation();
     this.initiateCall.emit(call);
+  }
+
+  // New method for rescheduling calls
+  onRescheduleCall(call: Call, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.rescheduleCall.emit(call);
   }
 }

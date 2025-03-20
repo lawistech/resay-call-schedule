@@ -293,4 +293,27 @@ export class DashboardComponent implements OnInit {
       this.syncInProgress = false;
     }
   }
+
+  /**
+   * Opens the reschedule modal for a call
+   * @param call The call to be rescheduled
+   */
+  openRescheduleModal(call: Call): void {
+    this.selectedCall = call;
+    this.showPostCallModal = true;
+    
+    // Set a small timeout to ensure the modal is initialized before setting action
+    setTimeout(() => {
+      // Access the post-call modal component and set the action to 'reschedule'
+      const postCallModalComponents = document.querySelectorAll('app-post-call-modal');
+      if (postCallModalComponents.length > 0) {
+        // This is a bit of a hack since we don't have direct component reference
+        // In a production app, it would be better to use a service or component reference
+        const componentInstance = (postCallModalComponents[0] as any)?.componentInstance;
+        if (componentInstance && componentInstance.selectedAction !== undefined) {
+          componentInstance.selectedAction = 'reschedule';
+        }
+      }
+    }, 100);
+  }
 }
