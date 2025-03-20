@@ -405,7 +405,36 @@ export class ScheduleComponent implements OnInit {
     }
   }
 
-  openRescheduleModal(){
-    this.showRescheduleCallModal = true;
+  // Add this method to the ScheduleComponent class in schedule.component.ts
+// Place it near the initiateCall() method
+
+  /**
+   * Opens the reschedule modal for a specific call
+   * @param call The call to reschedule
+   * @param event Optional mouse event to prevent propagation
+   */
+  openRescheduleModal(call: Call, event?: MouseEvent): void {
+    // If we have an event, prevent default behavior
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    this.selectedCall = call;
+    this.showPostCallModal = true;
+    
+    // Set a small timeout to ensure the modal is initialized before setting action
+    setTimeout(() => {
+      // Access the post-call modal component and set the action to 'reschedule'
+      const postCallModalComponents = document.querySelectorAll('app-post-call-modal');
+      if (postCallModalComponents.length > 0) {
+        // This is a bit of a hack since we don't have direct component reference
+        // In a production app, it would be better to use a service or component reference
+        const componentInstance = (postCallModalComponents[0] as any)?.ngComponentInstance;
+        if (componentInstance && componentInstance.selectedAction !== undefined) {
+          componentInstance.selectedAction = 'reschedule';
+        }
+      }
+    }, 100);
   }
 }

@@ -13,6 +13,7 @@ export class PostCallModalComponent implements OnInit {
   @Input() isOpen = false;
   @Input() call: Call | null = null;
   @Output() closed = new EventEmitter<void>();
+  @Input() initialAction: 'complete' | 'reschedule' = 'complete'; 
   @Output() completed = new EventEmitter<{callId: string, notes: string}>();
   @Output() rescheduled = new EventEmitter<{callId: string, scheduledAt: string, notes: string}>();
   
@@ -27,6 +28,9 @@ export class PostCallModalComponent implements OnInit {
   
   ngOnInit(): void {
     this.initForm();
+    
+    // Initialize selectedAction based on the input parameter
+    this.selectedAction = this.initialAction;
     
     // Watch for changes to the call input
     if (this.call) {
