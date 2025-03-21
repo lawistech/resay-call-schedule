@@ -6,6 +6,7 @@ import { AuthService } from './core/services/auth.service';
 import { ReminderService } from './core/services/reminder.service';
 import { NotificationDisplayComponent } from './shared/notification-display/notification-display.component';
 import { SupabaseService } from './core/services/supabase.service';
+import { TaskBoardComponent } from './features/tasks/task-board/task-board.component';
 
 
 @Component({
@@ -13,7 +14,7 @@ import { SupabaseService } from './core/services/supabase.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   standalone: true,
-  imports: [CommonModule, RouterModule, ]
+  imports: [CommonModule, RouterModule, TaskBoardComponent,NotificationDisplayComponent]
 })
 export class AppComponent implements OnInit {
   showSidebar = true;

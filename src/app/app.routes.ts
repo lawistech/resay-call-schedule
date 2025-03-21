@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { CallActiveGuard } from './core/guards/call-active.guard';
+import { TaskBoardComponent } from './features/tasks/task-board/task-board.component';
 
 export const routes: Routes = [
   {
@@ -41,6 +42,15 @@ export const routes: Routes = [
     path: 'settings',
     canActivate: [AuthGuard],
     loadChildren: () => import('./features/settings/settings.module').then(m => m.SettingsModule)
+  },
+  {
+    path: 'login',
+    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
+  },
+  {
+    path: 'tasks',
+    component: TaskBoardComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: '**',

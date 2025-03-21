@@ -1,6 +1,6 @@
 // src/app/core/services/notification.service.ts
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 export enum NotificationType {
   SUCCESS = 'success',
@@ -11,41 +11,59 @@ export enum NotificationType {
 }
 
 export interface Notification {
+  id: string;
   type: NotificationType;
   message: string;
   timestamp: Date;
-  id: string;
+  timeout: number;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NotificationService {
   private notificationsSubject = new BehaviorSubject<Notification[]>([]);
-  notifications$ = this.notificationsSubject.asObservable();
+  notifications$: Observable<Notification[]> = this.notificationsSubject.asObservable();
 
   constructor() {
     this.requestNotificationPermission();
   }
 
-  success(message: string): void {
-    this.addNotification(NotificationType.SUCCESS, message);
+  // Show a success notification
+  success(message: string, timeout = 5000): void {
+    this.addNotification(NotificationType.SUCCESS, message, timeout);
+    
+    // Also log to console for development
+    console.log(`Success: ${message}`);
   }
 
-  error(message: string): void {
-    this.addNotification(NotificationType.ERROR, message);
+  // Show an error notification
+  error(message: string, timeout = 7000): void {
+    this.addNotification(NotificationType.ERROR, message, timeout);
+    
+    // Also log to console for development
+    console.error(`Error: ${message}`);
   }
 
-  info(message: string): void {
-    this.addNotification(NotificationType.INFO, message);
+  // Show an info notification
+  info(message: string, timeout = 5000): void {
+    this.addNotification(NotificationType.INFO, message, timeout);
+    
+    // Also log to console for development
+    console.info(`Info: ${message}`);
   }
 
-  warning(message: string): void {
-    this.addNotification(NotificationType.WARNING, message);
+  // Show a warning notification
+  warning(message: string, timeout = 6000): void {
+    this.addNotification(NotificationType.WARNING, message, timeout);
+    
+    // Also log to console for development
+    console.warn(`Warning: ${message}`);
   }
 
-  reminder(message: string, callDetails: any): void {
-    this.addNotification(NotificationType.REMINDER, message);
+  // Show a reminder notification with browser notification
+  reminder(message: string, callDetails: any, timeout = 0): void {
+    this.addNotification(NotificationType.REMINDER, message, timeout);
     
     // Send browser notification if permission granted
     if (Notification.permission === 'granted') {
@@ -62,32 +80,46 @@ export class NotificationService {
         }
       };
     }
+    
+    // Also log to console for development
+    console.info(`Reminder: ${message}`);
   }
 
-  private addNotification(type: NotificationType, message: string): void {
-    const notification: Notification = {
-      type,
-      message,
-      timestamp: new Date(),
-      id: this.generateId()
-    };
-    
-    const currentNotifications = this.notificationsSubject.getValue();
-    this.notificationsSubject.next([...currentNotifications, notification]);
-    
-    // Auto-remove notification after 5 seconds (except for errors)
-    if (type !== NotificationType.ERROR) {
-      setTimeout(() => this.removeNotification(notification.id), 5000);
-    }
-  }
-
+  // Remove a notification by ID
   removeNotification(id: string): void {
-    const currentNotifications = this.notificationsSubject.getValue();
+    const currentNotifications = this.notificationsSubject.value;
     this.notificationsSubject.next(
       currentNotifications.filter(notification => notification.id !== id)
     );
   }
 
+  // Clear all notifications
+  clearAll(): void {
+    this.notificationsSubject.next([]);
+  }
+
+  // Add a notification and handle its timeout
+  private addNotification(type: NotificationType, message: string, timeout: number): void {
+    const notification: Notification = {
+      id: this.generateId(),
+      type,
+      message,
+      timestamp: new Date(),
+      timeout
+    };
+    
+    const currentNotifications = this.notificationsSubject.value;
+    this.notificationsSubject.next([...currentNotifications, notification]);
+
+    // Remove the notification after timeout if specified
+    if (timeout > 0) {
+      setTimeout(() => {
+        this.removeNotification(notification.id);
+      }, timeout);
+    }
+  }
+
+  // Generate a unique ID for notifications
   private generateId(): string {
     return Math.random().toString(36).substring(2, 11);
   }
