@@ -113,6 +113,7 @@
         [calls]="calls" 
         [maxCalls]="5"
         (completeCall)="markCallAsCompleted($event.toString())"
+        (makeCallEvent)="initiateCall($event)"
         class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition">
       </app-recent-calls>
       
