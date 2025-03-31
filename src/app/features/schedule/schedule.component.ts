@@ -338,6 +338,7 @@ export class ScheduleComponent implements OnInit {
       }
       
       this.notificationService.success('Call rescheduled successfully');
+      this.loadScheduleData(); // Refresh the data
     } catch (error: any) {
       this.notificationService.error('Failed to reschedule call: ' + error.message);
     } finally {
