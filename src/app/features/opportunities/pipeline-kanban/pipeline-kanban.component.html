@@ -1,0 +1,19 @@
+<div class="kanban-board p-4 flex gap-4 overflow-x-auto">
+  <div *ngFor="let stage of stages" 
+       class="stage-container min-w-72 bg-gray-50 rounded-lg shadow-sm p-4">
+    <h3 class="font-semibold mb-4 text-gray-700">{{stage}}</h3>
+    <div cdkDropList
+         [id]="stage"
+         [cdkDropListConnectedTo]="getConnectedLists()"
+         (cdkDropListDropped)="drop($event)"
+         class="min-h-40 space-y-2">
+      <div *ngFor="let opportunity of opportunitiesByStage[stage]" 
+           cdkDrag
+           class="opportunity-item bg-white p-4 rounded shadow-sm cursor-move hover:shadow-md transition-shadow">
+        <div class="font-medium text-gray-800">{{opportunity.title}}</div>
+        <div class="text-sm text-gray-600">{{opportunity.companyId}}</div>
+        <div class="text-sm text-blue-600">${{opportunity.value.toLocaleString()}}</div>
+      </div>
+    </div>
+  </div>
+</div>

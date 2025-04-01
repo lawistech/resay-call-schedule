@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { CallActiveGuard } from './core/guards/call-active.guard';
 import { TaskBoardComponent } from './features/tasks/task-board/task-board.component';
+import { LeadsComponent } from './features/leads/leads.component';
+import { OpportunitiesComponent } from './features/opportunities/opportunities.component';
 
 export const routes: Routes = [
   {
@@ -51,6 +53,17 @@ export const routes: Routes = [
     path: 'tasks',
     component: TaskBoardComponent,
     canActivate: [AuthGuard],
+  },
+  {
+    path: 'leads',
+    component: LeadsComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'opportunities',
+    component: OpportunitiesComponent,
+    canActivate: [AuthGuard],
+    // loadChildren: () => import('./features/opportunities/opportunities.module').then(m => m.OpportunitiesModule) // Replaced with direct component loading
   },
   {
     path: '**',

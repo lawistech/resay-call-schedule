@@ -1,0 +1,17 @@
+.kanban-board {
+  min-height: calc(100vh - 160px);
+}
+
+.stage-container {
+  flex: 1;
+  background: #f8fafc;
+}
+
+.opportunity-item {
+  transition: transform 0.1s ease-in-out;
+}
+
+.opportunity-item.cdk-drag-preview {
+  background: white;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
