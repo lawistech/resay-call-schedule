@@ -30,6 +30,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   expandedSection: string | null = null;
   routeSubscription: Subscription | null = null;
   upcomingCallsCount = 0;
+  pendingTasksCount = 0;
   // Controls hover expand functionality - can be set via settings
   hoverMode = true;
   expandTimer: any = null;
@@ -47,6 +48,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     
     // Get upcoming calls count
     this.refreshCallsCount();
+    // Get pending tasks count
+    this.refreshTasksCount();
   }
 
   ngOnDestroy(): void {
@@ -85,6 +88,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.expandedSection = 'calls';
     } else if (route.includes('/leads') || route.includes('/opportunities') || route.includes('/pipeline')) {
       this.expandedSection = 'sales';
+    } else if (route.includes('/tasks')) {
+      this.expandedSection = 'tasks';
     } else if (route.includes('/contacts') || route.includes('/accounts')) {
       this.expandedSection = 'contacts';
     } else if (route.includes('/products') || route.includes('/orders') || route.includes('/inventory') || route.includes('/ecommerce')) {
@@ -161,6 +166,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private refreshCallsCount(): void {
     // This is just a placeholder for demonstration
     this.upcomingCallsCount = 3;
+  }
+  
+  // Fetch pending tasks count
+  private refreshTasksCount(): void {
+    // This is just a placeholder - in a real app you would fetch from a service
+    // Example: this.taskService.getPendingTasksCount().subscribe(count => this.pendingTasksCount = count);
+    this.pendingTasksCount = 5;
   }
   
   // Logout handler

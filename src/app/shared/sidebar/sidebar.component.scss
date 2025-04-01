@@ -157,3 +157,24 @@
 .user-profile {
   transition: padding 0.3s ease;
 }
+
+// Add to src/app/shared/sidebar/sidebar.component.scss
+// Add within the .nav-section block
+
+// Task management section styling
+.nav-item.tasks-active {
+  @apply bg-purple-50 text-purple-700;
+  
+  svg {
+    @apply text-purple-600;
+  }
+}
+
+// Task management submenu styling
+.tasks-submenu {
+  @apply border-l-2 border-purple-100;
+  
+  a:hover {
+    @apply bg-purple-50 text-purple-700;
+  }
+}

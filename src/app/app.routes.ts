@@ -98,6 +98,38 @@ export const routes: Routes = [
   //   canActivate: [AuthGuard],
   //   loadChildren: () => import('./features/ecommerce/customers/customers.module').then(m => m.CustomersModule)
   // },
+
+  // src/app/app.routes.ts
+// Update the existing tasks route with these routes:
+
+  {
+    path: 'tasks',
+    children: [
+      {
+        path: '',
+        component: TaskBoardComponent,
+        canActivate: [AuthGuard]
+      },
+      {
+        path: 'my-tasks',
+        component: TaskBoardComponent, // You can create a dedicated component later
+        canActivate: [AuthGuard],
+        data: { filter: 'my-tasks' }
+      },
+      {
+        path: 'team-tasks',
+        component: TaskBoardComponent, // You can create a dedicated component later
+        canActivate: [AuthGuard],
+        data: { filter: 'team-tasks' }
+      },
+      {
+        path: 'calendar',
+        component: TaskBoardComponent, // You can create a dedicated component later
+        canActivate: [AuthGuard],
+        data: { view: 'calendar' }
+      }
+    ]
+  },
   {
     path: '**',
     redirectTo: 'dashboard'

@@ -136,6 +136,76 @@
         </div>
       </div>
       
+      <!-- Task Management Section -->
+      <div class="nav-section relative">
+        <button (click)="toggleSection('tasks')" 
+                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600 
+                      hover:bg-stone-50 transition-all duration-150 group"
+                [ngClass]="{'bg-purple-50 text-purple-700': expandedSection === 'tasks'}">
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-purple-600': expandedSection === 'tasks'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M6 16h.01" />
+            </svg>
+            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200" 
+                  [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+              Task Management
+            </span>
+          </div>
+          <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
+              [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
+            <svg xmlns="http://www.w3.org/2000/svg" 
+                [ngClass]="{'rotate-180': expandedSection === 'tasks'}"
+                class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          
+          <!-- Badge for pending tasks (if needed) -->
+          <div *ngIf="pendingTasksCount > 0" class="absolute top-0 right-0 transform translate-x-1 -translate-y-1 flex items-center justify-center h-5 w-5 rounded-full bg-purple-500 text-white text-xs font-bold">
+            {{ pendingTasksCount }}
+          </div>
+          
+          <!-- Tooltip for collapsed state -->
+          <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
+            Task Management
+          </div>
+        </button>
+        
+        <!-- Task Management submenu -->
+        <div *ngIf="expandedSection === 'tasks' && (expanded || tempExpanded)" 
+            [@submenuAnimation]
+            class="ml-4 pl-4 border-l-2 border-purple-100 mt-1 space-y-1">
+          <a routerLink="/tasks" routerLinkActive="text-purple-700 font-medium bg-purple-50"
+            class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-purple-50 hover:text-purple-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Task Board
+          </a>
+          <a routerLink="/tasks/my-tasks" routerLinkActive="text-purple-700 font-medium bg-purple-50"
+            class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-purple-50 hover:text-purple-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            My Tasks
+          </a>
+          <a routerLink="/tasks/team-tasks" routerLinkActive="text-purple-700 font-medium bg-purple-50"
+            class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-purple-50 hover:text-purple-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Team Tasks
+          </a>
+          <a routerLink="/tasks/calendar" routerLinkActive="text-purple-700 font-medium bg-purple-50"
+            class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-purple-50 hover:text-purple-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Task Calendar
+          </a>
+        </div>
+      </div>
+      
       <!-- Sales & Pipeline -->
       <div class="nav-section relative">
         <button (click)="toggleSection('sales')" 
@@ -194,6 +264,7 @@
         </div>
       </div>
       
+      
       <!-- NEW ECOMMERCE SECTION -->
       <div class="nav-section relative">
         <button (click)="toggleSection('ecommerce')" 
@@ -228,19 +299,13 @@
         <div *ngIf="expandedSection === 'ecommerce' && (expanded || tempExpanded)" 
              [@submenuAnimation]
              class="ml-4 pl-4 border-l-2 border-emerald-100 mt-1 space-y-1">
+          <!-- Continuing from where we left off in the Ecommerce submenu section -->
           <a routerLink="/products" routerLinkActive="text-emerald-700 font-medium bg-emerald-50"
              class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
             Products
-          </a>
-          <a routerLink="/categories" routerLinkActive="text-emerald-700 font-medium bg-emerald-50"
-             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-            Categories
           </a>
           <a routerLink="/orders" routerLinkActive="text-emerald-700 font-medium bg-emerald-50"
              class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
@@ -258,17 +323,15 @@
           </a>
           <a routerLink="/discounts" routerLinkActive="text-emerald-700 font-medium bg-emerald-50"
              class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-            </svg>
-            Discounts
+            Resay
           </a>
           <a routerLink="/customers" routerLinkActive="text-emerald-700 font-medium bg-emerald-50"
              class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            Customers
+            Android EPOS
+          </a>
+          <a routerLink="/categories" routerLinkActive="text-emerald-700 font-medium bg-emerald-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+            BarcodeForBusiness
           </a>
         </div>
       </div>
@@ -278,25 +341,6 @@
            [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
         <span class="text-xs font-semibold uppercase tracking-wider text-stone-400">Workspace</span>
       </div>
-      
-      <!-- Tasks -->
-      <a routerLink="/tasks" routerLinkActive="bg-stone-100 text-stone-800 before:opacity-100"
-         class="nav-item relative flex items-center px-3 py-3 rounded-md text-stone-600 hover:bg-stone-50 
-                transition-all duration-150 group before:content-[''] before:absolute before:left-0 before:top-0 
-                before:h-full before:w-[3px] before:bg-stone-800 before:opacity-0 before:transition-opacity">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M6 16h.01" />
-        </svg>
-        <span *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200" 
-              [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
-          Tasks
-        </span>
-        
-        <!-- Tooltip for collapsed state -->
-        <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
-          Tasks
-        </div>
-      </a>
       
       <!-- Settings Link -->
       <a routerLink="/settings" routerLinkActive="bg-stone-100 text-stone-800 before:opacity-100"
