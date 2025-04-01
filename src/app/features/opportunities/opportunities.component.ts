@@ -14,6 +14,8 @@ import { OpportunityDetailsModalComponent } from './opportunity-details-modal/op
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    OpportunityFormComponent,     // Add this component to imports
+    OpportunityDetailsModalComponent  // Add this component to imports
   ],
   templateUrl: './opportunities.component.html',
 })
