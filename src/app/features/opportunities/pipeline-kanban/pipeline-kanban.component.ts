@@ -1,15 +1,20 @@
+// src/app/features/opportunities/pipeline-kanban/pipeline-kanban.component.ts
 import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
+import { CommonModule } from '@angular/common';
 import { Opportunity } from '../../../core/models/company.model';
 import { OpportunitiesService } from '../opportunities.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Router } from '@angular/router';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-pipeline-kanban',
   templateUrl: './pipeline-kanban.component.html',
-  styleUrls: ['./pipeline-kanban.component.css']
+  styleUrls: ['./pipeline-kanban.component.css'],
+  standalone: true,
+  imports: [CommonModule, DragDropModule, DatePipe]
 })
 export class PipelineKanbanComponent implements OnInit {
   stages = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
@@ -65,7 +70,7 @@ export class PipelineKanbanComponent implements OnInit {
     });
   }
 
-  drop(event: CdkDragDrop<Opportunity[]>) {
+  drop(event: CdkDragDrop<Opportunity[]>): void {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
