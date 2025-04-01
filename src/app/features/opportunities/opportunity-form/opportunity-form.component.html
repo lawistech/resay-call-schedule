@@ -1,46 +1,111 @@
-<form [formGroup]="opportunityForm" (ngSubmit)="onSubmit()" class="max-w-2xl p-6 bg-white rounded-lg shadow-sm">
-  <div class="space-y-4">
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Opportunity Name</label>
-      <input type="text" formControlName="name" 
-             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Company ID</label>
-      <input type="text" formControlName="companyId" 
-             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Stage</label>
-      <select formControlName="stage" 
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-        <option *ngFor="let stage of stages" [value]="stage">{{stage}}</option>
-      </select>
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Value</label>
-      <input type="number" formControlName="value" 
-             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Close Date</label>
-      <input type="date" formControlName="closeDate" 
-             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-gray-700">Notes</label>
-      <textarea formControlName="notes" rows="3" 
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
-    </div>
-
-    <button type="submit" [disabled]="!opportunityForm.valid" 
-            class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-      Save Opportunity
+<div class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+  <div class="relative mx-auto p-6 border w-full max-w-lg shadow-lg rounded-lg bg-white">
+    <!-- Close Button -->
+    <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" (click)="onCancel()">
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
     </button>
+
+    <h2 class="text-xl font-semibold mb-4 pb-2 border-b">
+      {{ opportunity ? 'Edit Opportunity' : 'New Opportunity' }}
+    </h2>
+
+    <form [formGroup]="opportunityForm" (ngSubmit)="onSubmit()" class="space-y-4">
+      <!-- Title -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Title*</label>
+        <input type="text" formControlName="title" 
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <div *ngIf="opportunityForm.get('title')?.errors?.['required'] && opportunityForm.get('title')?.touched" 
+             class="text-red-500 text-xs mt-1">
+          Title is required
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Description</label>
+        <textarea formControlName="description" rows="3" 
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+      </div>
+
+      <!-- Company ID -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Company ID*</label>
+        <input type="text" formControlName="companyId" 
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <div *ngIf="opportunityForm.get('companyId')?.errors?.['required'] && opportunityForm.get('companyId')?.touched" 
+             class="text-red-500 text-xs mt-1">
+          Company ID is required
+        </div>
+      </div>
+
+      <!-- Stage -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Stage*</label>
+        <select formControlName="stage" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <option *ngFor="let stage of stages" [value]="stage">{{stage}}</option>
+        </select>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Status*</label>
+        <select formControlName="status" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <option *ngFor="let status of statuses" [value]="status">{{status}}</option>
+        </select>
+      </div>
+
+      <!-- Amount -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Amount*</label>
+        <input type="number" formControlName="amount" 
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <div *ngIf="opportunityForm.get('amount')?.errors?.['required'] && opportunityForm.get('amount')?.touched" 
+             class="text-red-500 text-xs mt-1">
+          Amount is required
+        </div>
+      </div>
+
+      <!-- Probability -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Probability (%)</label>
+        <input type="number" formControlName="probability" min="0" max="100"
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+      </div>
+
+      <!-- Expected Close Date -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Expected Close Date*</label>
+        <input type="date" formControlName="expectedCloseDate" 
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <div *ngIf="opportunityForm.get('expectedCloseDate')?.errors?.['required'] && opportunityForm.get('expectedCloseDate')?.touched" 
+             class="text-red-500 text-xs mt-1">
+          Close date is required
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Notes</label>
+        <textarea formControlName="notes" rows="3" 
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end space-x-3 pt-4">
+        <button type="button" (click)="onCancel()"
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+          Cancel
+        </button>
+        <button type="submit" [disabled]="!opportunityForm.valid || isSaving" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50">
+          {{ isSaving ? 'Saving...' : (opportunity ? 'Update' : 'Create') }}
+        </button>
+      </div>
+    </form>
   </div>
-</form>
+</div>

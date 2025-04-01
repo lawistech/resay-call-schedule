@@ -15,13 +15,13 @@ export interface Opportunity {
   description?: string;
   status: 'New' | 'In Progress' | 'Won' | 'Lost';
   probability?: number;
-  expectedCloseDate: Date;
+  expectedCloseDate: string | Date; // Changed from Date to string | Date to handle both
   amount: number;
   companyId: string;
   stage: string;
   value: number;
-  closeDate: Date;
+  closeDate: string | Date; // Changed from Date to string | Date
   notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string | Date; // Changed from Date to string | Date
+  updatedAt: string | Date; // Changed from Date to string | Date
 }

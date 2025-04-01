@@ -3,7 +3,7 @@ import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { RouterModule } from '@angular/router';
-import { NotificationService } from '../../core/services/notification.service';
+
 import { OpportunitiesComponent } from './opportunities.component';
 import { PipelineKanbanComponent } from './pipeline-kanban/pipeline-kanban.component';
 import { OpportunityFormComponent } from './opportunity-form/opportunity-form.component';
@@ -13,15 +13,14 @@ import { OpportunityDetailsModalComponent } from './opportunity-details-modal/op
   declarations: [
     OpportunitiesComponent,
     PipelineKanbanComponent,
-    OpportunityFormComponent
+    OpportunityFormComponent,
+    OpportunityDetailsModalComponent // Moved from imports to declarations
   ],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,
-    // Import standalone component instead of declaring it
-    OpportunityDetailsModalComponent,
     RouterModule.forChild([
       {
         path: '',
