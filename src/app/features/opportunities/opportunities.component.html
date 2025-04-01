@@ -61,14 +61,14 @@
           </div>
           <div class="flex items-center">
             <span class="font-medium text-gray-700 w-24">Exp. Close:</span> 
-            <span>{{ opportunity.expectedCloseDate | date:'mediumDate' }}</span>
+            <span>{{ opportunity.expectedCloseDate }}</span>
           </div>
         </div>
       </div>
 
       <!-- Card Footer -->
       <div class="border-t pt-3 mt-auto">
-        <span class="text-lg font-semibold text-green-600">{{ opportunity.amount | currency:'USD':'symbol':'1.2-2' }}</span>
+        <span class="text-lg font-semibold text-green-600">${{ opportunity.amount }}</span>
       </div>
     </div>
   </div>
@@ -97,7 +97,6 @@
   <!-- Opportunity Form Modal -->
   <ng-container *ngIf="showOpportunityForm">
     <app-opportunity-form 
-      *ngIf="showOpportunityForm"
       [opportunity]="selectedOpportunity"
       [isSaving]="isSaving"
       (close)="closeOpportunityForm()"

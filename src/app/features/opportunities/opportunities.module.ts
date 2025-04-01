@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { RouterModule } from '@angular/router';
@@ -14,7 +14,7 @@ import { OpportunityDetailsModalComponent } from './opportunity-details-modal/op
     OpportunitiesComponent,
     PipelineKanbanComponent,
     OpportunityFormComponent,
-    OpportunityDetailsModalComponent // Moved from imports to declarations
+    OpportunityDetailsModalComponent
   ],
   imports: [
     CommonModule,
@@ -28,9 +28,10 @@ import { OpportunityDetailsModalComponent } from './opportunity-details-modal/op
       }
     ])
   ],
-  providers: [
-    DatePipe,
-    CurrencyPipe
+  exports: [
+    // Export components that might be used in other modules
+    OpportunityFormComponent,
+    OpportunityDetailsModalComponent
   ]
 })
 export class OpportunitiesModule { }

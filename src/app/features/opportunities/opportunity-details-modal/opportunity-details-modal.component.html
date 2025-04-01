@@ -22,7 +22,7 @@
       <div class="grid grid-cols-2 gap-x-6 gap-y-3">
         <div>
           <span class="font-semibold text-gray-700 block">Amount:</span>
-          <p class="text-gray-600">{{ opportunity?.amount | currency:'USD':'symbol':'1.2-2' }}</p>
+          <p class="text-gray-600">${{ opportunity?.amount }}</p>
         </div>
         <div>
           <span class="font-semibold text-gray-700 block">Status:</span>
@@ -37,25 +37,21 @@
         </div>
         <div>
           <span class="font-semibold text-gray-700 block">Expected Close:</span>
-          <p class="text-gray-600">{{ opportunity?.expectedCloseDate | date:'mediumDate' }}</p>
+          <p class="text-gray-600">{{ opportunity?.expectedCloseDate }}</p>
         </div>
         <div>
           <span class="font-semibold text-gray-700 block">Created At:</span>
-          <p class="text-gray-600">{{ opportunity?.createdAt | date:'medium' }}</p>
+          <p class="text-gray-600">{{ opportunity?.createdAt }}</p>
         </div>
         <div>
           <span class="font-semibold text-gray-700 block">Last Updated:</span>
-          <p class="text-gray-600">{{ opportunity?.updatedAt | date:'medium' }}</p>
+          <p class="text-gray-600">{{ opportunity?.updatedAt }}</p>
         </div>
       </div>
     </div>
 
     <!-- Modal Footer -->
     <div class="mt-6 pt-4 border-t text-right space-x-2">
-      <!-- Add Edit Button later if needed -->
-      <!-- <button class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
-        Edit
-      </button> -->
       <button class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400" (click)="close()">
         Close
       </button>

@@ -1,15 +1,21 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NotificationService } from '../../core/services/notification.service';
 import { OpportunitiesService } from './opportunities.service';
 import { Opportunity } from '../../core/models/company.model';
-import { DatePipe, CurrencyPipe } from '@angular/common';
+import { OpportunityFormComponent } from './opportunity-form/opportunity-form.component';
+import { OpportunityDetailsModalComponent } from './opportunity-details-modal/opportunity-details-modal.component';
 
 @Component({
   selector: 'app-opportunities',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+  ],
   templateUrl: './opportunities.component.html',
-  styles: [` 
-    :host { display: block; }
-  `]
 })
 export class OpportunitiesComponent implements OnInit {
   opportunities: Opportunity[] = [];
