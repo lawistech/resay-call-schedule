@@ -46,10 +46,6 @@ export const routes: Routes = [
     loadChildren: () => import('./features/settings/settings.module').then(m => m.SettingsModule)
   },
   {
-    path: 'login',
-    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
-  },
-  {
     path: 'tasks',
     component: TaskBoardComponent,
     canActivate: [AuthGuard],
@@ -59,11 +55,11 @@ export const routes: Routes = [
     component: LeadsComponent,
     canActivate: [AuthGuard],
   },
+  // Direct component loading (simplified approach)
   {
     path: 'opportunities',
     component: OpportunitiesComponent,
-    canActivate: [AuthGuard],
-    // loadChildren: () => import('./features/opportunities/opportunities.module').then(m => m.OpportunitiesModule) // Replaced with direct component loading
+    canActivate: [AuthGuard]
   },
   {
     path: '**',
