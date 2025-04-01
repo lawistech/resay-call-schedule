@@ -1,0 +1,163 @@
+// src/app/components/sidebar/sidebar.component.scss
+
+.sidebar-container {
+    @apply bg-white border-r border-stone-200 transition-all duration-300 flex flex-col z-10;
+  }
+  
+  // Custom scrollbar for sidebar
+  .sidebar-scrollable {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
+    
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+  }
+  
+  // Navigation item styles
+  .nav-item {
+    position: relative;
+    
+    &:hover {
+      @apply bg-stone-50;
+      
+      // Subtle shift effect on hover
+      transform: translateX(2px);
+    }
+    
+    // Active indicator bar
+    &.active {
+      @apply bg-stone-100 text-stone-800;
+      
+      &::before {
+        opacity: 1;
+      }
+    }
+    
+    // Smooth transitions
+    transition: all 0.2s ease-in-out;
+  }
+  
+  // Tooltip for collapsed sidebar
+  .sidebar-tooltip {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgb(41, 37, 36);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.3rem;
+    font-size: 0.75rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+    z-index: 50;
+    margin-left: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    
+    // Arrow pointing to the sidebar
+    &::before {
+      content: '';
+      position: absolute;
+      left: -4px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-right: 4px solid rgb(41, 37, 36);
+    }
+  }
+  
+  // Show tooltip on hover
+  .nav-item:hover .sidebar-tooltip {
+    opacity: 1;
+  }
+  
+  // Section colors
+  .nav-section {
+    // Call management section
+    &.calls-section {
+      .active {
+        @apply bg-blue-50 text-blue-700;
+        
+        svg {
+          @apply text-blue-600;
+        }
+      }
+      
+      .submenu {
+        @apply border-l-2 border-blue-100;
+        
+        a:hover {
+          @apply bg-blue-50 text-blue-700;
+        }
+      }
+    }
+    
+    // Sales section
+    &.sales-section {
+      .active {
+        @apply bg-amber-50 text-amber-700;
+        
+        svg {
+          @apply text-amber-600;
+        }
+      }
+      
+      .submenu {
+        @apply border-l-2 border-amber-100;
+        
+        a:hover {
+          @apply bg-amber-50 text-amber-700;
+        }
+      }
+    }
+  }
+  
+  // Status indicator for user profile
+  .status-indicator {
+    @apply h-2 w-2 rounded-full;
+    
+    &.online {
+      @apply bg-green-500;
+    }
+    
+    &.away {
+      @apply bg-yellow-500;
+    }
+    
+    &.offline {
+      @apply bg-gray-400;
+    }
+  }
+  
+  // Notification badge
+  .notification-badge {
+    @apply absolute flex items-center justify-center h-5 w-5 rounded-full bg-red-500 
+      text-white text-xs font-bold transform translate-x-1 -translate-y-1;
+      
+    top: 0;
+    right: 0;
+    box-shadow: 0 0 0 2px white;
+  }
+  
+  // Submenu animation
+  .submenu-enter-active, .submenu-leave-active {
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .submenu-enter-from, .submenu-leave-to {
+    max-height: 0;
+  }

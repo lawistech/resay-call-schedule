@@ -1,0 +1,261 @@
+<!-- src/app/components/sidebar/sidebar.component.html -->
+<div class="sidebar-container h-full"
+     [ngClass]="{'w-64': expanded, 'w-20': !expanded, 'shadow-lg': expanded}"
+     (mouseenter)="hoverMode && !expanded ? temporarilyExpand() : null"
+     (mouseleave)="hoverMode && tempExpanded ? collapseTemporary() : null">
+     
+  <!-- Logo and Toggle -->
+  <div class="flex items-center justify-between p-4 border-b border-stone-100">
+    <div class="flex items-center">
+      <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-stone-800 text-white font-serif text-xl">
+        P
+      </div>
+      <div *ngIf="expanded || tempExpanded" class="ml-3 transition-opacity duration-200" [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
+        <h1 class="text-xl font-bold text-stone-800">Pro CRM</h1>
+      </div>
+    </div>
+    <button (click)="toggleSidebar()" 
+            class="p-1.5 rounded-md hover:bg-stone-100 text-stone-500 transition-colors group focus:outline-none focus:ring-2 focus:ring-stone-300">
+      <svg *ngIf="expanded" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-x-[-2px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+      </svg>
+      <svg *ngIf="!expanded" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-x-[2px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+  
+  <!-- Scrollable Navigation -->
+  <div class="overflow-y-auto sidebar-scrollable h-[calc(100%-8rem)] py-4">
+    <!-- Search Box (Only when expanded) -->
+    <div *ngIf="expanded || tempExpanded" class="px-4 mb-4 transition-opacity duration-200"
+         [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
+      <div class="relative">
+        <input type="text" placeholder="Search..." 
+               class="w-full py-2 pl-9 pr-3 rounded-md bg-stone-50 border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-300 focus:border-transparent text-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Categories Label -->
+    <div *ngIf="expanded || tempExpanded" class="px-4 mb-2 transition-opacity duration-200"
+         [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
+      <span class="text-xs font-semibold uppercase tracking-wider text-stone-400">Main</span>
+    </div>
+    
+    <!-- Primary Navigation Items -->
+    <nav class="px-2 space-y-1">
+      <!-- Dashboard -->
+      <a routerLink="/dashboard" routerLinkActive="bg-stone-100 text-stone-800 before:opacity-100"
+         class="nav-item relative flex items-center px-3 py-3 rounded-md text-stone-600 hover:bg-stone-50 
+                transition-all duration-150 group before:content-[''] before:absolute before:left-0 before:top-0 
+                before:h-full before:w-[3px] before:bg-stone-800 before:opacity-0 before:transition-opacity">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        <span *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200" 
+              [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+          Dashboard
+        </span>
+        
+        <!-- Tooltip for collapsed state -->
+        <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
+          Dashboard
+        </div>
+      </a>
+      
+      <!-- Call Management -->
+      <div class="nav-section relative">
+        <button (click)="toggleSection('calls')" 
+                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600 
+                       hover:bg-stone-50 transition-all duration-150 group"
+                [ngClass]="{'bg-blue-50 text-blue-700': expandedSection === 'calls'}">
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-blue-600': expandedSection === 'calls'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200" 
+                  [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+              Call Management
+            </span>
+          </div>
+          <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
+               [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
+            <svg xmlns="http://www.w3.org/2000/svg" 
+                 [ngClass]="{'rotate-180': expandedSection === 'calls'}"
+                 class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          
+          <!-- Badge for upcoming calls (if needed) -->
+          <div *ngIf="upcomingCallsCount > 0" class="absolute top-0 right-0 transform translate-x-1 -translate-y-1 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-bold">
+            {{ upcomingCallsCount }}
+          </div>
+          
+          <!-- Tooltip for collapsed state -->
+          <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
+            Call Management
+          </div>
+        </button>
+        
+        <!-- Call Management submenu with smooth height animation -->
+        <div *ngIf="expandedSection === 'calls' && (expanded || tempExpanded)" 
+             [@submenuAnimation]
+             class="ml-4 pl-4 border-l-2 border-blue-100 mt-1 space-y-1">
+          <a routerLink="/schedule" routerLinkActive="text-blue-700 font-medium bg-blue-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-blue-50 hover:text-blue-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Upcoming Calls
+          </a>
+          <a routerLink="/call-history" routerLinkActive="text-blue-700 font-medium bg-blue-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-blue-50 hover:text-blue-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Call History
+          </a>
+          <a routerLink="/call-analytics" routerLinkActive="text-blue-700 font-medium bg-blue-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-blue-50 hover:text-blue-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Analytics
+          </a>
+        </div>
+      </div>
+      
+      <!-- Sales & Pipeline -->
+      <div class="nav-section relative">
+        <button (click)="toggleSection('sales')" 
+                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600 
+                       hover:bg-stone-50 transition-all duration-150 group"
+                [ngClass]="{'bg-amber-50 text-amber-700': expandedSection === 'sales'}">
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-amber-600': expandedSection === 'sales'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200" 
+                  [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+              Sales Pipeline
+            </span>
+          </div>
+          <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
+               [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
+            <svg xmlns="http://www.w3.org/2000/svg" 
+                 [ngClass]="{'rotate-180': expandedSection === 'sales'}"
+                 class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          
+          <!-- Tooltip for collapsed state -->
+          <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
+            Sales Pipeline
+          </div>
+        </button>
+        
+        <!-- Sales submenu -->
+        <div *ngIf="expandedSection === 'sales' && (expanded || tempExpanded)" 
+             [@submenuAnimation]
+             class="ml-4 pl-4 border-l-2 border-amber-100 mt-1 space-y-1">
+          <a routerLink="/leads" routerLinkActive="text-amber-700 font-medium bg-amber-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            Leads
+          </a>
+          <a routerLink="/opportunities" routerLinkActive="text-amber-700 font-medium bg-amber-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            Opportunities
+          </a>
+          <a routerLink="/pipeline" routerLinkActive="text-amber-700 font-medium bg-amber-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Pipeline
+          </a>
+        </div>
+      </div>
+      
+      <!-- Further menu items follow the same pattern -->
+      
+      <!-- Categories Label - Secondary Items -->
+      <div *ngIf="expanded || tempExpanded" class="mt-8 mb-2 px-4 transition-opacity duration-200"
+           [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
+        <span class="text-xs font-semibold uppercase tracking-wider text-stone-400">Workspace</span>
+      </div>
+      
+      <!-- Tasks -->
+      <a routerLink="/tasks" routerLinkActive="bg-stone-100 text-stone-800 before:opacity-100"
+         class="nav-item relative flex items-center px-3 py-3 rounded-md text-stone-600 hover:bg-stone-50 
+                transition-all duration-150 group before:content-[''] before:absolute before:left-0 before:top-0 
+                before:h-full before:w-[3px] before:bg-stone-800 before:opacity-0 before:transition-opacity">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M6 16h.01" />
+        </svg>
+        <span *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200" 
+              [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+          Tasks
+        </span>
+        
+        <!-- Tooltip for collapsed state -->
+        <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
+          Tasks
+        </div>
+      </a>
+      
+      <!-- Settings Link -->
+      <a routerLink="/settings" routerLinkActive="bg-stone-100 text-stone-800 before:opacity-100"
+         class="nav-item relative flex items-center px-3 py-3 rounded-md text-stone-600 hover:bg-stone-50 
+                transition-all duration-150 group before:content-[''] before:absolute before:left-0 before:top-0 
+                before:h-full before:w-[3px] before:bg-stone-800 before:opacity-0 before:transition-opacity">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200" 
+              [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+          Settings
+        </span>
+        
+        <!-- Tooltip for collapsed state -->
+        <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
+          Settings
+        </div>
+      </a>
+    </nav>
+  </div>
+  
+  <!-- User Profile Section -->
+  <div class="mt-auto border-t border-stone-200 p-4 user-profile">
+    <div class="flex items-center">
+      <div class="relative flex-shrink-0">
+        <div class="h-10 w-10 rounded-full bg-stone-800 flex items-center justify-center text-white font-medium">
+          {{ userInitial }}
+        </div>
+        <div class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"></div>
+      </div>
+      <div *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200" 
+           [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+        <p class="text-sm font-medium text-stone-800 truncate max-w-[140px]">Admin User</p>
+        <div class="flex items-center mt-1">
+          <span class="h-2 w-2 rounded-full bg-green-500 mr-1.5"></span>
+          <p class="text-xs text-stone-500">Online</p>
+        </div>
+        <button (click)="logout()" class="mt-2 text-xs text-stone-500 hover:text-stone-800 underline decoration-dashed underline-offset-4">
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
