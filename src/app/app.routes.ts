@@ -67,6 +67,37 @@ export const routes: Routes = [
     component: PipelineKanbanComponent,
     canActivate: [AuthGuard]
   },
+  // Ecommerce routes
+  // {
+  //   path: 'products',
+  //   canActivate: [AuthGuard],
+  //   loadChildren: () => import('./features/ecommerce/products/products.module').then(m => m.ProductsModule)
+  // },
+  // {
+  //   path: 'categories',
+  //   canActivate: [AuthGuard],
+  //   loadChildren: () => import('./features/ecommerce/categories/categories.module').then(m => m.CategoriesModule)
+  // },
+  // {
+  //   path: 'orders',
+  //   canActivate: [AuthGuard],
+  //   loadChildren: () => import('./features/ecommerce/orders/orders.module').then(m => m.OrdersModule)
+  // },
+  // {
+  //   path: 'inventory',
+  //   canActivate: [AuthGuard],
+  //   loadChildren: () => import('./features/ecommerce/inventory/inventory.module').then(m => m.InventoryModule)
+  // },
+  // {
+  //   path: 'discounts',
+  //   canActivate: [AuthGuard],
+  //   loadChildren: () => import('./features/ecommerce/discounts/discounts.module').then(m => m.DiscountsModule)
+  // },
+  // {
+  //   path: 'customers',
+  //   canActivate: [AuthGuard],
+  //   loadChildren: () => import('./features/ecommerce/customers/customers.module').then(m => m.CustomersModule)
+  // },
   {
     path: '**',
     redirectTo: 'dashboard'

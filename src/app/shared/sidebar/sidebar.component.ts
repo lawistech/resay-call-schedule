@@ -1,11 +1,11 @@
-// src/app/components/sidebar/sidebar.component.ts
+// src/app/shared/sidebar/sidebar.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { ReminderService } from '../../core/services/reminder.service';
-import { trigger, transition, style, animate, state } from '@angular/animations';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-sidebar',
@@ -45,8 +45,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.loadSidebarState();
     this.setupRouteListener();
     
-    // Sample code to get upcoming calls count - replace with actual service call
-    // This would typically be refreshed periodically or via push notifications
+    // Get upcoming calls count
     this.refreshCallsCount();
   }
 
@@ -55,12 +54,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.routeSubscription.unsubscribe();
     }
     
+    this.clearTimers();
+  }
+
+  // Clear all timers to prevent memory leaks
+  private clearTimers(): void {
     if (this.expandTimer) {
       clearTimeout(this.expandTimer);
+      this.expandTimer = null;
     }
     
     if (this.collapseTimer) {
       clearTimeout(this.collapseTimer);
+      this.collapseTimer = null;
     }
   }
 
@@ -81,7 +87,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.expandedSection = 'sales';
     } else if (route.includes('/contacts') || route.includes('/accounts')) {
       this.expandedSection = 'contacts';
-    } else if (route.includes('/products') || route.includes('/orders') || route.includes('/inventory')) {
+    } else if (route.includes('/products') || route.includes('/orders') || route.includes('/inventory') || route.includes('/ecommerce')) {
       this.expandedSection = 'ecommerce';
     } else if (route.includes('/reports') || route.includes('/analytics')) {
       this.expandedSection = 'analytics';
@@ -91,6 +97,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
   // Toggle sidebar expanded/collapsed state
   toggleSidebar(): void {
     this.expanded = !this.expanded;
+    
+    // Reset temp expanded state when manually toggling
+    if (this.expanded) {
+      this.tempExpanded = false;
+    }
+    
     localStorage.setItem('sidebarExpanded', this.expanded.toString());
   }
 
@@ -121,15 +133,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
   
   // Temporarily expand the sidebar on hover
   temporarilyExpand(): void {
+    // Clear any existing timers first
+    this.clearTimers();
+    
     if (this.hoverMode && !this.expanded) {
-      // Clear any existing collapse timer
-      if (this.collapseTimer) {
-        clearTimeout(this.collapseTimer);
-        this.collapseTimer = null;
-      }
-      
       // Set a small delay before expanding to prevent unwanted expansions
-      // when user is just moving the mouse across the screen
       this.expandTimer = setTimeout(() => {
         this.tempExpanded = true;
       }, 200);
@@ -138,33 +146,21 @@ export class SidebarComponent implements OnInit, OnDestroy {
   
   // Collapse when mouse leaves
   collapseTemporary(): void {
-    if (this.hoverMode && this.tempExpanded) {
-      // Clear any existing expand timer
-      if (this.expandTimer) {
-        clearTimeout(this.expandTimer);
-        this.expandTimer = null;
-      }
-      
+    // Clear any existing timers first
+    this.clearTimers();
+    
+    if (this.hoverMode && !this.expanded) {
       // Set a small delay before collapsing to prevent flickering
-      // when the mouse briefly leaves the sidebar
       this.collapseTimer = setTimeout(() => {
         this.tempExpanded = false;
       }, 300);
     }
   }
   
-  // Fetch upcoming calls count - would be connected to your actual service
+  // Fetch upcoming calls count
   private refreshCallsCount(): void {
     // This is just a placeholder for demonstration
-    // In a real app, you'd fetch this data from your service
     this.upcomingCallsCount = 3;
-    
-    // Example of how you might set this up with a real service:
-    /*
-    this.reminderService.getUpcomingCallsCount().subscribe(count => {
-      this.upcomingCallsCount = count;
-    });
-    */
   }
   
   // Logout handler
