@@ -1,18 +1,142 @@
-<div class="kanban-board p-4 flex gap-4 overflow-x-auto">
-  <div *ngFor="let stage of stages" 
-       class="stage-container min-w-72 bg-gray-50 rounded-lg shadow-sm p-4">
-    <h3 class="font-semibold mb-4 text-gray-700">{{stage}}</h3>
-    <div cdkDropList
-         [id]="stage"
-         [cdkDropListConnectedTo]="getConnectedLists()"
-         (cdkDropListDropped)="drop($event)"
-         class="min-h-40 space-y-2">
-      <div *ngFor="let opportunity of opportunitiesByStage[stage]" 
-           cdkDrag
-           class="opportunity-item bg-white p-4 rounded shadow-sm cursor-move hover:shadow-md transition-shadow">
-        <div class="font-medium text-gray-800">{{opportunity.title}}</div>
-        <div class="text-sm text-gray-600">{{opportunity.companyId}}</div>
-        <div class="text-sm text-blue-600">${{opportunity.value.toLocaleString()}}</div>
+<div class="bg-white rounded-lg shadow-sm p-6">
+  <!-- Heading and Controls -->
+  <div class="flex flex-wrap justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-stone-800">Sales Pipeline</h1>
+    <div class="flex space-x-3">
+      <button class="px-4 py-2 bg-stone-800 text-white rounded-md hover:bg-stone-700 transition-colors flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        New Opportunity
+      </button>
+      <button class="px-4 py-2 border border-stone-300 rounded-md hover:bg-stone-50 text-stone-700 transition-colors flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+        Filter
+      </button>
+    </div>
+  </div>
+
+  <!-- Pipeline Info Panel -->
+  <div class="mb-6 bg-stone-50 p-4 rounded-lg border border-stone-200 flex flex-wrap gap-4 justify-between">
+    <div class="flex-1 min-w-[200px]">
+      <span class="text-xs text-stone-500 uppercase font-semibold">Total Value</span>
+      <p class="text-2xl font-bold text-stone-800">$312,000</p>
+    </div>
+    <div class="flex-1 min-w-[200px]">
+      <span class="text-xs text-stone-500 uppercase font-semibold">Deals</span>
+      <p class="text-2xl font-bold text-stone-800">24</p>
+    </div>
+    <div class="flex-1 min-w-[200px]">
+      <span class="text-xs text-stone-500 uppercase font-semibold">Avg Deal Size</span>
+      <p class="text-2xl font-bold text-stone-800">$13,000</p>
+    </div>
+    <div class="flex-1 min-w-[200px]">
+      <span class="text-xs text-stone-500 uppercase font-semibold">Win Rate</span>
+      <p class="text-2xl font-bold text-stone-800">42%</p>
+    </div>
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-board flex gap-4 overflow-x-auto pb-4">
+    <div *ngFor="let stage of stages" 
+         class="stage-container min-w-[300px] w-[300px] bg-stone-50 rounded-lg shadow-sm flex flex-col">
+      <!-- Stage Header -->
+      <div class="p-3 border-b border-stone-200 flex justify-between items-center sticky top-0 bg-stone-50 rounded-t-lg z-10">
+        <div>
+          <h3 class="font-semibold text-stone-700">{{stage}}</h3>
+          <div class="flex items-center mt-1">
+            <span class="text-xs font-medium text-stone-600">
+              {{opportunitiesByStage[stage]?.length || 0}} deals
+            </span>
+            <span class="mx-1 text-stone-400">•</span>
+            <span class="text-xs font-medium text-green-600">
+              ${{getStageValue(stage)}}
+            </span>
+          </div>
+        </div>
+        <div class="stage-header-bar h-1 w-16 rounded-full" [ngClass]="{
+          'bg-blue-400': stage === 'Prospecting',
+          'bg-indigo-400': stage === 'Discovery',
+          'bg-purple-400': stage === 'Proposal',
+          'bg-amber-400': stage === 'Negotiation',
+          'bg-emerald-400': stage === 'Closed-Won'
+        }"></div>
+      </div>
+      
+      <!-- Dropzone for cards -->
+      <div class="flex-1 min-h-[70vh] p-3 overflow-y-auto"
+           cdkDropList
+           [id]="stage"
+           [cdkDropListConnectedTo]="getConnectedLists()"
+           (cdkDropListDropped)="drop($event)">
+        
+        <!-- Empty state -->
+        <div *ngIf="!opportunitiesByStage[stage]?.length" class="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+          <p class="text-sm">No opportunities in {{stage}}</p>
+        </div>
+        
+        <!-- Opportunity Cards -->
+        <div *ngFor="let opportunity of opportunitiesByStage[stage]" 
+             cdkDrag
+             [cdkDragData]="opportunity"
+             class="opportunity-item bg-white mb-3 rounded-lg border border-stone-200 hover:border-stone-300 overflow-hidden cursor-move transition-all">
+          
+          <!-- Card Drag Preview -->
+          <div *cdkDragPreview class="bg-white p-4 rounded-lg shadow-lg border border-stone-200 w-[280px]">
+            <div class="font-medium text-stone-800">{{opportunity.title}}</div>
+            <div class="text-sm text-stone-600 mt-1">{{opportunity.companyId}}</div>
+            <div class="text-sm text-green-600 font-semibold mt-2">${{opportunity.value.toLocaleString()}}</div>
+          </div>
+          
+          <!-- Card Content -->
+          <div class="p-4">
+            <div class="flex justify-between items-start">
+              <div class="font-medium text-stone-800 hover:text-stone-600">{{opportunity.title}}</div>
+              <span [ngClass]="{
+                'bg-blue-100 text-blue-800': opportunity.status === 'New',
+                'bg-yellow-100 text-yellow-800': opportunity.status === 'In Progress',
+                'bg-green-100 text-green-800': opportunity.status === 'Won',
+                'bg-red-100 text-red-800': opportunity.status === 'Lost'
+              }" class="text-xs px-2 py-1 rounded-full">
+                {{opportunity.status}}
+              </span>
+            </div>
+            
+            <div class="text-sm text-stone-600 mt-1">{{opportunity.companyId}}</div>
+            
+            <div *ngIf="opportunity.description" class="mt-3 text-xs text-stone-500 line-clamp-2">
+              {{opportunity.description}}
+            </div>
+            
+            <div class="mt-3 flex items-center justify-between">
+              <div class="text-sm font-medium text-green-600">${{opportunity.value.toLocaleString()}}</div>
+              
+              <div class="flex items-center">
+                <div class="text-xs text-stone-500 mr-2">{{opportunity.probability}}%</div>
+                <div class="w-16 h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-green-500 rounded-full" [style.width.%]="opportunity.probability"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Card Footer -->
+            <div class="mt-3 pt-3 border-t border-stone-100 flex justify-between items-center">
+              <div class="text-xs text-stone-500">
+                <span>Due: {{opportunity.expectedCloseDate | date:'MMM d'}}</span>
+              </div>
+              <button class="p-1 text-stone-400 hover:text-stone-700 rounded transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

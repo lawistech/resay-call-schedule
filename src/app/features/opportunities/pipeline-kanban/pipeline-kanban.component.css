@@ -1,17 +1,87 @@
 .kanban-board {
-  min-height: calc(100vh - 160px);
+  min-height: calc(100vh - 260px);
+  margin: 0 -1rem; /* Negative margin to allow for full scroll width */
+  padding: 0 1rem;
+  scrollbar-width: thin;
+}
+
+.kanban-board::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.kanban-board::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.kanban-board::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .stage-container {
-  flex: 1;
-  background: #f8fafc;
+  flex: 0 0 auto;
+  transition: box-shadow 0.2s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.stage-container:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .opportunity-item {
-  transition: transform 0.1s ease-in-out;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.opportunity-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
 }
 
 .opportunity-item.cdk-drag-preview {
-  background: white;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  border-radius: 0.5rem;
+  opacity: 0.9;
+}
+
+.opportunity-item.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.opportunity-item.cdk-drag-animating {
+  transition: transform 250ms ease;
+}
+
+.cdk-drop-list-dragging .opportunity-item:not(.cdk-drag-placeholder) {
+  transition: transform 250ms ease;
+}
+
+/* Placeholder for empty lists */
+.cdk-drop-list-dragging-over {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Stage header custom colors */
+.stage-header-bg-prospecting { background-color: rgba(59, 130, 246, 0.1); }
+.stage-header-bg-discovery { background-color: rgba(99, 102, 241, 0.1); }
+.stage-header-bg-proposal { background-color: rgba(139, 92, 246, 0.1); }
+.stage-header-bg-negotiation { background-color: rgba(245, 158, 11, 0.1); }
+.stage-header-bg-closed-won { background-color: rgba(16, 185, 129, 0.1); }
+
+/* Opportunity card highlight based on value */
+.high-value-opportunity {
+  border-left: 3px solid #10b981 !important;
+}
+
+.medium-value-opportunity {
+  border-left: 3px solid #f59e0b !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .kanban-board {
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+  }
 }

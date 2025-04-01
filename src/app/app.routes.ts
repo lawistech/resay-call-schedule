@@ -1,9 +1,11 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { CallActiveGuard } from './core/guards/call-active.guard';
 import { TaskBoardComponent } from './features/tasks/task-board/task-board.component';
 import { LeadsComponent } from './features/leads/leads.component';
 import { OpportunitiesComponent } from './features/opportunities/opportunities.component';
+import { PipelineKanbanComponent } from './features/opportunities/pipeline-kanban/pipeline-kanban.component';
 
 export const routes: Routes = [
   {
@@ -55,10 +57,14 @@ export const routes: Routes = [
     component: LeadsComponent,
     canActivate: [AuthGuard],
   },
-  // Direct component loading (simplified approach)
   {
     path: 'opportunities',
     component: OpportunitiesComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'pipeline',
+    component: PipelineKanbanComponent,
     canActivate: [AuthGuard]
   },
   {
