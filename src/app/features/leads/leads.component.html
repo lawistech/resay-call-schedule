@@ -1,280 +1,267 @@
 <!-- src/app/features/leads/leads.component.html -->
 <div class="container mx-auto px-4 py-6">
-    <!-- Header -->
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold text-stone-800 mb-4">Leads Management</h1>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Total Leads Card -->
-        <div class="bg-white rounded-lg shadow-md p-5 border border-stone-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-stone-500">Total Leads</p>
-              <p class="text-2xl font-bold text-stone-800">{{ leads.length }}</p>
-            </div>
-            <div class="rounded-full bg-blue-100 p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-stone-800 mb-4">Leads Management</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Total Leads Card -->
+      <div class="bg-white rounded-lg shadow-md p-5 border border-stone-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-stone-500">Total Leads</p>
+            <p class="text-2xl font-bold text-stone-800">{{ leads.length }}</p>
           </div>
-          <div class="mt-4">
-            <div class="flex justify-between items-center">
-              <div>
-                <span class="text-xs font-medium text-stone-500">Active leads</span>
-                <span class="ml-2 text-xs font-semibold text-stone-700">{{ leads.filter(l => l.status !== 'Lost').length }}</span>
-              </div>
-            </div>
-            <div class="w-full bg-stone-100 rounded-full h-1.5 mt-1">
-              <div class="bg-blue-500 h-1.5 rounded-full" [style.width.%]="
-                leads.length > 0 
-                ? (leads.filter(l => l.status !== 'Lost').length / leads.length) * 100 
-                : 0
-              "></div>
-            </div>
+          <div class="rounded-full bg-blue-100 p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
           </div>
         </div>
-  
-        <!-- Pipeline Value Card -->
-        <div class="bg-white rounded-lg shadow-md p-5 border border-stone-100">
-          <div class="flex items-center justify-between">
+        <div class="mt-4">
+          <div class="flex justify-between items-center">
             <div>
-              <p class="text-sm font-medium text-stone-500">Pipeline Value</p>
-              <p class="text-2xl font-bold text-stone-800">£{{ totalPipelineValue.toFixed(0) }}</p>
-            </div>
-            <div class="rounded-full bg-green-100 p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <span class="text-xs font-medium text-stone-500">Active leads</span>
+              <span class="ml-2 text-xs font-semibold text-stone-700">{{ getActiveLeadsCount() }}</span>
             </div>
           </div>
-          <div class="mt-4">
-            <div class="flex justify-between items-center">
-              <div>
-                <span class="text-xs font-medium text-stone-500">Expected value</span>
-                <span class="ml-2 text-xs font-semibold text-stone-700">£{{ weightedPipelineValue.toFixed(0) }}</span>
-              </div>
-            </div>
-            <div class="w-full bg-stone-100 rounded-full h-1.5 mt-1">
-              <div class="bg-green-500 h-1.5 rounded-full" [style.width.%]="
-                totalPipelineValue > 0 
-                ? (weightedPipelineValue / totalPipelineValue) * 100 
-                : 0
-              "></div>
-            </div>
-          </div>
-        </div>
-  
-        <!-- Conversion Rate Card -->
-        <div class="bg-white rounded-lg shadow-md p-5 border border-stone-100">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-medium text-stone-500">Conversion Rate</p>
-              <p class="text-2xl font-bold text-stone-800">{{ 
-                leads.length > 0 
-                ? Math.round((leads.filter(l => l.status === 'Won').length / leads.length) * 100) 
-                : 0 
-              }}%</p>
-            </div>
-            <div class="rounded-full bg-purple-100 p-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-          </div>
-          <div class="mt-4">
-            <div class="flex justify-between items-center">
-              <div>
-                <span class="text-xs font-medium text-stone-500">Won/Lost ratio</span>
-                <span class="ml-2 text-xs font-semibold text-stone-700">{{ leads.filter(l => l.status === 'Won').length }} / {{ leads.filter(l => l.status === 'Lost').length }}</span>
-              </div>
-            </div>
-            <div class="w-full bg-stone-100 rounded-full h-1.5 mt-1">
-              <div class="bg-purple-500 h-1.5 rounded-full" [style.width.%]="
-                leads.filter(l => l.status === 'Won' || l.status === 'Lost').length > 0 
-                ? (leads.filter(l => l.status === 'Won').length / 
-                  (leads.filter(l => l.status === 'Won' || l.status === 'Lost').length)) * 100 
-                : 0
-              "></div>
-            </div>
+          <div class="w-full bg-stone-100 rounded-full h-1.5 mt-1">
+            <div class="bg-blue-500 h-1.5 rounded-full" [style.width.%]="getActiveLeadsPercentage()"></div>
           </div>
         </div>
       </div>
-    </div>
-  
-    <!-- Search and filters -->
-    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-      <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <!-- Search -->
-        <div class="relative w-full md:w-1/3">
-          <input
-            type="text"
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="applyFilters()"
-            placeholder="Search leads..."
-            class="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-md"
-          >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-stone-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+
+      <!-- Pipeline Value Card -->
+      <div class="bg-white rounded-lg shadow-md p-5 border border-stone-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-stone-500">Pipeline Value</p>
+            <p class="text-2xl font-bold text-stone-800">£{{ totalPipelineValue.toFixed(0) }}</p>
+          </div>
+          <div class="rounded-full bg-green-100 p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
         </div>
-  
-        <!-- Filters -->
-        <div class="flex flex-wrap gap-3 items-center">
-          <select
-            [(ngModel)]="statusFilter"
-            (ngModelChange)="applyFilters()"
-            class="px-3 py-2 border border-stone-200 rounded-md"
-          >
-            <option value="">All Statuses</option>
-            <option *ngFor="let status of availableStatuses" [value]="status">
-              {{ status }}
-            </option>
-          </select>
-  
-          <select
-            [(ngModel)]="sourceFilter"
-            (ngModelChange)="applyFilters()"
-            class="px-3 py-2 border border-stone-200 rounded-md"
-          >
-            <option value="">All Sources</option>
-            <option *ngFor="let source of availableSources" [value]="source">
-              {{ source }}
-            </option>
-          </select>
-          
-          <button 
-            *ngIf="searchTerm || statusFilter || sourceFilter"
-            (click)="clearFilters()" 
-            class="px-3 py-2 border border-stone-200 rounded-md hover:bg-stone-50 text-sm"
-          >
-            Clear filters
-          </button>
-          
-          <button 
-            (click)="openAddLeadDialog()" 
-            class="px-4 py-2 bg-stone-800 text-white rounded-md hover:bg-stone-700"
-          >
-            <span class="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Add Lead
-            </span>
-          </button>
+        <div class="mt-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="text-xs font-medium text-stone-500">Expected value</span>
+              <span class="ml-2 text-xs font-semibold text-stone-700">£{{ weightedPipelineValue.toFixed(0) }}</span>
+            </div>
+          </div>
+          <div class="w-full bg-stone-100 rounded-full h-1.5 mt-1">
+            <div class="bg-green-500 h-1.5 rounded-full" [style.width.%]="
+              totalPipelineValue > 0 
+              ? (weightedPipelineValue / totalPipelineValue) * 100 
+              : 0
+            "></div>
+          </div>
         </div>
       </div>
-    </div>
-  
-    <!-- Loading state -->
-    <div *ngIf="isLoading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-stone-800"></div>
-    </div>
-  
-    <!-- Empty state -->
-    <div *ngIf="!isLoading && filteredLeads.length === 0" class="bg-white rounded-lg shadow p-8 text-center">
-      <div class="mx-auto w-20 h-20 flex items-center justify-center rounded-full bg-stone-100 mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-        </svg>
-      </div>
-      <h3 class="text-lg font-medium text-stone-800 mb-2">No leads found</h3>
-      <p class="text-stone-500 mb-6">
-        {{ leads.length === 0 ? 
-          "You haven't added any leads yet. Get started by adding your first lead." : 
-          "No leads match your current filters. Try adjusting your search or clearing the filters." }}
-      </p>
-      <button 
-        *ngIf="leads.length === 0"
-        (click)="openAddLeadDialog()" 
-        class="px-4 py-2 bg-stone-800 text-white rounded-md hover:bg-stone-700"
-      >
-        Add your first lead
-      </button>
-      <button 
-        *ngIf="leads.length > 0"
-        (click)="clearFilters()" 
-        class="px-4 py-2 border border-stone-200 rounded-md hover:bg-stone-50"
-      >
-        Clear filters
-      </button>
-    </div>
-  
-    <!-- Leads table -->
-    <div *ngIf="!isLoading && filteredLeads.length > 0" class="bg-white rounded-lg shadow overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-stone-200">
-          <thead class="bg-stone-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Lead</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Company</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Value</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Source</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Expected Close</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-stone-200">
-            <tr *ngFor="let lead of filteredLeads" class="hover:bg-stone-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0 h-10 w-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 font-medium">
-                    {{ lead.name.charAt(0).toUpperCase() }}
-                  </div>
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-stone-900">{{ lead.name }}</div>
-                    <div class="text-sm text-stone-500">{{ lead.email }}</div>
-                    <div *ngIf="lead.phone" class="text-xs text-stone-400">{{ lead.phone }}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span [ngClass]="getStatusBadgeClass(lead.status)">{{ lead.status }}</span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-stone-500">{{ lead.company_name || 'N/A' }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-stone-900">{{ lead.value ? ('£' + lead.value) : 'N/A' }}</div>
-                <div *ngIf="lead.probability" class="text-xs text-stone-500">
-                  {{ lead.probability }}% probability
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-stone-500">{{ lead.lead_source || 'N/A' }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-stone-500">{{ formatDate(lead.expected_close_date) }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button 
-                  (click)="editLead(lead)" 
-                  class="text-stone-600 hover:text-stone-900 mr-4"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button 
-                  (click)="deleteLead(lead)" 
-                  class="text-red-500 hover:text-red-700"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+
+      <!-- Conversion Rate Card -->
+      <div class="bg-white rounded-lg shadow-md p-5 border border-stone-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-stone-500">Conversion Rate</p>
+            <p class="text-2xl font-bold text-stone-800">{{ getConversionRate() }}%</p>
+          </div>
+          <div class="rounded-full bg-purple-100 p-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="text-xs font-medium text-stone-500">Won/Lost ratio</span>
+              <span class="ml-2 text-xs font-semibold text-stone-700">{{ getWonLostRatio() }}</span>
+            </div>
+          </div>
+          <div class="w-full bg-stone-100 rounded-full h-1.5 mt-1">
+            <div class="bg-purple-500 h-1.5 rounded-full" [style.width.%]="getWonLostPercentage()"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  
-  <!-- Lead form dialog -->
-  <app-lead-form-dialog 
-    *ngIf="showDialog" 
-    [lead]="selectedLead"
-    (dialogClose)="handleDialogClose($event)">
-  </app-lead-form-dialog>
+
+  <!-- Search and filters -->
+  <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+    <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+      <!-- Search -->
+      <div class="relative w-full md:w-1/3">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          placeholder="Search leads..."
+          class="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-md"
+        >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-stone-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-3 items-center">
+        <select
+          [(ngModel)]="statusFilter"
+          (ngModelChange)="applyFilters()"
+          class="px-3 py-2 border border-stone-200 rounded-md"
+        >
+          <option value="">All Statuses</option>
+          <option *ngFor="let status of availableStatuses" [value]="status">
+            {{ status }}
+          </option>
+        </select>
+
+        <select
+          [(ngModel)]="sourceFilter"
+          (ngModelChange)="applyFilters()"
+          class="px-3 py-2 border border-stone-200 rounded-md"
+        >
+          <option value="">All Sources</option>
+          <option *ngFor="let source of availableSources" [value]="source">
+            {{ source }}
+          </option>
+        </select>
+        
+        <button 
+          *ngIf="searchTerm || statusFilter || sourceFilter"
+          (click)="clearFilters()" 
+          class="px-3 py-2 border border-stone-200 rounded-md hover:bg-stone-50 text-sm"
+        >
+          Clear filters
+        </button>
+        
+        <button 
+          (click)="openAddLeadDialog()" 
+          class="px-4 py-2 bg-stone-800 text-white rounded-md hover:bg-stone-700"
+        >
+          <span class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Lead
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-stone-800"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && filteredLeads.length === 0" class="bg-white rounded-lg shadow p-8 text-center">
+    <div class="mx-auto w-20 h-20 flex items-center justify-center rounded-full bg-stone-100 mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-stone-800 mb-2">No leads found</h3>
+    <p class="text-stone-500 mb-6">
+      {{ leads.length === 0 ? 
+        "You haven't added any leads yet. Get started by adding your first lead." : 
+        "No leads match your current filters. Try adjusting your search or clearing the filters." }}
+    </p>
+    <button 
+      *ngIf="leads.length === 0"
+      (click)="openAddLeadDialog()" 
+      class="px-4 py-2 bg-stone-800 text-white rounded-md hover:bg-stone-700"
+    >
+      Add your first lead
+    </button>
+    <button 
+      *ngIf="leads.length > 0"
+      (click)="clearFilters()" 
+      class="px-4 py-2 border border-stone-200 rounded-md hover:bg-stone-50"
+    >
+      Clear filters
+    </button>
+  </div>
+
+  <!-- Leads table -->
+  <div *ngIf="!isLoading && filteredLeads.length > 0" class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-stone-200">
+        <thead class="bg-stone-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Lead</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Company</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Value</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Source</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Expected Close</th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-stone-200">
+          <tr *ngFor="let lead of filteredLeads" class="hover:bg-stone-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-600 font-medium">
+                  {{ lead.name.charAt(0).toUpperCase() }}
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-stone-900">{{ lead.name }}</div>
+                  <div class="text-sm text-stone-500">{{ lead.email }}</div>
+                  <div *ngIf="lead.phone" class="text-xs text-stone-400">{{ lead.phone }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [ngClass]="getStatusBadgeClass(lead.status)">{{ lead.status }}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-stone-500">{{ lead.company_name || 'N/A' }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-stone-900">{{ lead.value ? ('£' + lead.value) : 'N/A' }}</div>
+              <div *ngIf="lead.probability" class="text-xs text-stone-500">
+                {{ lead.probability }}% probability
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-stone-500">{{ lead.lead_source || 'N/A' }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-stone-500">{{ formatDate(lead.expected_close_date) }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button 
+                (click)="editLead(lead)" 
+                class="text-stone-600 hover:text-stone-900 mr-4"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button 
+                (click)="deleteLead(lead)" 
+                class="text-red-500 hover:text-red-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Lead form dialog -->
+<app-lead-form-dialog 
+  *ngIf="showDialog" 
+  [lead]="selectedLead"
+  (dialogClose)="handleDialogClose($event)">
+</app-lead-form-dialog>

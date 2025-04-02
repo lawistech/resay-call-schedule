@@ -188,6 +188,50 @@ export class LeadsComponent implements OnInit, OnDestroy {
     this.closeDialog();
   }
   
+  // Helper methods to replace template filter functions
+  
+  // Count active leads
+  getActiveLeadsCount(): number {
+    return this.leads.filter(l => l.status !== 'Lost').length;
+  }
+
+  // Calculate active leads percentage
+  getActiveLeadsPercentage(): number {
+    return this.leads.length > 0 
+      ? (this.getActiveLeadsCount() / this.leads.length) * 100 
+      : 0;
+  }
+
+  // Count won leads
+  getWonLeadsCount(): number {
+    return this.leads.filter(l => l.status === 'Won').length;
+  }
+
+  // Count lost leads
+  getLostLeadsCount(): number {
+    return this.leads.filter(l => l.status === 'Lost').length;
+  }
+
+  // Calculate won/lost ratio
+  getWonLostRatio(): string {
+    return `${this.getWonLeadsCount()} / ${this.getLostLeadsCount()}`;
+  }
+
+  // Calculate conversion rate
+  getConversionRate(): number {
+    return this.leads.length > 0 
+      ? Math.round((this.getWonLeadsCount() / this.leads.length) * 100) 
+      : 0;
+  }
+
+  // Calculate conversion percentage for progress bar
+  getWonLostPercentage(): number {
+    const totalClosedLeads = this.getWonLeadsCount() + this.getLostLeadsCount();
+    return totalClosedLeads > 0 
+      ? (this.getWonLeadsCount() / totalClosedLeads) * 100 
+      : 0;
+  }
+  
   // Calculates the value of the leads pipeline
   get totalPipelineValue(): number {
     return this.leads

@@ -135,7 +135,7 @@ export class LeadFormDialogComponent implements OnInit {
     }
 
     this.isSubmitting = true;
-    const formData = this.leadForm.value;
+    const formData = this.prepareFormData();
     
     let saveOperation: Observable<Lead>;
     
@@ -155,8 +155,24 @@ export class LeadFormDialogComponent implements OnInit {
       error: (error) => {
         console.error('Error saving lead:', error);
         this.isSubmitting = false;
+        this.notificationService.error(`Failed to save lead: ${error.message}`);
       }
     });
+  }
+
+  // Prepare form data and handle empty values
+  prepareFormData(): Partial<Lead> {
+    const formValues = this.leadForm.value;
+    
+    // Handle empty UUID fields by setting them to null instead of empty strings
+    const result: Partial<Lead> = {
+      ...formValues,
+      // Set empty IDs to null to avoid UUID errors
+      company_id: formValues.company_id?.trim() || null,
+      assigned_to: formValues.assigned_to?.trim() || null
+    };
+    
+    return result;
   }
 
   close(result?: any): void {
