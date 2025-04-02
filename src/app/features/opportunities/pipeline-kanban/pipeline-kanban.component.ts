@@ -8,13 +8,14 @@ import { OpportunitiesService } from '../opportunities.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-pipeline-kanban',
   templateUrl: './pipeline-kanban.component.html',
   styleUrls: ['./pipeline-kanban.component.css'],
   standalone: true,
-  imports: [CommonModule, DragDropModule, DatePipe]
+  imports: [CommonModule, DragDropModule, DatePipe, FormsModule]
 })
 export class PipelineKanbanComponent implements OnInit {
   stages = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
@@ -26,6 +27,12 @@ export class PipelineKanbanComponent implements OnInit {
     avgDealSize: 0,
     winRate: 0
   };
+  
+  // Filtering options
+  searchTerm: string = '';
+  minAmount: number | null = null;
+  maxAmount: number | null = null;
+  statusFilter: string = '';
 
   constructor(
     private opportunitiesService: OpportunitiesService,
@@ -97,6 +104,15 @@ export class PipelineKanbanComponent implements OnInit {
         opportunity.status = 'In Progress';
       }
       
+      // Auto-update probability based on stage
+      switch(newStage) {
+        case 'Prospecting': opportunity.probability = 20; break;
+        case 'Discovery': opportunity.probability = 40; break;
+        case 'Proposal': opportunity.probability = 60; break;
+        case 'Negotiation': opportunity.probability = 80; break;
+        case 'Closed-Won': opportunity.probability = 100; break;
+      }
+      
       this.opportunitiesService.updateOpportunity(opportunity.id, opportunity).subscribe({
         next: () => {
           this.notificationService.success(`Moved opportunity to ${newStage}`);
@@ -119,6 +135,25 @@ export class PipelineKanbanComponent implements OnInit {
     }
   }
 
+  applyFilters(): void {
+    this.loadOpportunities();
+    /* 
+    Note: In a real implementation, we would apply filters here based on searchTerm, 
+    minAmount, maxAmount, and statusFilter. Since we're loading all data from the server
+    and filtering client-side in this example, we'd filter the loaded opportunities.
+    
+    A more scalable approach would be to pass filter parameters to the server.
+    */
+  }
+
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.minAmount = null;
+    this.maxAmount = null;
+    this.statusFilter = '';
+    this.loadOpportunities();
+  }
+
   getConnectedLists(): string[] {
     return this.stages;
   }
@@ -126,7 +161,7 @@ export class PipelineKanbanComponent implements OnInit {
   getStageValue(stage: string): string {
     if (!this.opportunitiesByStage[stage]) return '0';
     
-    const total = this.opportunitiesByStage[stage].reduce((sum, opp) => sum + opp.value, 0);
+    const total = this.opportunitiesByStage[stage].reduce((sum, opp) => sum + opp.amount, 0);
     return total.toLocaleString();
   }
   
@@ -135,7 +170,7 @@ export class PipelineKanbanComponent implements OnInit {
     const allOpportunities = opportunities || Object.values(this.opportunitiesByStage).flat();
     
     // Calculate total value
-    this.pipelineStats.totalValue = allOpportunities.reduce((sum, opp) => sum + opp.value, 0);
+    this.pipelineStats.totalValue = allOpportunities.reduce((sum, opp) => sum + opp.amount, 0);
     
     // Calculate total deals
     this.pipelineStats.totalDeals = allOpportunities.length;
@@ -154,7 +189,13 @@ export class PipelineKanbanComponent implements OnInit {
   }
   
   openOpportunityDetail(opportunity: Opportunity): void {
-    // Navigate to opportunity detail page or open modal
+    // You can implement detailed view navigation here
+    this.router.navigate(['/opportunities'], { 
+      queryParams: { 
+        action: 'view',
+        id: opportunity.id
+      } 
+    });
   }
   
   createNewOpportunity(): void {

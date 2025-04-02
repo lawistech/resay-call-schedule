@@ -1,7 +1,9 @@
+// src/app/features/opportunities/opportunity-form/opportunity-form.component.ts
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Opportunity } from '../../../core/models/company.model';
+import { OpportunitiesService } from '../opportunities.service';
 
 @Component({
   selector: 'app-opportunity-form',
@@ -22,8 +24,13 @@ export class OpportunityFormComponent implements OnInit {
   opportunityForm: FormGroup;
   stages = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
   statuses = ['New', 'In Progress', 'Won', 'Lost'];
+  companies: {id: string, name: string}[] = [];
+  isLoadingCompanies = false;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private opportunitiesService: OpportunitiesService
+  ) {
     this.opportunityForm = this.fb.group({
       title: ['', Validators.required],
       description: [''],
@@ -38,6 +45,8 @@ export class OpportunityFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadCompanies();
+    
     if (this.opportunity) {
       // For edit mode, populate the form with opportunity data
       this.opportunityForm.patchValue({
@@ -52,6 +61,36 @@ export class OpportunityFormComponent implements OnInit {
         notes: this.opportunity.notes
       });
     }
+    
+    // Auto-adjust probability based on stage selection
+    this.opportunityForm.get('stage')?.valueChanges.subscribe(stage => {
+      if (!this.opportunityForm.get('probability')?.dirty) {
+        // Only auto-set if user hasn't manually changed the probability
+        let probability = 0;
+        switch(stage) {
+          case 'Prospecting': probability = 20; break;
+          case 'Discovery': probability = 40; break;
+          case 'Proposal': probability = 60; break;
+          case 'Negotiation': probability = 80; break;
+          case 'Closed-Won': probability = 100; break;
+        }
+        this.opportunityForm.get('probability')?.setValue(probability);
+      }
+    });
+  }
+
+  loadCompanies(): void {
+    this.isLoadingCompanies = true;
+    this.opportunitiesService.getCompanies().subscribe({
+      next: (companies) => {
+        this.companies = companies;
+        this.isLoadingCompanies = false;
+      },
+      error: (error) => {
+        console.error('Error loading companies:', error);
+        this.isLoadingCompanies = false;
+      }
+    });
   }
 
   onSubmit(): void {
@@ -70,6 +109,11 @@ export class OpportunityFormComponent implements OnInit {
         companyId: formValue.companyId,
         notes: formValue.notes
       };
+
+      // If the stage is Closed-Won, auto-set status to Won
+      if (formValue.stage === 'Closed-Won') {
+        opportunityData.status = 'Won';
+      }
 
       // If editing, add the ID
       if (this.opportunity && this.opportunity.id) {

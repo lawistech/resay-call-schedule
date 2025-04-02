@@ -1,234 +1,217 @@
 // src/app/features/opportunities/opportunities.service.ts
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
-import { Opportunity } from '../../core/models/company.model';
+import { Observable, from, map, catchError, throwError } from 'rxjs';
+import { SupabaseService } from '../../core/services/supabase.service';
+import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { Opportunity } from '../../core/models/company.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OpportunitiesService {
-  // Mock data for testing
-  private mockOpportunities: Opportunity[] = [
-    {
-      id: 'opp1',
-      title: 'Enterprise Software License',
-      description: 'Annual license renewal for CRM software',
-      status: 'In Progress',
-      probability: 75,
-      expectedCloseDate: new Date(2025, 5, 15),
-      amount: 125000,
-      companyId: 'comp1',
-      stage: 'Negotiation',
-      value: 125000,
-      closeDate: new Date(2025, 5, 15),
-      notes: 'Client is considering upgrading to premium tier',
-      createdAt: new Date(2025, 1, 10),
-      updatedAt: new Date(2025, 3, 20)
-    },
-    {
-      id: 'opp2',
-      title: 'Cloud Migration Services',
-      description: 'Migrating on-premise infrastructure to cloud',
-      status: 'New',
-      probability: 50,
-      expectedCloseDate: new Date(2025, 7, 30),
-      amount: 85000,
-      companyId: 'comp2',
-      stage: 'Discovery',
-      value: 85000,
-      closeDate: new Date(2025, 7, 30),
-      notes: 'Need to schedule technical assessment',
-      createdAt: new Date(2025, 3, 5),
-      updatedAt: new Date(2025, 3, 5)
-    },
-    {
-      id: 'opp3',
-      title: 'Hardware Upgrade',
-      description: 'Workstation replacement for marketing department',
-      status: 'Won',
-      probability: 100,
-      expectedCloseDate: new Date(2025, 2, 10),
-      amount: 45000,
-      companyId: 'comp3',
-      stage: 'Closed-Won',
-      value: 45000,
-      closeDate: new Date(2025, 2, 10),
-      notes: 'Delivery scheduled for next month',
-      createdAt: new Date(2025, 0, 15),
-      updatedAt: new Date(2025, 2, 10)
-    },
-    {
-      id: 'opp4',
-      title: 'Consulting Services',
-      description: 'Business process optimization',
-      status: 'In Progress',
-      probability: 60,
-      expectedCloseDate: new Date(2025, 6, 20),
-      amount: 35000,
-      companyId: 'comp4',
-      stage: 'Proposal',
-      value: 35000,
-      closeDate: new Date(2025, 6, 20),
-      notes: 'Proposal presentation scheduled next week',
-      createdAt: new Date(2025, 2, 25),
-      updatedAt: new Date(2025, 3, 15)
-    },
-    {
-      id: 'opp5',
-      title: 'Training Program',
-      description: 'Employee onboarding and skills development',
-      status: 'Lost',
-      probability: 0,
-      expectedCloseDate: new Date(2025, 1, 28),
-      amount: 22000,
-      companyId: 'comp5',
-      stage: 'Prospecting',
-      value: 22000,
-      closeDate: new Date(2025, 1, 28),
-      notes: 'Client went with competitor offering',
-      createdAt: new Date(2024, 11, 10),
-      updatedAt: new Date(2025, 1, 28)
-    },
-    // Adding more mock data for better pipeline visualization
-    {
-      id: 'opp6',
-      title: 'Network Infrastructure',
-      description: 'Complete overhaul of network infrastructure',
-      status: 'In Progress',
-      probability: 65,
-      expectedCloseDate: new Date(2025, 5, 28),
-      amount: 78000,
-      companyId: 'comp2',
-      stage: 'Prospecting',
-      value: 78000,
-      closeDate: new Date(2025, 5, 28),
-      notes: 'Initial meetings scheduled with IT department',
-      createdAt: new Date(2025, 3, 15),
-      updatedAt: new Date(2025, 3, 15)
-    },
-    {
-      id: 'opp7',
-      title: 'Data Analytics Platform',
-      description: 'Implementation of business intelligence tools',
-      status: 'New',
-      probability: 45,
-      expectedCloseDate: new Date(2025, 8, 15),
-      amount: 95000,
-      companyId: 'comp3',
-      stage: 'Discovery',
-      value: 95000,
-      closeDate: new Date(2025, 8, 15),
-      notes: 'Needs assessment in progress',
-      createdAt: new Date(2025, 3, 10),
-      updatedAt: new Date(2025, 3, 10)
-    },
-    {
-      id: 'opp8',
-      title: 'Security Audit Services',
-      description: 'Comprehensive security assessment and remediation',
-      status: 'In Progress',
-      probability: 80,
-      expectedCloseDate: new Date(2025, 4, 30),
-      amount: 42000,
-      companyId: 'comp1',
-      stage: 'Proposal',
-      value: 42000,
-      closeDate: new Date(2025, 4, 30),
-      notes: 'Proposal being finalized',
-      createdAt: new Date(2025, 2, 5),
-      updatedAt: new Date(2025, 3, 18)
-    }
-  ];
-
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private supabaseService: SupabaseService,
+    private authService: AuthService,
+    private notificationService: NotificationService
+  ) {}
 
   getOpportunities(): Observable<Opportunity[]> {
-    // Simulate API delay for realistic testing
-    return of([...this.mockOpportunities]).pipe(delay(800));
+    return from(this.supabaseService.supabaseClient
+      .from('opportunities')
+      .select(`
+        *,
+        company:companies(id, name)
+      `)
+      .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        
+        // Format the data to match our Opportunity model
+        return response.data.map(opp => this.formatOpportunityFromDatabase(opp));
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to fetch opportunities: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
   }
 
-  addOpportunity(payload: Partial<Opportunity>): Observable<Opportunity> {
-    const newOpportunity: Opportunity = {
-      id: 'opp_' + Math.random().toString(36).substr(2, 9),
-      title: payload.title || '',
-      description: payload.description,
-      status: payload.status as 'New' | 'In Progress' | 'Won' | 'Lost' || 'New',
-      probability: payload.probability || 0,
-      expectedCloseDate: payload.expectedCloseDate || new Date(),
-      amount: payload.amount || 0,
-      companyId: payload.companyId || '',
-      stage: payload.stage || 'Prospecting',
-      value: payload.amount || 0,
-      closeDate: payload.expectedCloseDate || new Date(),
-      notes: payload.notes || '',
-      createdAt: new Date(),
-      updatedAt: new Date()
+  getOpportunityById(id: string): Observable<Opportunity> {
+    return from(this.supabaseService.supabaseClient
+      .from('opportunities')
+      .select(`
+        *,
+        company:companies(id, name)
+      `)
+      .eq('id', id)
+      .single()
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return this.formatOpportunityFromDatabase(response.data);
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to fetch opportunity: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  addOpportunity(opportunity: Partial<Opportunity>): Observable<Opportunity> {
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (!currentUser) {
+      return throwError(() => new Error('User must be logged in to create opportunities'));
+    }
+    
+    // Clean up data to prevent empty UUIDs
+    const cleanedOpp = { ...opportunity };
+    
+    // Remove empty UUID fields
+    if (!cleanedOpp.companyId) delete cleanedOpp.companyId;
+    
+    const formattedOpp = {
+      ...this.formatOpportunityForDatabase(cleanedOpp),
+      created_by: currentUser.id,
+      created_at: new Date().toISOString()
     };
-    
-    // Add to mock data
-    this.mockOpportunities.unshift(newOpportunity);
-    
-    // Simulate API delay
-    return of(newOpportunity).pipe(delay(800));
+
+    return from(this.supabaseService.supabaseClient
+      .from('opportunities')
+      .insert(formattedOpp)
+      .select(`
+        *,
+        company:companies(id, name)
+      `)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        this.notificationService.success('Opportunity created successfully');
+        return this.formatOpportunityFromDatabase(response.data[0]);
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to create opportunity: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
   }
 
-  updateOpportunity(id: string, payload: Partial<Opportunity>): Observable<Opportunity> {
-    // Find the opportunity to update
-    const index = this.mockOpportunities.findIndex(o => o.id === id);
+  updateOpportunity(id: string, opportunity: Partial<Opportunity>): Observable<Opportunity> {
+    // Clean up data to prevent empty UUIDs
+    const cleanedOpp = { ...opportunity };
     
-    if (index !== -1) {
-      // Create updated opportunity
-      const updatedOpportunity: Opportunity = {
-        ...this.mockOpportunities[index],
-        ...payload,
-        updatedAt: new Date()
-      };
-      
-      // Update stage-related probabilities automatically
-      if (payload.stage && payload.stage !== this.mockOpportunities[index].stage) {
-        // Adjust probability based on stage if not explicitly set
-        if (payload.probability === undefined) {
-          switch (payload.stage) {
-            case 'Prospecting':
-              updatedOpportunity.probability = 20;
-              break;
-            case 'Discovery':
-              updatedOpportunity.probability = 40;
-              break;
-            case 'Proposal':
-              updatedOpportunity.probability = 60;
-              break;
-            case 'Negotiation':
-              updatedOpportunity.probability = 80;
-              break;
-            case 'Closed-Won':
-              updatedOpportunity.probability = 100;
-              updatedOpportunity.status = 'Won';
-              break;
-          }
-        }
-      }
-      
-      // Update the mock data
-      this.mockOpportunities[index] = updatedOpportunity;
-      
-      // Simulate API delay
-      return of(updatedOpportunity).pipe(delay(800));
-    }
+    // Remove empty UUID fields
+    if (!cleanedOpp.companyId) delete cleanedOpp.companyId;
     
-    // Return the existing opportunity if not found (shouldn't happen in normal flow)
-    return of(this.mockOpportunities.find(o => o.id === id) as Opportunity).pipe(delay(800));
+    const formattedOpp = {
+      ...this.formatOpportunityForDatabase(cleanedOpp),
+      updated_at: new Date().toISOString()
+    };
+
+    return from(this.supabaseService.supabaseClient
+      .from('opportunities')
+      .update(formattedOpp)
+      .eq('id', id)
+      .select(`
+        *,
+        company:companies(id, name)
+      `)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        this.notificationService.success('Opportunity updated successfully');
+        return this.formatOpportunityFromDatabase(response.data[0]);
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to update opportunity: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
   }
-  
-  deleteOpportunity(id: string): Observable<boolean> {
-    const index = this.mockOpportunities.findIndex(o => o.id === id);
+
+  deleteOpportunity(id: string): Observable<void> {
+    return from(this.supabaseService.supabaseClient
+      .from('opportunities')
+      .delete()
+      .eq('id', id)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        this.notificationService.success('Opportunity deleted successfully');
+        return;
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to delete opportunity: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Helper functions to format data
+  private formatOpportunityFromDatabase(data: any): Opportunity {
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      status: data.status,
+      probability: data.probability,
+      expectedCloseDate: data.expected_close_date,
+      amount: data.amount,
+      companyId: data.company_id,
+      stage: data.stage,
+      value: data.amount, // For consistency (amount and value are the same)
+      closeDate: data.expected_close_date, // For consistency (closeDate and expectedCloseDate are the same)
+      notes: data.notes,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at
+    };
+  }
+
+  private formatOpportunityForDatabase(opp: Partial<Opportunity>): any {
+    // Map our model fields to the database fields
+    const result: any = {};
     
-    if (index !== -1) {
-      this.mockOpportunities.splice(index, 1);
-      return of(true).pipe(delay(800));
+    if (opp.title !== undefined) result.title = opp.title;
+    if (opp.description !== undefined) result.description = opp.description;
+    if (opp.status !== undefined) result.status = opp.status;
+    if (opp.probability !== undefined) result.probability = opp.probability;
+    
+    if (opp.expectedCloseDate !== undefined) {
+      result.expected_close_date = opp.expectedCloseDate instanceof Date 
+        ? opp.expectedCloseDate.toISOString() 
+        : opp.expectedCloseDate;
     }
     
-    return of(false).pipe(delay(800));
+    if (opp.amount !== undefined) result.amount = opp.amount;
+    
+    // Only include company_id if it's a non-empty string
+    if (opp.companyId && typeof opp.companyId === 'string' && opp.companyId.trim() !== '') {
+      result.company_id = opp.companyId;
+    }
+    
+    if (opp.stage !== undefined) result.stage = opp.stage;
+    if (opp.notes !== undefined) result.notes = opp.notes;
+    
+    return result;
+  }
+
+  // Get companies for dropdown
+  getCompanies(): Observable<{id: string, name: string}[]> {
+    return from(this.supabaseService.supabaseClient
+      .from('companies')
+      .select('id, name')
+      .order('name', { ascending: true })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to fetch companies: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
   }
 }

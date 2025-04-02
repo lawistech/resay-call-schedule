@@ -30,15 +30,19 @@
                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
       </div>
 
-      <!-- Company ID -->
+      <!-- Company Dropdown -->
       <div>
-        <label class="block text-sm font-medium text-gray-700">Company ID*</label>
-        <input type="text" formControlName="companyId" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <label class="block text-sm font-medium text-gray-700">Company*</label>
+        <select formControlName="companyId" 
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <option value="">-- Select Company --</option>
+          <option *ngFor="let company of companies" [value]="company.id">{{company.name}}</option>
+        </select>
         <div *ngIf="opportunityForm.get('companyId')?.errors?.['required'] && opportunityForm.get('companyId')?.touched" 
              class="text-red-500 text-xs mt-1">
-          Company ID is required
+          Company is required
         </div>
+        <div *ngIf="isLoadingCompanies" class="text-xs text-gray-500 mt-1">Loading companies...</div>
       </div>
 
       <!-- Stage -->
@@ -62,8 +66,13 @@
       <!-- Amount -->
       <div>
         <label class="block text-sm font-medium text-gray-700">Amount*</label>
-        <input type="number" formControlName="amount" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <div class="mt-1 relative rounded-md shadow-sm">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span class="text-gray-500 sm:text-sm">$</span>
+          </div>
+          <input type="number" formControlName="amount" 
+                 class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        </div>
         <div *ngIf="opportunityForm.get('amount')?.errors?.['required'] && opportunityForm.get('amount')?.touched" 
              class="text-red-500 text-xs mt-1">
           Amount is required
@@ -73,8 +82,14 @@
       <!-- Probability -->
       <div>
         <label class="block text-sm font-medium text-gray-700">Probability (%)</label>
-        <input type="number" formControlName="probability" min="0" max="100"
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        <div class="mt-1">
+          <input type="number" formControlName="probability" min="0" max="100"
+                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <!-- Visual probability bar -->
+          <div class="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+            <div class="bg-blue-600 h-2.5 rounded-full" [style.width.%]="opportunityForm.get('probability')?.value"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Expected Close Date -->

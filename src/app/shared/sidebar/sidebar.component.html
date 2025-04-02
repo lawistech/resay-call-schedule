@@ -136,6 +136,65 @@
         </div>
       </div>
       
+
+      <!-- Sales & Pipeline -->
+      <div class="nav-section relative">
+        <button (click)="toggleSection('sales')" 
+                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600 
+                       hover:bg-stone-50 transition-all duration-150 group"
+                [ngClass]="{'bg-amber-50 text-amber-700': expandedSection === 'sales'}">
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-amber-600': expandedSection === 'sales'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200" 
+                  [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+              Sales Pipeline
+            </span>
+          </div>
+          <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
+               [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
+            <svg xmlns="http://www.w3.org/2000/svg" 
+                 [ngClass]="{'rotate-180': expandedSection === 'sales'}"
+                 class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          
+          <!-- Tooltip for collapsed state -->
+          <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
+            Sales Pipeline
+          </div>
+        </button>
+        
+        <!-- Sales submenu -->
+        <div *ngIf="expandedSection === 'sales' && (expanded || tempExpanded)" 
+             [@submenuAnimation]
+             class="ml-4 pl-4 border-l-2 border-amber-100 mt-1 space-y-1">
+          <a routerLink="/leads" routerLinkActive="text-amber-700 font-medium bg-amber-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            Leads
+          </a>
+          <a routerLink="/opportunities" routerLinkActive="text-amber-700 font-medium bg-amber-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            Opportunities
+          </a>
+          <a routerLink="/pipeline" routerLinkActive="text-amber-700 font-medium bg-amber-50"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Pipeline
+          </a>
+        </div>
+      </div>
+      
       <!-- Task Management Section -->
       <div class="nav-section relative">
         <button (click)="toggleSection('tasks')" 
@@ -206,63 +265,6 @@
         </div>
       </div>
       
-      <!-- Sales & Pipeline -->
-      <div class="nav-section relative">
-        <button (click)="toggleSection('sales')" 
-                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600 
-                       hover:bg-stone-50 transition-all duration-150 group"
-                [ngClass]="{'bg-amber-50 text-amber-700': expandedSection === 'sales'}">
-          <div class="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-amber-600': expandedSection === 'sales'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200" 
-                  [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
-              Sales Pipeline
-            </span>
-          </div>
-          <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
-               [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
-            <svg xmlns="http://www.w3.org/2000/svg" 
-                 [ngClass]="{'rotate-180': expandedSection === 'sales'}"
-                 class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          
-          <!-- Tooltip for collapsed state -->
-          <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
-            Sales Pipeline
-          </div>
-        </button>
-        
-        <!-- Sales submenu -->
-        <div *ngIf="expandedSection === 'sales' && (expanded || tempExpanded)" 
-             [@submenuAnimation]
-             class="ml-4 pl-4 border-l-2 border-amber-100 mt-1 space-y-1">
-          <a routerLink="/leads" routerLinkActive="text-amber-700 font-medium bg-amber-50"
-             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-            Leads
-          </a>
-          <a routerLink="/opportunities" routerLinkActive="text-amber-700 font-medium bg-amber-50"
-             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            Opportunities
-          </a>
-          <a routerLink="/pipeline" routerLinkActive="text-amber-700 font-medium bg-amber-50"
-             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-amber-50 hover:text-amber-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            Pipeline
-          </a>
-        </div>
-      </div>
       
       
       <!-- NEW ECOMMERCE SECTION -->
