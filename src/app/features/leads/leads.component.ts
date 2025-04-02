@@ -82,6 +82,7 @@ export class LeadsComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error loading leads:', error);
           this.isLoading = false;
+          this.notificationService.error('Failed to load leads');
         }
       });
   }
@@ -114,9 +115,11 @@ export class LeadsComponent implements OnInit, OnDestroy {
             // Remove from local array
             this.leads = this.leads.filter(l => l.id !== lead.id);
             this.applyFilters();
+            this.notificationService.success('Lead deleted successfully');
           },
           error: (error) => {
             console.error('Error deleting lead:', error);
+            this.notificationService.error('Failed to delete lead');
           }
         });
     }
@@ -217,4 +220,4 @@ export class LeadsComponent implements OnInit, OnDestroy {
       currency: 'GBP' 
     }).format(value);
   }
-} 
+}
