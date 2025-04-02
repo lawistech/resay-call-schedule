@@ -1,17 +1,12 @@
-import { Component, Input } from '@angular/core';
+// src/app/features/leads/lead-form-dialog/lead-form-dialog.component.ts
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
 
-interface Lead {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  company: string;
-  status: 'New' | 'Contacted' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Closed';
-  source: string;
-  createdAt: Date;
-}
+import { Lead } from '../../../core/models/lead.model';
+import { LeadService } from '../../../core/services/lead.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-lead-form-dialog',
@@ -20,180 +15,222 @@ interface Lead {
     CommonModule,
     ReactiveFormsModule
   ],
-  template: `
-    <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" (click)="closeDialog()">
-      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" (click)="$event.stopPropagation()">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-medium text-gray-900">{{ data ? 'Edit Lead' : 'Add New Lead' }}</h3>
-          <button (click)="closeDialog()" class="text-gray-400 hover:text-gray-500">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-
-        <form [formGroup]="leadForm" (ngSubmit)="onSubmit()" class="space-y-4">
-          <!-- Name Field -->
-          <div>
-            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              type="text"
-              id="name"
-              formControlName="name"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              placeholder="Enter name"
-            >
-            <div *ngIf="leadForm.get('name')?.hasError('required') && leadForm.get('name')?.touched" 
-                 class="mt-1 text-sm text-red-600">
-              Name is required
-            </div>
-          </div>
-
-          <!-- Email Field -->
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              id="email"
-              formControlName="email"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              placeholder="Enter email"
-            >
-            <div *ngIf="leadForm.get('email')?.hasError('required') && leadForm.get('email')?.touched" 
-                 class="mt-1 text-sm text-red-600">
-              Email is required
-            </div>
-            <div *ngIf="leadForm.get('email')?.hasError('email') && leadForm.get('email')?.touched" 
-                 class="mt-1 text-sm text-red-600">
-              Please enter a valid email
-            </div>
-          </div>
-
-          <!-- Phone Field -->
-          <div>
-            <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
-            <input
-              type="tel"
-              id="phone"
-              formControlName="phone"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              placeholder="Enter phone number"
-            >
-            <div *ngIf="leadForm.get('phone')?.hasError('required') && leadForm.get('phone')?.touched" 
-                 class="mt-1 text-sm text-red-600">
-              Phone is required
-            </div>
-          </div>
-
-          <!-- Company Field -->
-          <div>
-            <label for="company" class="block text-sm font-medium text-gray-700">Company</label>
-            <input
-              type="text"
-              id="company"
-              formControlName="company"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              placeholder="Enter company name"
-            >
-            <div *ngIf="leadForm.get('company')?.hasError('required') && leadForm.get('company')?.touched" 
-                 class="mt-1 text-sm text-red-600">
-              Company is required
-            </div>
-          </div>
-
-          <!-- Status Field -->
-          <div>
-            <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-            <select
-              id="status"
-              formControlName="status"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            >
-              <option value="New">New</option>
-              <option value="Contacted">Contacted</option>
-              <option value="Qualified">Qualified</option>
-              <option value="Proposal">Proposal</option>
-              <option value="Negotiation">Negotiation</option>
-              <option value="Closed">Closed</option>
-            </select>
-            <div *ngIf="leadForm.get('status')?.hasError('required') && leadForm.get('status')?.touched" 
-                 class="mt-1 text-sm text-red-600">
-              Status is required
-            </div>
-          </div>
-
-          <!-- Source Field -->
-          <div>
-            <label for="source" class="block text-sm font-medium text-gray-700">Source</label>
-            <input
-              type="text"
-              id="source"
-              formControlName="source"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-              placeholder="Enter lead source"
-            >
-            <div *ngIf="leadForm.get('source')?.hasError('required') && leadForm.get('source')?.touched" 
-                 class="mt-1 text-sm text-red-600">
-              Source is required
-            </div>
-          </div>
-
-          <!-- Form Actions -->
-          <div class="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              (click)="closeDialog()"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              [disabled]="!leadForm.valid"
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {{ data ? 'Update' : 'Add' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  `
+  templateUrl: './lead-form-dialog.component.html',
+  styleUrls: ['./lead-form-dialog.component.scss']
 })
-export class LeadFormDialogComponent {
-  @Input() data: Lead | null = null;
-  leadForm: FormGroup;
+export class LeadFormDialogComponent implements OnInit {
+  @Input() lead: Lead | null = null;
+  @Output() dialogClose = new EventEmitter<any>();
+  
+  leadForm!: FormGroup;
+  isSubmitting = false;
+  companies: {id: string, name: string}[] = [];
+  users: {id: string, email: string, full_name: string}[] = [];
+  
+  statusOptions = [
+    'New',
+    'Contacted',
+    'Qualified', 
+    'Proposal',
+    'Negotiation',
+    'Won',
+    'Lost'
+  ];
+  
+  sourceOptions = [
+    'Website',
+    'Referral',
+    'Email Campaign',
+    'Cold Call',
+    'Social Media',
+    'Trade Show',
+    'Other'
+  ];
 
-  constructor(private fb: FormBuilder) {
-    this.leadForm = this.fb.group({
-      name: [this.data?.name || '', Validators.required],
-      email: [this.data?.email || '', [Validators.required, Validators.email]],
-      phone: [this.data?.phone || '', Validators.required],
-      company: [this.data?.company || '', Validators.required],
-      status: [this.data?.status || 'New', Validators.required],
-      source: [this.data?.source || '', Validators.required]
-    });
-  }
+  constructor(
+    private fb: FormBuilder,
+    private leadService: LeadService,
+    private notificationService: NotificationService
+  ) {}
 
-  onSubmit(): void {
-    if (this.leadForm.valid) {
-      const formData = this.leadForm.value;
-      if (this.data) {
-        formData.id = this.data.id;
-        formData.createdAt = this.data.createdAt;
-      } else {
-        formData.id = Date.now().toString();
-        formData.createdAt = new Date();
-      }
-      this.closeDialog(formData);
+  ngOnInit(): void {
+    this.initForm();
+    this.loadDropdownData();
+    
+    if (this.lead) {
+      this.patchFormValues();
     }
   }
 
-  closeDialog(result?: any): void {
-    const event = new CustomEvent('dialogClose', { 
-      bubbles: true,
-      detail: result 
+  initForm(): void {
+    this.leadForm = this.fb.group({
+      name: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      phone: [''],
+      company_id: [''],
+      status: ['New', [Validators.required]],
+      lead_source: ['', [Validators.required]],
+      notes: [''],
+      assigned_to: [''],
+      value: [null, [Validators.min(0)]],
+      probability: [null, [Validators.min(0), Validators.max(100)]],
+      expected_close_date: ['']
     });
-    window.dispatchEvent(event);
   }
-} 
+  
+  loadDropdownData(): void {
+    // Load companies
+    this.leadService.getCompanies().subscribe({
+      next: (data) => {
+        this.companies = data;
+      },
+      error: (error) => {
+        console.error('Error loading companies:', error);
+      }
+    });
+    
+    // Load users
+    this.leadService.getUsers().subscribe({
+      next: (data) => {
+        this.users = data;
+      },
+      error: (error) => {
+        console.error('Error loading users:', error);
+      }
+    });
+  }
+  
+  patchFormValues(): void {
+    if (!this.lead) return;
+    
+    this.leadForm.patchValue({
+      name: this.lead.name,
+      email: this.lead.email,
+      phone: this.lead.phone || '',
+      company_id: this.lead.company_id || '',
+      status: this.lead.status,
+      lead_source: this.lead.lead_source || '',
+      notes: this.lead.notes || '',
+      assigned_to: this.lead.assigned_to || '',
+      value: this.lead.value || null,
+      probability: this.lead.probability || null,
+      expected_close_date: this.lead.expected_close_date ? 
+        this.formatDateForInput(new Date(this.lead.expected_close_date)) : ''
+    });
+  }
+  
+  formatDateForInput(date: Date): string {
+    // Format date as YYYY-MM-DD for input[type="date"]
+    return date.toISOString().split('T')[0];
+  }
+
+  onSubmit(): void {
+    if (this.leadForm.invalid) {
+      // Mark all fields as touched to trigger validation messages
+      Object.keys(this.leadForm.controls).forEach(key => {
+        const control = this.leadForm.get(key);
+        control?.markAsTouched();
+      });
+      return;
+    }
+
+    this.isSubmitting = true;
+    const formData = this.leadForm.value;
+    
+    let saveOperation: Observable<Lead>;
+    
+    if (this.lead) {
+      // Update existing lead
+      saveOperation = this.leadService.updateLead(this.lead.id, formData);
+    } else {
+      // Create new lead
+      saveOperation = this.leadService.createLead(formData);
+    }
+    
+    saveOperation.subscribe({
+      next: (result) => {
+        this.isSubmitting = false;
+        this.dialogClose.emit(result);
+      },
+      error: (error) => {
+        console.error('Error saving lead:', error);
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  close(result?: any): void {
+    this.dialogClose.emit(result);
+  }
+  
+  // Get formatted user display name
+  getUserDisplayName(userId: string): string {
+    const user = this.users.find(u => u.id === userId);
+    if (!user) return 'Unknown User';
+    
+    return user.full_name || user.email;
+  }
+  
+  // Get control error state
+  isInvalid(controlName: string): boolean {
+    const control = this.leadForm.get(controlName);
+    return !!control && control.invalid && control.touched;
+  }
+  
+  // Get control error message
+  getErrorMessage(controlName: string): string {
+    const control = this.leadForm.get(controlName);
+    if (!control) return '';
+    
+    if (control.errors?.['required']) {
+      return 'This field is required';
+    }
+    
+    if (control.errors?.['email']) {
+      return 'Please enter a valid email';
+    }
+    
+    if (control.errors?.['min']) {
+      return `Value must be at least ${control.errors['min'].min}`;
+    }
+    
+    if (control.errors?.['max']) {
+      return `Value must be at most ${control.errors['max'].max}`;
+    }
+    
+    return 'Invalid value';
+  }
+  
+  // Handle probability change when status changes
+  onStatusChange(event: Event): void {
+    const status = (event.target as HTMLSelectElement).value;
+    const probabilityControl = this.leadForm.get('probability');
+    
+    if (!probabilityControl) return;
+    
+    // Set probability based on status
+    switch (status) {
+      case 'New':
+        probabilityControl.setValue(10);
+        break;
+      case 'Contacted':
+        probabilityControl.setValue(20);
+        break;
+      case 'Qualified':
+        probabilityControl.setValue(40);
+        break;
+      case 'Proposal':
+        probabilityControl.setValue(60);
+        break;
+      case 'Negotiation':
+        probabilityControl.setValue(80);
+        break;
+      case 'Won':
+        probabilityControl.setValue(100);
+        break;
+      case 'Lost':
+        probabilityControl.setValue(0);
+        break;
+    }
+  }
+}

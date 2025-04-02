@@ -1,0 +1,84 @@
+// src/app/features/leads/lead-form-dialog/lead-form-dialog.component.scss
+
+// Dialog animation
+:host {
+    display: block;
+    
+    .fixed {
+      animation: fadeIn 0.2s ease-out;
+    }
+    
+    .relative {
+      animation: slideUp 0.3s ease-out;
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  // Custom styling for range input
+  input[type="range"] {
+    height: 0.5rem;
+    background: #e5e5e5;
+    border-radius: 0.25rem;
+    appearance: none;
+    margin-top: 0.75rem;
+    
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 1rem;
+      height: 1rem;
+      background: #44403c;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      
+      &:hover {
+        background: #57534e;
+        transform: scale(1.1);
+      }
+    }
+    
+    &::-moz-range-thumb {
+      width: 1rem;
+      height: 1rem;
+      background: #44403c;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease-in-out;
+      
+      &:hover {
+        background: #57534e;
+        transform: scale(1.1);
+      }
+    }
+  }
+  
+  // Dialog backdrop for mobile
+  @media (max-width: 640px) {
+    .fixed {
+      padding: 0.5rem;
+    }
+    
+    .max-h-screen {
+      max-height: 90vh;
+    }
+  }

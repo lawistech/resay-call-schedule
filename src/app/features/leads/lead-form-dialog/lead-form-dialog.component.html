@@ -1,0 +1,218 @@
+<!-- src/app/features/leads/lead-form-dialog/lead-form-dialog.component.html -->
+<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-screen overflow-hidden" (click)="$event.stopPropagation()">
+      <!-- Dialog header -->
+      <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between">
+        <h3 class="text-lg font-medium text-stone-900">{{ lead ? 'Edit Lead' : 'Add New Lead' }}</h3>
+        <button (click)="close()" class="text-stone-400 hover:text-stone-500 focus:outline-none rounded-full p-1 hover:bg-stone-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Dialog body -->
+      <div class="px-6 py-4 overflow-y-auto max-h-[calc(100vh-12rem)]">
+        <form [formGroup]="leadForm" (ngSubmit)="onSubmit()">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Left column -->
+            <div class="space-y-6">
+              <!-- Name -->
+              <div>
+                <label for="name" class="block text-sm font-medium text-stone-700">Name <span class="text-red-500">*</span></label>
+                <input 
+                  type="text" 
+                  id="name" 
+                  formControlName="name" 
+                  class="mt-1 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                  placeholder="Enter lead name"
+                  [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('name')}"
+                >
+                <p *ngIf="isInvalid('name')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('name') }}</p>
+              </div>
+              
+              <!-- Email -->
+              <div>
+                <label for="email" class="block text-sm font-medium text-stone-700">Email <span class="text-red-500">*</span></label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  formControlName="email" 
+                  class="mt-1 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                  placeholder="Enter email address"
+                  [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('email')}"
+                >
+                <p *ngIf="isInvalid('email')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('email') }}</p>
+              </div>
+              
+              <!-- Phone -->
+              <div>
+                <label for="phone" class="block text-sm font-medium text-stone-700">Phone</label>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  formControlName="phone" 
+                  class="mt-1 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                  placeholder="Enter phone number"
+                  [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('phone')}"
+                >
+                <p *ngIf="isInvalid('phone')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('phone') }}</p>
+              </div>
+              
+              <!-- Company -->
+              <div>
+                <label for="company_id" class="block text-sm font-medium text-stone-700">Company</label>
+                <select 
+                  id="company_id" 
+                  formControlName="company_id"
+                  class="mt-1 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                  [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('company_id')}"
+                >
+                  <option value="">-- Select Company --</option>
+                  <option *ngFor="let company of companies" [value]="company.id">{{ company.name }}</option>
+                </select>
+                <p *ngIf="isInvalid('company_id')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('company_id') }}</p>
+              </div>
+              
+              <!-- Source -->
+              <div>
+                <label for="lead_source" class="block text-sm font-medium text-stone-700">Lead Source <span class="text-red-500">*</span></label>
+                <select 
+                  id="lead_source" 
+                  formControlName="lead_source"
+                  class="mt-1 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                  [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('lead_source')}"
+                >
+                  <option value="">-- Select Source --</option>
+                  <option *ngFor="let source of sourceOptions" [value]="source">{{ source }}</option>
+                </select>
+                <p *ngIf="isInvalid('lead_source')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('lead_source') }}</p>
+              </div>
+              
+              <!-- Assigned To -->
+              <div>
+                <label for="assigned_to" class="block text-sm font-medium text-stone-700">Assigned To</label>
+                <select 
+                  id="assigned_to" 
+                  formControlName="assigned_to"
+                  class="mt-1 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                  [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('assigned_to')}"
+                >
+                  <option value="">-- Select User --</option>
+                  <option *ngFor="let user of users" [value]="user.id">{{ user.full_name || user.email }}</option>
+                </select>
+                <p *ngIf="isInvalid('assigned_to')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('assigned_to') }}</p>
+              </div>
+            </div>
+            
+            <!-- Right column -->
+            <div class="space-y-6">
+              <!-- Status -->
+              <div>
+                <label for="status" class="block text-sm font-medium text-stone-700">Status <span class="text-red-500">*</span></label>
+                <select 
+                  id="status" 
+                  formControlName="status"
+                  (change)="onStatusChange($event)"
+                  class="mt-1 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                  [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('status')}"
+                >
+                  <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+                </select>
+                <p *ngIf="isInvalid('status')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('status') }}</p>
+              </div>
+              
+              <!-- Value -->
+              <div>
+                <label for="value" class="block text-sm font-medium text-stone-700">Value</label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-stone-500 sm:text-sm">£</span>
+                  </div>
+                  <input 
+                    type="number" 
+                    id="value" 
+                    formControlName="value" 
+                    class="pl-7 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                    placeholder="0.00"
+                    [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('value')}"
+                  >
+                </div>
+                <p *ngIf="isInvalid('value')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('value') }}</p>
+              </div>
+              
+              <!-- Probability -->
+              <div>
+                <label for="probability" class="block text-sm font-medium text-stone-700">
+                  Probability (%)
+                  <span class="text-stone-500 text-xs ml-1">{{ leadForm.get('probability')?.value || 0 }}%</span>
+                </label>
+                <input 
+                  type="range" 
+                  id="probability" 
+                  formControlName="probability" 
+                  class="mt-1 block w-full accent-stone-600"
+                  min="0"
+                  max="100"
+                  step="5"
+                >
+                <p *ngIf="isInvalid('probability')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('probability') }}</p>
+              </div>
+              
+              <!-- Expected Close Date -->
+              <div>
+                <label for="expected_close_date" class="block text-sm font-medium text-stone-700">Expected Close Date</label>
+                <input 
+                  type="date" 
+                  id="expected_close_date" 
+                  formControlName="expected_close_date" 
+                  class="mt-1 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                  [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('expected_close_date')}"
+                >
+                <p *ngIf="isInvalid('expected_close_date')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('expected_close_date') }}</p>
+              </div>
+              
+              <!-- Notes -->
+              <div>
+                <label for="notes" class="block text-sm font-medium text-stone-700">Notes</label>
+                <textarea 
+                  id="notes" 
+                  formControlName="notes" 
+                  rows="4"
+                  class="mt-1 block w-full rounded-md border-stone-300 shadow-sm focus:border-stone-500 focus:ring-stone-500 sm:text-sm"
+                  placeholder="Enter any additional notes about this lead"
+                  [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isInvalid('notes')}"
+                ></textarea>
+                <p *ngIf="isInvalid('notes')" class="mt-1 text-sm text-red-600">{{ getErrorMessage('notes') }}</p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Dialog footer -->
+      <div class="px-6 py-4 border-t border-stone-200 flex justify-end space-x-3">
+        <button 
+          type="button" 
+          (click)="close()" 
+          class="px-4 py-2 bg-white border border-stone-300 rounded-md text-sm font-medium text-stone-700 hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500"
+        >
+          Cancel
+        </button>
+        <button 
+          type="button" 
+          (click)="onSubmit()" 
+          [disabled]="leadForm.invalid || isSubmitting"
+          class="px-4 py-2 bg-stone-800 rounded-md text-sm font-medium text-white hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 flex items-center disabled:bg-stone-400 disabled:cursor-not-allowed"
+        >
+          <span *ngIf="isSubmitting" class="mr-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </span>
+          {{ lead ? 'Update Lead' : 'Create Lead' }}
+        </button>
+      </div>
+    </div>
+  </div>
