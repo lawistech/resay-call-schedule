@@ -4,6 +4,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 import { CallActiveGuard } from './core/guards/call-active.guard';
 import { TaskBoardComponent } from './features/tasks/task-board/task-board.component';
 import { MyTasksComponent } from './features/tasks/my-tasks/my-tasks.component';
+import { TaskCalendarPageComponent } from './features/tasks/task-calendar-page/task-calendar-page.component';
 import { LeadsComponent } from './features/leads/leads.component';
 import { OpportunitiesComponent } from './features/opportunities/opportunities.component';
 import { PipelineKanbanComponent } from './features/opportunities/pipeline-kanban/pipeline-kanban.component';
@@ -69,9 +70,8 @@ export const routes: Routes = [
       },
       {
         path: 'calendar',
-        component: TaskBoardComponent, // You can create a dedicated component later
-        canActivate: [AuthGuard],
-        data: { view: 'calendar' }
+        component: TaskCalendarPageComponent, // Using our new dedicated component
+        canActivate: [AuthGuard]
       }
     ]
   },

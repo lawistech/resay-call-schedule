@@ -1,0 +1,302 @@
+<!-- src/app/features/tasks/task-calendar-page/task-calendar-page.component.html -->
+<div class="flex flex-col h-full bg-indigo-50">
+  <!-- Header Section -->
+  <header class="px-6 pt-6 pb-4 bg-indigo-50">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-serif font-bold text-indigo-900">Task Calendar</h1>
+        <p class="text-indigo-700 mt-1">Manage and schedule your tasks with a visual calendar</p>
+      </div>
+      
+      <button 
+        (click)="createTaskForSelectedDate()" 
+        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md flex items-center shadow-lg transition-all"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Task
+      </button>
+    </div>
+
+    <!-- Task View Mode Switcher -->
+    <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
+      <div class="bg-white rounded-lg p-1 flex shadow-sm">
+        <button
+          (click)="changeTaskViewMode('all')"
+          [class.bg-indigo-100]="taskViewMode === 'all'"
+          [class.text-indigo-800]="taskViewMode === 'all'"
+          class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          All Tasks
+        </button>
+        <button
+          (click)="changeTaskViewMode('my-tasks')"
+          [class.bg-indigo-100]="taskViewMode === 'my-tasks'"
+          [class.text-indigo-800]="taskViewMode === 'my-tasks'"
+          class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          My Tasks
+        </button>
+        <button
+          (click)="changeTaskViewMode('team-tasks')"
+          [class.bg-indigo-100]="taskViewMode === 'team-tasks'"
+          [class.text-indigo-800]="taskViewMode === 'team-tasks'"
+          class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          Team Tasks
+        </button>
+      </div>
+
+      <!-- Quick Filters -->
+      <div class="flex gap-2 items-center">
+        <div class="relative">
+          <select 
+            [(ngModel)]="priorityFilter" 
+            (change)="applyFilters()"
+            class="appearance-none pl-3 pr-8 py-2 rounded-md border border-slate-300 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          >
+            <option value="all">All Priorities</option>
+            <option value="high">High Priority</option>
+            <option value="medium">Medium Priority</option>
+            <option value="low">Low Priority</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+            <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+        
+        <div class="relative">
+          <select 
+            [(ngModel)]="statusFilter" 
+            (change)="applyFilters()"
+            class="appearance-none pl-3 pr-8 py-2 rounded-md border border-slate-300 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          >
+            <option value="all">All Statuses</option>
+            <option value="todo">To Do</option>
+            <option value="inProgress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+            <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+        
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="applyFilters()"
+            placeholder="Search tasks..."
+            class="pl-10 pr-3 py-2 rounded-md border border-slate-300 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <button 
+            *ngIf="searchTerm" 
+            (click)="clearSearch()" 
+            class="absolute inset-y-0 right-0 flex items-center pr-3"
+          >
+            <svg class="h-4 w-4 text-slate-400 hover:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <button 
+          *ngIf="hasActiveFilters()"
+          (click)="clearAllFilters()"
+          class="text-indigo-700 text-sm hover:text-indigo-900 hover:underline flex items-center"
+        >
+          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear All
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Large Calendar View (70% width) -->
+    <div class="w-8/12 p-4">
+      <!-- Calendar Controls -->
+      <div class="bg-white rounded-t-lg shadow-sm p-4 border-b border-slate-200">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-medium text-slate-800">
+            {{ selectedDate | date:'MMMM yyyy' }}
+          </h2>
+          <div class="flex space-x-2">
+            <button class="p-2 rounded-full hover:bg-indigo-100 text-indigo-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
+            <button class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-md text-sm font-medium">
+              Today
+            </button>
+            <div class="flex rounded-md shadow-sm">
+              <button class="bg-white border border-r-0 border-slate-300 rounded-l-md p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button class="bg-white border border-slate-300 rounded-r-md p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Component -->
+      <div class="bg-white rounded-b-lg shadow-sm overflow-hidden h-[calc(100%-4rem)]">
+        <app-task-calendar 
+          [tasks]="filteredTasks" 
+          (viewTask)="viewTaskDetails($event)"
+        ></app-task-calendar>
+      </div>
+    </div>
+
+    <!-- Task List for Selected Day (30% width) -->
+    <div class="w-4/12 p-4">
+      <div class="bg-white rounded-lg shadow-sm h-full flex flex-col">
+        <!-- Selected Date Header -->
+        <div class="p-4 border-b border-slate-200">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-xl font-medium text-slate-800">
+                {{ selectedDate | date:'MMM d, yyyy' }}
+              </h3>
+              <p class="text-slate-500 text-sm">
+                {{ selectedDateTasks.length }} task{{ selectedDateTasks.length !== 1 ? 's' : '' }} for this day
+              </p>
+            </div>
+            <button 
+              (click)="createTaskForSelectedDate()" 
+              class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-2"
+              title="Add task for this date"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Task List for Selected Date -->
+        <div class="flex-grow overflow-auto p-2">
+          <div *ngIf="isLoading" class="flex justify-center items-center h-full">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-700"></div>
+          </div>
+          
+          <div *ngIf="!isLoading && selectedDateTasks.length === 0" class="flex flex-col items-center justify-center h-full text-center p-6">
+            <div class="bg-indigo-50 rounded-full p-4 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-700 mb-2">No tasks scheduled</h3>
+            <p class="text-slate-500 mb-4">There are no tasks scheduled for this date.</p>
+            <button 
+              (click)="createTaskForSelectedDate()" 
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Task
+            </button>
+          </div>
+          
+          <div *ngIf="!isLoading && selectedDateTasks.length > 0" class="space-y-3">
+            <div 
+              *ngFor="let task of selectedDateTasks" 
+              class="task-card bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 cursor-pointer"
+              (click)="viewTaskDetails(task)"
+            >
+              <!-- Task Status Indicator -->
+              <div class="flex items-center mb-3">
+                <div class="w-2 h-2 rounded-full mr-2" [ngClass]="getStatusClass(task.status)"></div>
+                <span class="text-xs font-medium uppercase tracking-wide text-slate-500">
+                  {{ getStatusDisplay(task.status) }}
+                </span>
+              </div>
+              
+              <!-- Task Title -->
+              <h4 class="text-lg font-medium text-slate-800 mb-2">{{ task.title }}</h4>
+              
+              <!-- Task Description (truncated) -->
+              <p *ngIf="task.description" class="text-sm text-slate-500 mb-3 line-clamp-2">
+                {{ task.description }}
+              </p>
+              
+              <!-- Task Meta Info -->
+              <div class="flex justify-between items-center text-sm">
+                <!-- Priority Badge -->
+                <span 
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                  [ngClass]="getPriorityClass(task.priority)"
+                >
+                  {{ task.priority | titlecase }} Priority
+                </span>
+                
+                <!-- Assigned To -->
+                <span *ngIf="isAssignedToUser(task)" class="text-indigo-600 font-medium">
+                  Assigned to you
+                </span>
+                
+                <!-- Edit Button -->
+                <button 
+                  (click)="editTask(task); $event.stopPropagation();" 
+                  class="text-slate-400 hover:text-indigo-600"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Form Modal -->
+  <div
+    *ngIf="showTaskForm"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+  >
+    <app-task-form
+      [task]="currentTask"
+      (taskSaved)="onTaskSaved($event)"
+      (closeForm)="closeTaskForm()"
+    >
+    </app-task-form>
+  </div>
+
+  <!-- Task Details Modal -->
+  <div
+    *ngIf="showTaskDetails"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+  >
+    <app-task-details
+      [task]="selectedTask"
+      (close)="closeTaskDetails()"
+      (editTask)="editTaskFromDetails($event)"
+      (deleteTask)="deleteTask(selectedTask?.id || '')"
+    >
+    </app-task-details>
+  </div>
+</div>
