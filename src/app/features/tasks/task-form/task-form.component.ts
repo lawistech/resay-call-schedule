@@ -7,6 +7,7 @@ import { Task } from '../../../core/models/task.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { FileUploadService } from '../../../core/services/file-upload.service';
+import { SupabaseService } from '../../../core/services/supabase.service';
 import { firstValueFrom, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -19,6 +20,12 @@ interface UploadedFile {
   progress: number;
   uploaded?: boolean;
   url?: string;
+}
+
+interface UserProfile {
+  id: string;
+  displayName: string;
+  email: string;
 }
 
 @Component({
@@ -44,21 +51,56 @@ export class TaskFormComponent implements OnInit {
   // Multi-step form
   formSteps = ['Basic Info', 'Details', 'Attachments'];
   currentStep = 0;
+
+  // User assignment
+  currentUserId: string | null = null;
+  users: UserProfile[] = [];
   
   constructor(
     private fb: FormBuilder,
     private taskService: TaskService,
     private authService: AuthService,
     private notificationService: NotificationService,
-    private fileUploadService: FileUploadService
+    private fileUploadService: FileUploadService,
+    private supabaseService: SupabaseService
   ) { }
 
   ngOnInit(): void {
     this.initForm();
     
+    // Get current user
+    const currentUser = this.authService.getCurrentUser();
+    this.currentUserId = currentUser?.id || null;
+    
+    // Load team members
+    this.loadTeamMembers();
+    
     if (this.task) {
       this.patchFormWithTaskData();
       this.loadTaskAttachments();
+    }
+  }
+
+  private async loadTeamMembers() {
+    try {
+      const { data, error } = await this.supabaseService.supabaseClient
+        .from('profiles')
+        .select('id, email, full_name')
+        .neq('id', this.currentUserId || '')
+        .order('full_name');
+        
+      if (error) {
+        throw error;
+      }
+      
+      this.users = data.map(user => ({
+        id: user.id,
+        displayName: user.full_name || user.email,
+        email: user.email
+      }));
+    } catch (error) {
+      console.error('Error loading team members:', error);
+      this.notificationService.error('Failed to load team members');
     }
   }
   
@@ -73,7 +115,8 @@ export class TaskFormComponent implements OnInit {
       description: [''],
       status: ['todo', Validators.required],
       priority: ['medium', Validators.required],
-      dueDate: ['']
+      dueDate: [''],
+      assignedTo: [null] // New field for task assignment
     });
   }
   
@@ -86,6 +129,7 @@ export class TaskFormComponent implements OnInit {
       status: this.task.status,
       priority: this.task.priority,
       dueDate: this.task.dueDate ? this.formatDateForInput(this.task.dueDate) : '',
+      assignedTo: this.task.assignedTo || null
     });
     
     // Set tags
@@ -345,6 +389,7 @@ export class TaskFormComponent implements OnInit {
       priority: formValue.priority,
       dueDate: formValue.dueDate ? new Date(formValue.dueDate) : undefined,
       tags: this.tags,
+      assignedTo: formValue.assignedTo, // Include the assignedTo field
       attachments: this.uploadedFiles
         .filter(file => file.uploaded && file.id)
         .map(file => file.id as string)

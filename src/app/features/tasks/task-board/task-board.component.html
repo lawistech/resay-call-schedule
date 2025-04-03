@@ -17,6 +17,34 @@
           <h1 class="text-2xl font-serif font-bold text-stone-800 mr-4">
             Tasks
           </h1>
+          
+          <!-- Task View Mode Switcher -->
+          <div class="bg-stone-100 rounded-lg p-1 flex">
+            <button
+              (click)="changeTaskViewMode('all')"
+              [class.bg-white]="taskViewMode === 'all'"
+              [class.shadow]="taskViewMode === 'all'"
+              class="px-3 py-1 rounded-md text-sm font-medium transition"
+            >
+              All
+            </button>
+            <button
+              (click)="changeTaskViewMode('my-tasks')"
+              [class.bg-white]="taskViewMode === 'my-tasks'"
+              [class.shadow]="taskViewMode === 'my-tasks'"
+              class="px-3 py-1 rounded-md text-sm font-medium transition"
+            >
+              My Tasks
+            </button>
+            <button
+              (click)="changeTaskViewMode('team-tasks')"
+              [class.bg-white]="taskViewMode === 'team-tasks'"
+              [class.shadow]="taskViewMode === 'team-tasks'"
+              class="px-3 py-1 rounded-md text-sm font-medium transition"
+            >
+              Team Tasks
+            </button>
+          </div>
         </div>
         <button
           (click)="createTask()"
@@ -124,7 +152,65 @@
             </svg>
           </button>
         </div>
-        <!-- Other active filters... -->
+        
+        <div
+          *ngIf="priorityFilter !== 'all'"
+          class="inline-flex items-center px-3 py-1 bg-stone-200 text-stone-700 rounded-full text-sm"
+        >
+          Priority: {{ priorityFilter | titlecase }}
+          <button
+            (click)="clearPriorityFilter()"
+            class="ml-2 text-stone-500 hover:text-stone-700"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        
+        <div
+          *ngIf="searchTerm !== ''"
+          class="inline-flex items-center px-3 py-1 bg-stone-200 text-stone-700 rounded-full text-sm"
+        >
+          Search: "{{ searchTerm }}"
+          <button
+            (click)="clearSearch()"
+            class="ml-2 text-stone-500 hover:text-stone-700"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        
+        <button
+          (click)="clearAllFilters()"
+          class="inline-flex items-center px-3 py-1 bg-stone-800 text-white rounded-full text-sm hover:bg-stone-700"
+        >
+          Clear all filters
+        </button>
       </div>
 
       <!-- Loading state -->
@@ -278,6 +364,20 @@
                 {{ task.title }}
               </h3>
 
+              <!-- Assignment badge -->
+              <div *ngIf="task.assignedTo" class="mb-2 flex items-center text-xs text-stone-600">
+                <span class="inline-flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  {{ isAssignedToUser(task) ? 'Assigned to me' : 'Assigned to team member' }}
+                </span>
+                <span *ngIf="task.assignedTo === currentUserId" 
+                      class="ml-2 bg-purple-100 text-purple-700 text-xs px-1.5 py-0.5 rounded">
+                  Me
+                </span>
+              </div>
+
               <div
                 *ngIf="task.dueDate"
                 class="flex items-center text-xs text-stone-500 mb-2"
@@ -420,6 +520,20 @@
                 {{ task.title }}
               </h3>
 
+              <!-- Assignment badge -->
+              <div *ngIf="task.assignedTo" class="mb-2 flex items-center text-xs text-stone-600">
+                <span class="inline-flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  {{ isAssignedToUser(task) ? 'Assigned to me' : 'Assigned to team member' }}
+                </span>
+                <span *ngIf="task.assignedTo === currentUserId" 
+                      class="ml-2 bg-purple-100 text-purple-700 text-xs px-1.5 py-0.5 rounded">
+                  Me
+                </span>
+              </div>
+
               <div
                 *ngIf="task.dueDate"
                 class="flex items-center text-xs text-stone-500 mb-2"
@@ -561,6 +675,20 @@
                 {{ task.title }}
               </h3>
 
+              <!-- Assignment badge -->
+              <div *ngIf="task.assignedTo" class="mb-2 flex items-center text-xs text-stone-600">
+                <span class="inline-flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  {{ isAssignedToUser(task) ? 'Completed by me' : 'Completed by team member' }}
+                </span>
+                <span *ngIf="task.assignedTo === currentUserId" 
+                      class="ml-2 bg-purple-100 text-purple-700 text-xs px-1.5 py-0.5 rounded">
+                  Me
+                </span>
+              </div>
+
               <div
                 *ngIf="task.dueDate"
                 class="flex items-center text-xs text-stone-500 mb-2"
@@ -568,16 +696,8 @@
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-3 w-3 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
                 </svg>
                 {{ task.dueDate | date : "MMM d" }}
               </div>
@@ -603,7 +723,7 @@
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      stroke-width="2"
+                      stroke-width="2" 
                       d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                     />
                   </svg>
@@ -612,7 +732,105 @@
             </div>
             <!-- Placeholder when column is empty -->
             <div *ngIf="completedTasks.length === 0" class="text-center p-4 text-stone-400 text-sm">
-              Drag a task here to mark as completed
+              Drag a task here when completed
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- List view when viewing filtered tasks -->
+      <div 
+        *ngIf="!isLoading && filteredTasks.length > 0 && statusFilter !== 'all'"
+        class="bg-white rounded-lg shadow-sm overflow-hidden"
+      >
+        <!-- Task list header -->
+        <div class="grid grid-cols-12 bg-stone-100 px-4 py-2 border-b border-stone-200 text-sm font-medium text-stone-600">
+          <div class="col-span-5">Task</div>
+          <div class="col-span-2">Status</div>
+          <div class="col-span-2">Priority</div>
+          <div class="col-span-2">Due Date</div>
+          <div class="col-span-1">Actions</div>
+        </div>
+        
+        <!-- Task list rows -->
+        <div class="divide-y divide-stone-100">
+          <div *ngFor="let task of filteredTasks" class="grid grid-cols-12 px-4 py-3 hover:bg-stone-50 items-center">
+            <!-- Task title and assigned to -->
+            <div class="col-span-5">
+              <div 
+                class="font-medium text-stone-800 hover:text-blue-600 cursor-pointer"
+                (click)="viewTaskDetails(task)"
+              >
+                {{ task.title }}
+              </div>
+              
+              <div *ngIf="task.assignedTo" class="mt-1 text-xs text-stone-500 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span class="mr-1">{{ isAssignedToUser(task) ? 'Assigned to me' : 'Assigned to team' }}</span>
+                <span *ngIf="task.assignedTo === currentUserId" 
+                      class="bg-purple-100 text-purple-700 text-xs px-1 py-0.5 rounded">Me</span>
+              </div>
+            </div>
+            
+            <!-- Status -->
+            <div class="col-span-2">
+              <span [class]="getStatusBadgeClass(task.status)">
+                <span class="w-2 h-2 rounded-full mr-1" [class]="getStatusClass(task.status)"></span>
+                {{ getStatusDisplay(task.status) }}
+              </span>
+            </div>
+            
+            <!-- Priority -->
+            <div class="col-span-2">
+              <span [class]="'text-xs font-medium px-2 py-1 rounded ' + getPriorityClass(task.priority)">
+                {{ task.priority | titlecase }}
+              </span>
+            </div>
+            
+            <!-- Due date -->
+            <div class="col-span-2">
+              <div *ngIf="task.dueDate" class="flex items-center text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span [class]="isOverdue(task.dueDate) ? 'text-rose-600' : 'text-stone-600'">
+                  {{ task.dueDate | date: 'MMM d, y' }}
+                </span>
+              </div>
+              <div *ngIf="!task.dueDate" class="text-sm text-stone-400">Not set</div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="col-span-1 flex justify-end space-x-2">
+              <button 
+                (click)="viewTaskDetails(task)"
+                class="text-stone-500 hover:text-blue-600"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+              
+              <button 
+                (click)="editTask(task)"
+                class="text-stone-500 hover:text-amber-600"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              
+              <button 
+                (click)="deleteTask(task.id)"
+                class="text-stone-500 hover:text-rose-600"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { CallActiveGuard } from './core/guards/call-active.guard';
 import { TaskBoardComponent } from './features/tasks/task-board/task-board.component';
+import { MyTasksComponent } from './features/tasks/my-tasks/my-tasks.component';
 import { LeadsComponent } from './features/leads/leads.component';
 import { OpportunitiesComponent } from './features/opportunities/opportunities.component';
 import { PipelineKanbanComponent } from './features/opportunities/pipeline-kanban/pipeline-kanban.component';
@@ -49,8 +50,30 @@ export const routes: Routes = [
   },
   {
     path: 'tasks',
-    component: TaskBoardComponent,
-    canActivate: [AuthGuard],
+    children: [
+      {
+        path: '',
+        component: TaskBoardComponent,
+        canActivate: [AuthGuard]
+      },
+      {
+        path: 'my-tasks',
+        component: MyTasksComponent,
+        canActivate: [AuthGuard]
+      },
+      {
+        path: 'team-tasks',
+        component: TaskBoardComponent, // You can create a dedicated component later
+        canActivate: [AuthGuard],
+        data: { filter: 'team-tasks' }
+      },
+      {
+        path: 'calendar',
+        component: TaskBoardComponent, // You can create a dedicated component later
+        canActivate: [AuthGuard],
+        data: { view: 'calendar' }
+      }
+    ]
   },
   {
     path: 'leads',
@@ -66,69 +89,6 @@ export const routes: Routes = [
     path: 'pipeline',
     component: PipelineKanbanComponent,
     canActivate: [AuthGuard]
-  },
-  // Ecommerce routes
-  // {
-  //   path: 'products',
-  //   canActivate: [AuthGuard],
-  //   loadChildren: () => import('./features/ecommerce/products/products.module').then(m => m.ProductsModule)
-  // },
-  // {
-  //   path: 'categories',
-  //   canActivate: [AuthGuard],
-  //   loadChildren: () => import('./features/ecommerce/categories/categories.module').then(m => m.CategoriesModule)
-  // },
-  // {
-  //   path: 'orders',
-  //   canActivate: [AuthGuard],
-  //   loadChildren: () => import('./features/ecommerce/orders/orders.module').then(m => m.OrdersModule)
-  // },
-  // {
-  //   path: 'inventory',
-  //   canActivate: [AuthGuard],
-  //   loadChildren: () => import('./features/ecommerce/inventory/inventory.module').then(m => m.InventoryModule)
-  // },
-  // {
-  //   path: 'discounts',
-  //   canActivate: [AuthGuard],
-  //   loadChildren: () => import('./features/ecommerce/discounts/discounts.module').then(m => m.DiscountsModule)
-  // },
-  // {
-  //   path: 'customers',
-  //   canActivate: [AuthGuard],
-  //   loadChildren: () => import('./features/ecommerce/customers/customers.module').then(m => m.CustomersModule)
-  // },
-
-  // src/app/app.routes.ts
-// Update the existing tasks route with these routes:
-
-  {
-    path: 'tasks',
-    children: [
-      {
-        path: '',
-        component: TaskBoardComponent,
-        canActivate: [AuthGuard]
-      },
-      {
-        path: 'my-tasks',
-        component: TaskBoardComponent, // You can create a dedicated component later
-        canActivate: [AuthGuard],
-        data: { filter: 'my-tasks' }
-      },
-      {
-        path: 'team-tasks',
-        component: TaskBoardComponent, // You can create a dedicated component later
-        canActivate: [AuthGuard],
-        data: { filter: 'team-tasks' }
-      },
-      {
-        path: 'calendar',
-        component: TaskBoardComponent, // You can create a dedicated component later
-        canActivate: [AuthGuard],
-        data: { view: 'calendar' }
-      }
-    ]
   },
   {
     path: '**',

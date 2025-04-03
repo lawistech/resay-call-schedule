@@ -66,10 +66,10 @@
         </div>
         
         <!-- Tags -->
-        <div *ngIf="task?.tags && task!.tags.length > 0">
-          <h3 class="text-sm font-medium text-stone-700 mb-2">Tags</h3>
+        <div *ngIf="task && task.tags && task.tags.length > 0">
+             <h3 class="text-sm font-medium text-stone-700 mb-2">Tags</h3>
           <div class="flex flex-wrap gap-2">
-            <span *ngFor="let tag of task!.tags" class="bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded">
+            <span *ngFor="let tag of task.tags" class="bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded">
               {{ tag }}
             </span>
           </div>

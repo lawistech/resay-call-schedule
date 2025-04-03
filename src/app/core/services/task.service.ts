@@ -61,6 +61,100 @@ export class TaskService {
     );
   }
 
+  // Get tasks assigned to the current user
+  getMyTasks(): Observable<Task[]> {
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (!currentUser) {
+      return throwError(() => new Error('User must be logged in to fetch assigned tasks'));
+    }
+    
+    return from(this.supabaseService.supabaseClient
+      .from('tasks')
+      .select('*, contacts(*), calls(*)')
+      .eq('assigned_to', currentUser.id)
+      .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data.map(task => this.formatTaskFromDatabase(task));
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to fetch your tasks: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Get tasks created by the current user
+  getTasksCreatedByMe(): Observable<Task[]> {
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (!currentUser) {
+      return throwError(() => new Error('User must be logged in to fetch created tasks'));
+    }
+    
+    return from(this.supabaseService.supabaseClient
+      .from('tasks')
+      .select('*, contacts(*), calls(*)')
+      .eq('created_by', currentUser.id)
+      .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data.map(task => this.formatTaskFromDatabase(task));
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to fetch tasks created by you: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Get tasks for the team (not assigned to the current user)
+  getTeamTasks(): Observable<Task[]> {
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (!currentUser) {
+      return throwError(() => new Error('User must be logged in to fetch team tasks'));
+    }
+    
+    return from(this.supabaseService.supabaseClient
+      .from('tasks')
+      .select('*, contacts(*), calls(*)')
+      .neq('assigned_to', currentUser.id)
+      .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data.map(task => this.formatTaskFromDatabase(task));
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to fetch team tasks: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Get tasks assigned to a specific user by ID
+  getTasksAssignedToUser(userId: string): Observable<Task[]> {
+    return from(this.supabaseService.supabaseClient
+      .from('tasks')
+      .select('*, contacts(*), calls(*)')
+      .eq('assigned_to', userId)
+      .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data.map(task => this.formatTaskFromDatabase(task));
+      }),
+      catchError((error: Error) => {
+        this.notificationService.error(`Failed to fetch assigned tasks: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
   getTaskById(id: string): Observable<Task> {
     return from(this.supabaseService.supabaseClient
       .from('tasks')
@@ -171,9 +265,7 @@ export class TaskService {
 
   // Helper methods to convert between camelCase (TypeScript) and snake_case (PostgreSQL)
   private formatTaskForDatabase(task: any): any {
-
     const { attachments, ...taskWithoutAttachments } = task;
-
     
     return {
       title: task.title,
@@ -201,6 +293,7 @@ export class TaskService {
       tags: task.tags || [],
       attachments: task.attachments || [],
       createdBy: task.created_by,
+      assignedTo: task.assigned_to,
       createdAt: new Date(task.created_at),
       updatedAt: new Date(task.updated_at)
     };

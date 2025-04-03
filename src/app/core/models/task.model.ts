@@ -2,16 +2,16 @@
 export interface Task {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   status: 'todo' | 'inProgress' | 'completed';
   priority: 'low' | 'medium' | 'high';
   dueDate?: Date;
-  tags: string[];
-  attachments?: string[]; // Array of file attachment IDs
-  completed?: boolean;
-  createdBy?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  tags?: string[];
+  attachments?: string[];
+  assignedTo?: string; // User ID of assignee
+  createdBy?: string;  // User ID of creator
 }
 
 // Used for creating a new task (without the server-generated fields)

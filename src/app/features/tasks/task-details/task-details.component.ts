@@ -8,11 +8,12 @@ import { Comment } from '../../../core/models/comment.model';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { firstValueFrom } from 'rxjs';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-task-details',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule,RouterModule],
   templateUrl: './task-details.component.html',
   styleUrls: ['./task-details.component.scss']
 })
