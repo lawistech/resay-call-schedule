@@ -1,0 +1,57 @@
+/* Kanban board styling */
+.cdk-drag-preview {
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border-radius: 0.5rem;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms ease;
+}
+
+.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+  transition: transform 250ms ease;
+}
+
+/* Task card hover effects */
+.task-card {
+  transition: all 0.2s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Custom scrollbar for task columns */
+.task-column {
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.task-column::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-column::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 20px;
+}
+
+.task-column::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 20px;
+}
+
+/* Assignee avatar styling */
+.assignee-avatar {
+  transition: transform 0.2s ease;
+}
+
+.assignee-avatar:hover {
+  transform: scale(1.1);
+}
