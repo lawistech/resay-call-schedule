@@ -9,11 +9,19 @@ import { DateUtilsService } from '../../../core/services/date-utils.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { format } from 'date-fns';
+import { TaskFormComponent } from '../task-form/task-form.component';
+import { TaskDetailsComponent } from '../task-details/task-details.component';
 
 @Component({
   selector: 'app-my-tasks',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule,
+    TaskFormComponent,
+    TaskDetailsComponent
+  ],
   templateUrl: './my-tasks.component.html'
 })
 export class MyTasksComponent implements OnInit {
@@ -26,6 +34,11 @@ export class MyTasksComponent implements OnInit {
   searchQuery = '';
   filterStatus = 'all';
   filterPriority = 'all';
+
+  // Task form and details
+  showTaskForm = false;
+  taskToEdit: Task | null = null;
+  selectedTask: Task | null = null;
 
   constructor(
     private taskService: TaskService,
@@ -148,5 +161,54 @@ export class MyTasksComponent implements OnInit {
     }
     
     this.filteredTasks = filtered;
+  }
+
+  // Task form methods
+  createTask(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      this.notificationService.error('You must be logged in to create a task');
+      return;
+    }
+
+    this.taskToEdit = {
+      id: '',
+      title: '',
+      status: 'todo',
+      priority: 'medium',
+      createdAt: new Date(),
+      assignedTo: currentUser.id
+    };
+    this.showTaskForm = true;
+  }
+
+  editTask(task: Task): void {
+    this.taskToEdit = { ...task };
+    this.showTaskForm = true;
+  }
+
+  closeTaskForm(): void {
+    this.showTaskForm = false;
+    this.taskToEdit = null;
+  }
+
+  onTaskSaved(task: Task): void {
+    this.closeTaskForm();
+    this.loadTasks();
+    this.notificationService.success(`Task ${task.id ? 'updated' : 'created'} successfully`);
+  }
+
+  // Task details methods
+  viewTaskDetails(task: Task): void {
+    this.selectedTask = task;
+  }
+
+  editTaskFromDetails(task: Task): void {
+    this.closeTaskDetails();
+    this.editTask(task);
+  }
+
+  closeTaskDetails(): void {
+    this.selectedTask = null;
   }
 }

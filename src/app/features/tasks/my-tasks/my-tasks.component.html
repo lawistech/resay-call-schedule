@@ -15,12 +15,15 @@
         Refresh
       </button>
       
-      <a routerLink="/tasks/new" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+      <button 
+        (click)="createTask()" 
+        class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors shadow-sm"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
         </svg>
         New Task
-      </a>
+      </button>
     </div>
   </div>
   
@@ -29,14 +32,21 @@
     <div class="flex flex-col md:flex-row gap-4">
       <div class="w-full md:w-1/3">
         <label for="searchQuery" class="block text-sm font-medium text-gray-700 mb-1">Search Tasks</label>
-        <input 
-          type="text"
-          id="searchQuery"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="applyFilters()"
-          placeholder="Search by title or description"
-          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
-        >
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input 
+            type="text"
+            id="searchQuery"
+            [(ngModel)]="searchQuery"
+            (ngModelChange)="applyFilters()"
+            placeholder="Search by title or description"
+            class="w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500"
+          >
+        </div>
       </div>
       
       <div class="w-full md:w-1/3">
@@ -55,7 +65,6 @@
       </div>
       
       <div class="w-full md:w-1/3">
-      <div class="w-full md:w-1/3">
         <label for="filterPriority" class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
         <select 
           id="filterPriority"
@@ -71,12 +80,12 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Loading State -->
   <div *ngIf="loading" class="flex justify-center items-center py-10">
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
   </div>
-
+  
   <!-- Error State -->
   <div *ngIf="error && !loading" class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
     <div class="flex">
@@ -90,7 +99,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Empty State -->
   <div *ngIf="filteredTasks.length === 0 && !loading && !error" class="bg-gray-50 rounded-lg shadow p-10 text-center">
     <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,18 +110,18 @@
       No tasks match your current filters or you don't have any assigned tasks.
     </p>
     <div class="mt-6">
-      <a routerLink="/tasks/new" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
+      <button (click)="createTask()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
         <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
         </svg>
         Create new task
-      </a>
+      </button>
     </div>
   </div>
-
+  
   <!-- Task Grid -->
-  <div *ngIf="filteredTasks.length > 0 && !loading" class="task-grid">
-    <div *ngFor="let task of filteredTasks" class="bg-white rounded-lg shadow overflow-hidden">
+  <div *ngIf="filteredTasks.length > 0 && !loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let task of filteredTasks" class="bg-white rounded-lg shadow overflow-hidden transform transition-transform hover:scale-102 hover:shadow-md">
       <div class="px-4 py-5 sm:p-6">
         <div class="flex justify-between items-start">
           <h3 class="text-lg font-medium text-gray-900 line-clamp-2">{{ task.title }}</h3>
@@ -122,7 +131,7 @@
             'px-2 py-1 text-xs font-medium rounded-full': true,
             'bg-red-100 text-red-800': task.priority === 'high',
             'bg-yellow-100 text-yellow-800': task.priority === 'medium',
-            'bg-green-100 text-green-800': task.priority === 'low'
+            'bg-blue-100 text-blue-800': task.priority === 'low'
           }">
             {{ task.priority | titlecase }}
           </span>
@@ -140,25 +149,102 @@
           </div>
           
           <!-- Status dropdown -->
-          <div>
+          <div class="relative mt-4">
             <select 
               [ngModel]="task.status" 
               (ngModelChange)="updateTaskStatus(task, $event)"
-              class="text-sm border border-gray-300 rounded-md"
+              class="appearance-none pl-8 pr-10 py-1.5 text-sm border rounded-md w-full focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+              [ngClass]="{
+                'border-amber-300 bg-amber-50 text-amber-800': task.status === 'todo',
+                'border-blue-300 bg-blue-50 text-blue-800': task.status === 'inProgress',
+                'border-green-300 bg-green-50 text-green-800': task.status === 'completed'
+              }"
+              aria-label="Change task status"
             >
-              <option value="pending">Pending</option>
-              <option value="in_progress">In Progress</option>
+              <option value="todo">To Do</option>
+              <option value="inProgress">In Progress</option>
               <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
             </select>
+            
+            <!-- Status Icons -->
+            <div class="absolute inset-y-0 left-2 flex items-center pointer-events-none">
+              <!-- To Do Icon -->
+              <svg *ngIf="task.status === 'todo'" class="h-4 w-4 text-amber-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 2a6 6 0 110 12 6 6 0 010-12z" />
+              </svg>
+              
+              <!-- In Progress Icon -->
+              <svg *ngIf="task.status === 'inProgress'" class="h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+              </svg>
+              
+              <!-- Completed Icon -->
+              <svg *ngIf="task.status === 'completed'" class="h-4 w-4 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            
+            <!-- Dropdown Arrow -->
+            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </div>
           </div>
         </div>
       </div>
       
-      <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-between">
-        <a [routerLink]="['/tasks', task.id]" class="text-sm text-purple-600 hover:text-purple-800">
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-between items-center">
+        <button (click)="viewTaskDetails(task)" class="text-sm text-purple-600 hover:text-purple-800">
           View Details
-        </a>
+        </button>
+        <button (click)="editTask(task)" class="text-sm text-blue-600 hover:text-blue-800">
+          Edit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Form Modal -->
+  <div *ngIf="showTaskForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-90vh overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-medium text-gray-900">{{ taskToEdit ? 'Edit Task' : 'Create New Task' }}</h3>
+        <button (click)="closeTaskForm()" class="text-gray-400 hover:text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <div class="p-6">
+        <app-task-form
+          [task]="taskToEdit"
+          (taskSaved)="onTaskSaved($event)"
+          (closeForm)="closeTaskForm()"
+        ></app-task-form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Task Details Modal -->
+  <div *ngIf="selectedTask" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-90vh overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-medium text-gray-900">Task Details</h3>
+        <button (click)="closeTaskDetails()" class="text-gray-400 hover:text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <div class="p-6">
+        <app-task-details
+          [task]="selectedTask"
+          (close)="closeTaskDetails()"
+          (editTask)="editTaskFromDetails($event)"
+        ></app-task-details>
       </div>
     </div>
   </div>
