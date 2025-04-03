@@ -173,12 +173,18 @@ export class LeadService {
   getUsers(): Observable<{id: string, email: string, full_name: string}[]> {
     return from(this.supabaseService.supabaseClient
       .from('profiles')
-      .select('id, email, full_name')
+      .select('id, full_name')  // Removed 'email' from the selection
       .order('full_name', { ascending: true })
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
-        return response.data;
+        
+        // Join with auth.users data to get email or use a fallback
+        return response.data.map(profile => ({
+          id: profile.id,
+          full_name: profile.full_name || '',
+          email: ''
+        }));
       }),
       catchError(error => {
         this.notificationService.error(`Failed to fetch users: ${error.message}`);
