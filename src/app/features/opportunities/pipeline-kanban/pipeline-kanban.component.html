@@ -150,6 +150,7 @@
       <div class="flex-1 min-h-[70vh] p-3 overflow-y-auto"
            cdkDropList
            [id]="stage"
+           [cdkDropListData]="opportunitiesByStage[stage]"
            [cdkDropListConnectedTo]="getConnectedLists()"
            (cdkDropListDropped)="drop($event)">
         

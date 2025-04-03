@@ -2,13 +2,12 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Opportunity } from '../../../core/models/company.model';
 import { OpportunitiesService } from '../opportunities.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Router } from '@angular/router';
-import { DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-pipeline-kanban',
