@@ -15,13 +15,12 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     CallListComponent,
-    CallDetailComponent,
     CallFormComponent
-    // Remove CallModalComponent from here
   ],
   imports: [
     CommonModule,
-    SharedModule, // This will provide access to CallModalComponent
+    SharedModule,
+    CallDetailComponent,
     RouterModule.forChild(routes)
   ]
 })

@@ -31,7 +31,7 @@
           Mark as Missed
         </button>
 
-        <button (click)="openEditModal()" class="btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-md shadow-md flex items-center transition duration-200">
+        <button (click)="openEditDetails()" class="btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-md shadow-md flex items-center transition duration-200">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
           </svg>
@@ -171,14 +171,158 @@
     </div>
   </div>
 
-  <!-- Call Modal Component -->
-  <app-call-modal
-    *ngIf="showEditModal && call && call.contact"
-    [isOpen]="showEditModal"
-    [call]="call"
-    [contact]="call.contact"
-    [isEditing]="true"
-    (closed)="closeEditModal()"
-    (saved)="handleCallUpdated()"
-  ></app-call-modal>
+  <!-- Custom Edit Details Modal -->
+  <div *ngIf="showEditDetailsModal && call" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <!-- Background overlay -->
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" (click)="closeEditDetailsModal()"></div>
+
+      <!-- Modal panel -->
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                Edit Call Details
+                <span *ngIf="call.contact" class="text-sm font-normal text-gray-500 ml-2">
+                  with {{ call.contact.first_name }} {{ call.contact.last_name }}
+                </span>
+              </h3>
+              
+              <!-- Edit Form -->
+              <form [formGroup]="editCallForm" (ngSubmit)="saveCallDetails()" class="mt-4 space-y-4">
+                <!-- Scheduled At -->
+                <div>
+                  <label for="scheduled_at" class="block text-sm font-medium text-gray-700">Date & Time</label>
+                  <input 
+                    type="datetime-local" 
+                    id="scheduled_at" 
+                    formControlName="scheduled_at"
+                    class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" 
+                  />
+                  <div *ngIf="editCallForm.get('scheduled_at')?.touched && editCallForm.get('scheduled_at')?.invalid" class="text-red-500 text-sm mt-1">
+                    Please select a valid date and time
+                  </div>
+                </div>
+                
+                <!-- Call Reason -->
+                <div>
+                  <label for="reason" class="block text-sm font-medium text-gray-700">Reason</label>
+                  <input 
+                    type="text" 
+                    id="reason" 
+                    formControlName="reason"
+                    class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" 
+                    placeholder="e.g. Follow up on proposal" 
+                  />
+                  <div *ngIf="editCallForm.get('reason')?.touched && editCallForm.get('reason')?.invalid" class="text-red-500 text-sm mt-1">
+                    Please provide a reason for the call
+                  </div>
+                </div>
+                
+                <!-- Call Method -->
+                <div>
+                  <label for="method" class="block text-sm font-medium text-gray-700">Call Method</label>
+                  <select id="method" formControlName="method" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
+                    <option *ngFor="let method of callMethods" [value]="method.value">{{ method.label }}</option>
+                  </select>
+                </div>
+                
+                <!-- Importance indicator (5 dots) -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Importance</label>
+                  <div class="flex items-center space-x-2 mt-2">
+                    <ng-container *ngFor="let dot of [1, 2, 3, 4, 5]">
+                      <button 
+                        type="button" 
+                        (click)="setImportance(dot)" 
+                        class="w-6 h-6 rounded-full border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500"
+                        [ngClass]="{
+                          'bg-red-500 border-red-500': editCallForm.get('importance')?.value >= dot,
+                          'bg-white border-gray-300': editCallForm.get('importance')?.value < dot
+                        }">
+                      </button>
+                    </ng-container>
+                    <span class="text-sm text-gray-500 ml-2">
+                      {{ getImportanceLabel(editCallForm.get('importance')?.value) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Lead source dropdown -->
+                <div>
+                  <label for="lead_source" class="block text-sm font-medium text-gray-700">Lead Source</label>
+                  <select id="lead_source" formControlName="lead_source" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md">
+                    <option value="">-- Select Lead Source --</option>
+                    <option value="resay">Resay</option>
+                    <option value="barcodesforbusiness">Barcodes For Business</option>
+                    <option value="androidepos">Android EPOS</option>
+                    <option value="referral">Referral</option>
+                    <option value="website">Website</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                
+                <!-- Notes -->
+                <div>
+                  <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
+                  <textarea 
+                    id="notes" 
+                    formControlName="notes" 
+                    rows="3" 
+                    class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" 
+                    placeholder="Add any additional notes about this call"
+                  ></textarea>
+                </div>
+                
+                <!-- Follow-up Date -->
+                <div>
+                  <label for="follow_up_date" class="block text-sm font-medium text-gray-700">Follow-up Date (Optional)</label>
+                  <input 
+                    type="datetime-local" 
+                    id="follow_up_date" 
+                    formControlName="follow_up_date"
+                    class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" 
+                  />
+                </div>
+                
+                <!-- Duration Minutes (only visible for completed calls) -->
+                <div *ngIf="call.status === 'completed'">
+                  <label for="duration_minutes" class="block text-sm font-medium text-gray-700">Duration (minutes)</label>
+                  <input 
+                    type="number" 
+                    id="duration_minutes" 
+                    formControlName="duration_minutes"
+                    min="1"
+                    class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" 
+                  />
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <button (click)="saveCallDetails()" type="button" [disabled]="editCallForm.invalid || isSaving" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+            <span *ngIf="isSaving" class="mr-2">
+              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </span>
+            Update Call
+          </button>
+          <button (click)="closeEditDetailsModal()" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
