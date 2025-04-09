@@ -89,20 +89,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.expandedSection = null;
     
     // Check for more specific paths first to avoid incorrect matches
-    if (route.includes('/schedule') || route.includes('/call-history')) {
+    if (route.includes('/schedule') || route.includes('/call-history') || 
+        route.includes('/contacts') || route.includes('/reports')) {
       this.expandedSection = 'calls';
     } else if (route.includes('/leads') || route.includes('/opportunities') || route.includes('/pipeline')) {
       this.expandedSection = 'sales';
     } else if (route.startsWith('/tasks')) {
       this.expandedSection = 'tasks';
-    } else if (route.includes('/contacts') || route.includes('/accounts')) {
+    } else if (route.includes('/accounts')) {
       this.expandedSection = 'contacts';
     } else if (route.includes('/products') || route.includes('/orders') || route.includes('/inventory') || 
               route.includes('/ecommerce') || 
               route === '/discounts' || route === '/customers' || route === '/categories') {
       this.expandedSection = 'ecommerce';
-    } else if (route.includes('/reports') || route.includes('/analytics')) {
-      this.expandedSection = 'analytics';
     }
     
     // Store the active section in localStorage for persistence
@@ -113,6 +112,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isRouteActive(routePath: string): boolean {
     if (routePath === '/dashboard') {
       return this.currentRoute === '/dashboard'; // Exact match for dashboard
+    }
+
+    // Special case for contacts route
+    if (routePath === '/contacts' && this.currentRoute.includes('/contacts')) {
+      return true;
+    }
+
+    // Special case for reports/analytics route
+    if (routePath === '/reports' && this.currentRoute.includes('/reports')) {
+      return true;
     }
     
     return this.currentRoute.includes(routePath);
