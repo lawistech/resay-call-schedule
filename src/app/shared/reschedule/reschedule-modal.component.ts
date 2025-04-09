@@ -1,4 +1,4 @@
-// First, let's add the Clipboard service to post-call-modal.component.ts
+// src/app/shared/reschedule/reschedule-modal.component.ts
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Clipboard } from '@angular/cdk/clipboard';
@@ -29,7 +29,7 @@ export class RescheduleModal implements OnInit {
   ngOnInit(): void {
     this.initForm();
     
-    if(this.isReschedule ==true){
+    if(this.isReschedule == true){
       this.selectedAction = 'reschedule';
     }
     // Watch for changes to the call input
@@ -73,14 +73,25 @@ export class RescheduleModal implements OnInit {
     }
   }
   
-  // Update the method to handle potentially undefined phone numbers
-copyPhoneNumber(phone: string | undefined): void {
-  if (!phone) {
-    this.notificationService.warning('No phone number available');
-    return;
+  // Copy phone number to clipboard
+  copyPhoneNumber(phone: string | undefined): void {
+    if (!phone) {
+      this.notificationService.warning('No phone number available');
+      return;
+    }
+    
+    this.clipboard.copy(phone);
+    this.notificationService.success('Phone number copied to clipboard');
   }
-  
-  this.clipboard.copy(phone);
-  this.notificationService.success('Phone number copied to clipboard');
-}
+
+  // Copy email to clipboard
+  copyEmail(email: string | undefined): void {
+    if (!email) {
+      this.notificationService.warning('No email available');
+      return;
+    }
+    
+    this.clipboard.copy(email);
+    this.notificationService.success('Email copied to clipboard');
+  }
 }
