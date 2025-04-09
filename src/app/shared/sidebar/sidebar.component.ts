@@ -29,12 +29,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
   tempExpanded = false;
   expandedSection: string | null = null;
   routeSubscription: Subscription | null = null;
-  upcomingCallsCount = 0;
-  pendingTasksCount = 0;
+  // Removed upcomingCallsCount and pendingTasksCount
+  
   // Controls hover expand functionality - can be set via settings
   hoverMode = true;
   expandTimer: any = null;
   collapseTimer: any = null;
+  currentRoute = '';
 
   constructor(
     public authService: AuthService,
@@ -46,10 +47,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.loadSidebarState();
     this.setupRouteListener();
     
-    // Get upcoming calls count
-    this.refreshCallsCount();
-    // Get pending tasks count
-    this.refreshTasksCount();
+    // Initialize the current route
+    this.currentRoute = this.router.url;
+    this.setActiveSection(this.currentRoute);
   }
 
   ngOnDestroy(): void {
@@ -73,30 +73,49 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Handles route changes to highlight correct sections
+  // Improved route listener to better handle active sections
   private setupRouteListener(): void {
     this.routeSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
-        const currentRoute = event.url;
-        this.setActiveSection(currentRoute);
+        this.currentRoute = event.url;
+        this.setActiveSection(this.currentRoute);
       });
   }
 
+  // Improved active section detection with more precise route matching
   private setActiveSection(route: string): void {
-    if (route.includes('/call') || route.includes('/schedule')) {
+    // Reset the expanded section first
+    this.expandedSection = null;
+    
+    // Check for more specific paths first to avoid incorrect matches
+    if (route.includes('/schedule') || route.includes('/call-history')) {
       this.expandedSection = 'calls';
     } else if (route.includes('/leads') || route.includes('/opportunities') || route.includes('/pipeline')) {
       this.expandedSection = 'sales';
-    } else if (route.includes('/tasks')) {
+    } else if (route.startsWith('/tasks')) {
       this.expandedSection = 'tasks';
     } else if (route.includes('/contacts') || route.includes('/accounts')) {
       this.expandedSection = 'contacts';
-    } else if (route.includes('/products') || route.includes('/orders') || route.includes('/inventory') || route.includes('/ecommerce')) {
+    } else if (route.includes('/products') || route.includes('/orders') || route.includes('/inventory') || 
+              route.includes('/ecommerce') || 
+              route === '/discounts' || route === '/customers' || route === '/categories') {
       this.expandedSection = 'ecommerce';
     } else if (route.includes('/reports') || route.includes('/analytics')) {
       this.expandedSection = 'analytics';
     }
+    
+    // Store the active section in localStorage for persistence
+    localStorage.setItem('expandedSection', this.expandedSection || '');
+  }
+
+  // Helper method to check if a route is currently active
+  isRouteActive(routePath: string): boolean {
+    if (routePath === '/dashboard') {
+      return this.currentRoute === '/dashboard'; // Exact match for dashboard
+    }
+    
+    return this.currentRoute.includes(routePath);
   }
 
   // Toggle sidebar expanded/collapsed state
@@ -160,19 +179,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.tempExpanded = false;
       }, 300);
     }
-  }
-  
-  // Fetch upcoming calls count
-  private refreshCallsCount(): void {
-    // This is just a placeholder for demonstration
-    this.upcomingCallsCount = 3;
-  }
-  
-  // Fetch pending tasks count
-  private refreshTasksCount(): void {
-    // This is just a placeholder - in a real app you would fetch from a service
-    // Example: this.taskService.getPendingTasksCount().subscribe(count => this.pendingTasksCount = count);
-    this.pendingTasksCount = 5;
   }
   
   // Logout handler

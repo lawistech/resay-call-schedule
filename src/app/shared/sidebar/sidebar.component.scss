@@ -33,28 +33,54 @@
   }
 }
 
-// Navigation item styles
+// Navigation item styles - Improved active states
 .nav-item {
   position: relative;
   
   &:hover {
     @apply bg-stone-50;
-    
-    // Remove the transform on hover to prevent overlap with tooltips
-    // transform: translateX(2px);
   }
   
   // Active indicator bar
-  &.active {
-    @apply bg-stone-100 text-stone-800;
-    
+  &.active, &.bg-stone-100, &.bg-blue-50, &.bg-amber-50, &.bg-purple-50, &.bg-emerald-50 {
     &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 3px;
       opacity: 1;
     }
   }
   
+  &.bg-stone-100::before {
+    @apply bg-stone-800;
+  }
+  
+  &.bg-blue-50::before {
+    @apply bg-blue-600;
+  }
+  
+  &.bg-amber-50::before {
+    @apply bg-amber-600;
+  }
+  
+  &.bg-purple-50::before {
+    @apply bg-purple-600;
+  }
+  
+  &.bg-emerald-50::before {
+    @apply bg-emerald-600;
+  }
+  
   // Smooth transitions
   transition: all 0.2s ease-in-out;
+  
+  &::before {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
 }
 
 // Tooltip for collapsed sidebar
@@ -94,87 +120,46 @@
   opacity: 1;
 }
 
-// Section colors for ecommerce
-.nav-section {
-  // Ecommerce section styling
-  .nav-item.ecommerce-active {
-    @apply bg-emerald-50 text-emerald-700;
-    
-    svg {
-      @apply text-emerald-600;
-    }
-  }
-  
-  // Ecommerce submenu styling
-  .ecommerce-submenu {
-    @apply border-l-2 border-emerald-100;
-    
-    a:hover {
-      @apply bg-emerald-50 text-emerald-700;
-    }
-  }
-}
-
-// Status indicator for user profile
-.status-indicator {
-  @apply h-2 w-2 rounded-full;
-  
-  &.online {
-    @apply bg-green-500;
-  }
-  
-  &.away {
-    @apply bg-yellow-500;
-  }
-  
-  &.offline {
-    @apply bg-gray-400;
-  }
-}
-
-// Notification badge
-.notification-badge {
-  @apply absolute flex items-center justify-center h-5 w-5 rounded-full bg-red-500 
-    text-white text-xs font-bold transform translate-x-1 -translate-y-1;
-    
-  top: 0;
-  right: 0;
-  box-shadow: 0 0 0 2px white;
-}
-
-// Fix for the submenu animation
-.submenu-enter-active, .submenu-leave-active {
-  transition: max-height 0.3s ease, opacity 0.2s ease;
-  overflow: hidden;
-}
-
-.submenu-enter-from, .submenu-leave-to {
-  max-height: 0;
-  opacity: 0;
-}
-
 // User profile section
 .user-profile {
   transition: padding 0.3s ease;
 }
 
-// Add to src/app/shared/sidebar/sidebar.component.scss
-// Add within the .nav-section block
-
-// Task management section styling
-.nav-item.tasks-active {
-  @apply bg-purple-50 text-purple-700;
-  
-  svg {
-    @apply text-purple-600;
-  }
-}
-
-// Task management submenu styling
-.tasks-submenu {
-  @apply border-l-2 border-purple-100;
-  
-  a:hover {
-    @apply bg-purple-50 text-purple-700;
+// Submenu styles
+.border-l-2 {
+  a {
+    position: relative;
+    
+    &.bg-blue-50, &.bg-amber-50, &.bg-purple-50, &.bg-emerald-50, &.bg-indigo-50 {
+      &::before {
+        content: '';
+        position: absolute;
+        left: -6px; // Position left of the submenu border
+        top: 0;
+        height: 100%;
+        width: 2px;
+        opacity: 1;
+      }
+    }
+    
+    &.bg-blue-50::before {
+      @apply bg-blue-600;
+    }
+    
+    &.bg-amber-50::before {
+      @apply bg-amber-600;
+    }
+    
+    &.bg-purple-50::before {
+      @apply bg-purple-600;
+    }
+    
+    &.bg-emerald-50::before {
+      @apply bg-emerald-600;
+    }
+    
+    &.bg-indigo-50::before {
+      @apply bg-indigo-600;
+    }
   }
 }
