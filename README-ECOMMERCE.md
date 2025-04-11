@@ -86,37 +86,7 @@ this.productAttachmentService.attachProductToEmail(
 });
 ```
 
-## Integration with WooCommerce
 
-The module also includes integration with WooCommerce to fetch products from your WordPress site. To configure this:
-
-1. Update the WooCommerce credentials in the environment configuration:
-
-```typescript
-// src/environments/environment.ts
-export const environment = {
-  // ...
-  woocommerceCredentials: {
-    resay: {
-      consumerKey: 'your-consumer-key',
-      consumerSecret: 'your-consumer-secret'
-    }
-  }
-};
-```
-
-2. Use the EcommerceService to fetch products from WooCommerce:
-
-```typescript
-this.ecommerceService.getProducts('resay').subscribe({
-  next: (products) => {
-    console.log('WooCommerce products:', products);
-  },
-  error: (error) => {
-    console.error('Error fetching products:', error);
-  }
-});
-```
 
 ## Customization
 
@@ -134,4 +104,3 @@ If you encounter issues:
 1. Check that the database tables are created correctly
 2. Verify that the Supabase connection is working
 3. Check the browser console for any error messages
-4. Ensure that the WooCommerce credentials are correct (if using WooCommerce integration)

@@ -5,9 +5,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
-import { EcommerceComponent } from './ecommerce.component';
-import { ProductsComponent } from './products/products.component';
-import { ProductDetailComponent } from './products/product-detail/product-detail.component';
+// Removed WooCommerce components
 import { SuppliersComponent } from './suppliers/suppliers.component';
 import { ProductCatalogComponent } from './product-catalog/product-catalog.component';
 import { SupplierService } from './services/supplier.service';
@@ -15,8 +13,7 @@ import { ProductCatalogService } from './services/product-catalog.service';
 import { ProductAttachmentService } from './services/product-attachment.service';
 
 const routes: Routes = [
-  { path: '', component: EcommerceComponent },
-  { path: 'products', component: ProductsComponent },
+  { path: '', redirectTo: 'product-catalog', pathMatch: 'full' },
   { path: 'suppliers', component: SuppliersComponent },
   { path: 'product-catalog', component: ProductCatalogComponent }
 ];
@@ -28,8 +25,6 @@ const routes: Routes = [
     ReactiveFormsModule,
     HttpClientModule,
     RouterModule.forChild(routes),
-    ProductsComponent,
-    ProductDetailComponent,
     SuppliersComponent,
     ProductCatalogComponent
   ],
