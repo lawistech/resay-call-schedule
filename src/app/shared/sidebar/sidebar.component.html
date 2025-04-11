@@ -3,7 +3,7 @@
      [ngClass]="{'w-64': expanded || tempExpanded, 'w-20': !expanded && !tempExpanded, 'shadow-lg': expanded || tempExpanded}"
      (mouseenter)="temporarilyExpand()"
      (mouseleave)="collapseTemporary()">
-     
+
   <!-- Logo and Toggle -->
   <div class="flex items-center justify-between p-4 border-b border-stone-100">
     <div class="flex items-center">
@@ -14,7 +14,7 @@
         <h1 class="text-xl font-bold text-stone-800">Resay CRM</h1>
       </div>
     </div>
-    <button (click)="toggleSidebar()" 
+    <button (click)="toggleSidebar()"
             class="p-1.5 rounded-md hover:bg-stone-100 text-stone-500 transition-colors group focus:outline-none focus:ring-2 focus:ring-stone-300">
       <svg *ngIf="expanded" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-x-[-2px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
@@ -24,14 +24,14 @@
       </svg>
     </button>
   </div>
-  
+
   <!-- Scrollable Navigation -->
   <div class="overflow-y-auto sidebar-scrollable h-[calc(100%-8rem)] py-4">
     <!-- Search Box (Only when expanded) -->
     <div *ngIf="expanded || tempExpanded" class="px-4 mb-4 transition-opacity duration-200"
          [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
       <div class="relative">
-        <input type="text" placeholder="Search..." 
+        <input type="text" placeholder="Search..."
                class="w-full py-2 pl-9 pr-3 rounded-md bg-stone-50 border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-300 focus:border-transparent text-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -44,68 +44,68 @@
          [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
       <span class="text-xs font-semibold uppercase tracking-wider text-stone-400">Main</span>
     </div>
-    
+
     <!-- Primary Navigation Items -->
     <nav class="px-2 space-y-1">
       <!-- Dashboard -->
-      <a routerLink="/dashboard" 
+      <a routerLink="/dashboard"
          [class.before:opacity-100]="isRouteActive('/dashboard')"
-         [class.bg-stone-100]="isRouteActive('/dashboard')" 
+         [class.bg-stone-100]="isRouteActive('/dashboard')"
          [class.text-stone-800]="isRouteActive('/dashboard')"
-         class="nav-item relative flex items-center px-3 py-3 rounded-md text-stone-600 hover:bg-stone-50 
-                transition-all duration-150 group before:content-[''] before:absolute before:left-0 before:top-0 
+         class="nav-item relative flex items-center px-3 py-3 rounded-md text-stone-600 hover:bg-stone-50
+                transition-all duration-150 group before:content-[''] before:absolute before:left-0 before:top-0
                 before:h-full before:w-[3px] before:bg-stone-800 before:opacity-0 before:transition-opacity">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
-        <span *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200" 
+        <span *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200"
               [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
           Dashboard
         </span>
-        
+
         <!-- Tooltip for collapsed state -->
         <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
           Dashboard
         </div>
       </a>
-      
+
       <!-- Call Management -->
       <div class="nav-section relative">
-        <button (click)="toggleSection('calls')" 
-                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600 
+        <button (click)="toggleSection('calls')"
+                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600
                        hover:bg-stone-50 transition-all duration-150 group"
                 [ngClass]="{'bg-blue-50 text-blue-700': expandedSection === 'calls'}">
           <div class="flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-blue-600': expandedSection === 'calls'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
-            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200" 
+            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200"
                   [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
               Call Management
             </span>
           </div>
           <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
                [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
-            <svg xmlns="http://www.w3.org/2000/svg" 
+            <svg xmlns="http://www.w3.org/2000/svg"
                  [ngClass]="{'rotate-180': expandedSection === 'calls'}"
                  class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
-          
+
           <!-- Removed the notification badge -->
-          
+
           <!-- Tooltip for collapsed state -->
           <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
             Call Management
           </div>
         </button>
-        
+
         <!-- Call Management submenu with smooth height animation -->
-        <div *ngIf="expandedSection === 'calls' && (expanded || tempExpanded)" 
+        <div *ngIf="expandedSection === 'calls' && (expanded || tempExpanded)"
              [@submenuAnimation]
              class="ml-4 pl-4 border-l-2 border-blue-100 mt-1 space-y-1">
-          <a routerLink="/schedule" 
+          <a routerLink="/schedule"
              [class.text-blue-700]="isRouteActive('/schedule')"
              [class.font-medium]="isRouteActive('/schedule')"
              [class.bg-blue-50]="isRouteActive('/schedule')"
@@ -115,7 +115,7 @@
             </svg>
             Upcoming Calls
           </a>
-          <a routerLink="/call-history" 
+          <a routerLink="/call-history"
              [class.text-blue-700]="isRouteActive('/call-history')"
              [class.font-medium]="isRouteActive('/call-history')"
              [class.bg-blue-50]="isRouteActive('/call-history')"
@@ -125,7 +125,7 @@
             </svg>
             Call History
           </a>
-          <a routerLink="/contacts" 
+          <a routerLink="/contacts"
              [class.text-blue-700]="currentRoute.includes('/contacts')"
              [class.font-medium]="currentRoute.includes('/contacts')"
              [class.bg-blue-50]="currentRoute.includes('/contacts')"
@@ -135,7 +135,7 @@
               </svg>
             Contacts
           </a>
-          <a routerLink="/reports" 
+          <a routerLink="/reports"
              [class.text-blue-700]="currentRoute.includes('/reports')"
              [class.font-medium]="currentRoute.includes('/reports')"
              [class.bg-blue-50]="currentRoute.includes('/reports')"
@@ -147,43 +147,43 @@
           </a>
         </div>
       </div>
-      
+
 
       <!-- Sales & Pipeline -->
       <div class="nav-section relative">
-        <button (click)="toggleSection('sales')" 
-                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600 
+        <button (click)="toggleSection('sales')"
+                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600
                        hover:bg-stone-50 transition-all duration-150 group"
                 [ngClass]="{'bg-amber-50 text-amber-700': expandedSection === 'sales'}">
           <div class="flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-amber-600': expandedSection === 'sales'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200" 
+            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200"
                   [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
               Sales Pipeline
             </span>
           </div>
           <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
                [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
-            <svg xmlns="http://www.w3.org/2000/svg" 
+            <svg xmlns="http://www.w3.org/2000/svg"
                  [ngClass]="{'rotate-180': expandedSection === 'sales'}"
                  class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
-          
+
           <!-- Tooltip for collapsed state -->
           <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
             Sales Pipeline
           </div>
         </button>
-        
+
         <!-- Sales submenu -->
-        <div *ngIf="expandedSection === 'sales' && (expanded || tempExpanded)" 
+        <div *ngIf="expandedSection === 'sales' && (expanded || tempExpanded)"
              [@submenuAnimation]
              class="ml-4 pl-4 border-l-2 border-amber-100 mt-1 space-y-1">
-          <a routerLink="/leads" 
+          <a routerLink="/leads"
              [class.text-amber-700]="isRouteActive('/leads')"
              [class.font-medium]="isRouteActive('/leads')"
              [class.bg-amber-50]="isRouteActive('/leads')"
@@ -193,7 +193,7 @@
             </svg>
             Leads
           </a>
-          <a routerLink="/opportunities" 
+          <a routerLink="/opportunities"
              [class.text-amber-700]="isRouteActive('/opportunities')"
              [class.font-medium]="isRouteActive('/opportunities')"
              [class.bg-amber-50]="isRouteActive('/opportunities')"
@@ -203,7 +203,7 @@
             </svg>
             Opportunities
           </a>
-          <a routerLink="/pipeline" 
+          <a routerLink="/pipeline"
              [class.text-amber-700]="isRouteActive('/pipeline')"
              [class.font-medium]="isRouteActive('/pipeline')"
              [class.bg-amber-50]="isRouteActive('/pipeline')"
@@ -215,44 +215,44 @@
           </a>
         </div>
       </div>
-      
+
       <!-- Task Management Section -->
       <div class="nav-section relative">
-        <button (click)="toggleSection('tasks')" 
-                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600 
+        <button (click)="toggleSection('tasks')"
+                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600
                       hover:bg-stone-50 transition-all duration-150 group"
                 [ngClass]="{'bg-purple-50 text-purple-700': expandedSection === 'tasks'}">
           <div class="flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-purple-600': expandedSection === 'tasks'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M6 16h.01" />
             </svg>
-            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200" 
+            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200"
                   [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
               Task Management
             </span>
           </div>
           <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
               [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
-            <svg xmlns="http://www.w3.org/2000/svg" 
+            <svg xmlns="http://www.w3.org/2000/svg"
                 [ngClass]="{'rotate-180': expandedSection === 'tasks'}"
                 class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
-          
+
           <!-- Removed the notification badge -->
-          
+
           <!-- Tooltip for collapsed state -->
           <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
             Task Management
           </div>
         </button>
-        
+
         <!-- Task Management submenu -->
-        <div *ngIf="expandedSection === 'tasks' && (expanded || tempExpanded)" 
+        <div *ngIf="expandedSection === 'tasks' && (expanded || tempExpanded)"
             [@submenuAnimation]
             class="ml-4 pl-4 border-l-2 border-purple-100 mt-1 space-y-1">
-          <a routerLink="/tasks" 
+          <a routerLink="/tasks"
              [class.text-purple-700]="isRouteActive('/tasks') && !isRouteActive('/tasks/my-tasks') && !isRouteActive('/tasks/team-tasks') && !isRouteActive('/tasks/calendar')"
              [class.font-medium]="isRouteActive('/tasks') && !isRouteActive('/tasks/my-tasks') && !isRouteActive('/tasks/team-tasks') && !isRouteActive('/tasks/calendar')"
              [class.bg-purple-50]="isRouteActive('/tasks') && !isRouteActive('/tasks/my-tasks') && !isRouteActive('/tasks/team-tasks') && !isRouteActive('/tasks/calendar')"
@@ -262,7 +262,7 @@
             </svg>
             Task Board
           </a>
-          <a routerLink="/tasks/my-tasks" 
+          <a routerLink="/tasks/my-tasks"
              [class.text-purple-700]="isRouteActive('/tasks/my-tasks')"
              [class.font-medium]="isRouteActive('/tasks/my-tasks')"
              [class.bg-purple-50]="isRouteActive('/tasks/my-tasks')"
@@ -272,7 +272,7 @@
             </svg>
             My Tasks
           </a>
-          <a routerLink="/tasks/team-tasks" 
+          <a routerLink="/tasks/team-tasks"
              [class.text-purple-700]="isRouteActive('/tasks/team-tasks')"
              [class.font-medium]="isRouteActive('/tasks/team-tasks')"
              [class.bg-purple-50]="isRouteActive('/tasks/team-tasks')"
@@ -282,7 +282,7 @@
             </svg>
             Team Tasks
           </a>
-          <a routerLink="/tasks/calendar" 
+          <a routerLink="/tasks/calendar"
              [class.text-indigo-700]="isRouteActive('/tasks/calendar')"
              [class.font-medium]="isRouteActive('/tasks/calendar')"
              [class.bg-indigo-50]="isRouteActive('/tasks/calendar')"
@@ -297,45 +297,55 @@
           </a>
         </div>
       </div>
-      
-      
-      
+
+
+
       <!-- NEW ECOMMERCE SECTION -->
       <div class="nav-section relative">
-        <button (click)="toggleSection('ecommerce')" 
-                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600 
+        <button (click)="toggleSection('ecommerce')"
+                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600
                        hover:bg-stone-50 transition-all duration-150 group"
                 [ngClass]="{'bg-emerald-50 text-emerald-700': expandedSection === 'ecommerce'}">
           <div class="flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-emerald-600': expandedSection === 'ecommerce'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200" 
+            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200"
                   [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
               Ecommerce
             </span>
           </div>
           <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
                [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
-            <svg xmlns="http://www.w3.org/2000/svg" 
+            <svg xmlns="http://www.w3.org/2000/svg"
                  [ngClass]="{'rotate-180': expandedSection === 'ecommerce'}"
                  class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
-          
+
           <!-- Tooltip for collapsed state -->
           <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
             Ecommerce
           </div>
         </button>
-        
+
         <!-- Ecommerce submenu -->
-        <div *ngIf="expandedSection === 'ecommerce' && (expanded || tempExpanded)" 
+        <div *ngIf="expandedSection === 'ecommerce' && (expanded || tempExpanded)"
              [@submenuAnimation]
              class="ml-4 pl-4 border-l-2 border-emerald-100 mt-1 space-y-1">
           <!-- Continuing from where we left off in the Ecommerce submenu section -->
-          <a routerLink="/products" 
+          <a routerLink="/ecommerce"
+             [class.text-emerald-700]="isRouteActive('/ecommerce')"
+             [class.font-medium]="isRouteActive('/ecommerce')"
+             [class.bg-emerald-50]="isRouteActive('/ecommerce')"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Dashboard
+          </a>
+          <a routerLink="/products"
              [class.text-emerald-700]="isRouteActive('/products')"
              [class.font-medium]="isRouteActive('/products')"
              [class.bg-emerald-50]="isRouteActive('/products')"
@@ -345,73 +355,74 @@
             </svg>
             Products
           </a>
-          <a routerLink="/orders" 
-             [class.text-emerald-700]="isRouteActive('/orders')"
-             [class.font-medium]="isRouteActive('/orders')"
-             [class.bg-emerald-50]="isRouteActive('/orders')"
-             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-            </svg>
-            Orders
-          </a>
-          <a routerLink="/inventory" 
-             [class.text-emerald-700]="isRouteActive('/inventory')"
-             [class.font-medium]="isRouteActive('/inventory')"
-             [class.bg-emerald-50]="isRouteActive('/inventory')"
-             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-            </svg>
-            Inventory
-          </a>
-          <a routerLink="/discounts" 
-             [class.text-emerald-700]="isRouteActive('/discounts')"
-             [class.font-medium]="isRouteActive('/discounts')"
-             [class.bg-emerald-50]="isRouteActive('/discounts')"
-             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-            Resay
-          </a>
-          <a routerLink="/customers" 
-             [class.text-emerald-700]="isRouteActive('/customers')"
-             [class.font-medium]="isRouteActive('/customers')"
-             [class.bg-emerald-50]="isRouteActive('/customers')"
-             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-            Android EPOS
-          </a>
-          <a routerLink="/categories" 
-             [class.text-emerald-700]="isRouteActive('/categories')"
-             [class.font-medium]="isRouteActive('/categories')"
-             [class.bg-emerald-50]="isRouteActive('/categories')"
-             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-            BarcodeForBusiness
-          </a>
+          <!-- WordPress WooCommerce Sites -->
+          <div class="mt-3 pt-3 border-t border-emerald-100">
+            <div class="flex items-center px-3 mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z" />
+              </svg>
+              <p class="text-xs font-semibold uppercase tracking-wider text-emerald-500">WooCommerce Sites</p>
+            </div>
+
+            <a href="https://resay.co.uk" target="_blank"
+               class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Resay
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-auto text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+
+            <a href="https://android-epos.co.uk" target="_blank"
+               class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Android EPOS
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-auto text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+
+            <a href="https://barcodeforbusiness.co.uk" target="_blank"
+               class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+              BarcodeForBusiness
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-auto text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
-      
+
       <!-- Categories Label - Secondary Items -->
       <div *ngIf="expanded || tempExpanded" class="mt-8 mb-2 px-4 transition-opacity duration-200"
            [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
         <span class="text-xs font-semibold uppercase tracking-wider text-stone-400">Workspace</span>
       </div>
-      
+
       <!-- Settings Link -->
-      <a routerLink="/settings" 
-         [class.bg-stone-100]="isRouteActive('/settings')" 
+      <a routerLink="/settings"
+         [class.bg-stone-100]="isRouteActive('/settings')"
          [class.text-stone-800]="isRouteActive('/settings')"
          [class.before:opacity-100]="isRouteActive('/settings')"
-         class="nav-item relative flex items-center px-3 py-3 rounded-md text-stone-600 hover:bg-stone-50 
-                transition-all duration-150 group before:content-[''] before:absolute before:left-0 before:top-0 
+         class="nav-item relative flex items-center px-3 py-3 rounded-md text-stone-600 hover:bg-stone-50
+                transition-all duration-150 group before:content-[''] before:absolute before:left-0 before:top-0
                 before:h-full before:w-[3px] before:bg-stone-800 before:opacity-0 before:transition-opacity">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        <span *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200" 
+        <span *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200"
               [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
           Settings
         </span>
-        
+
         <!-- Tooltip for collapsed state -->
         <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
           Settings
@@ -419,7 +430,7 @@
       </a>
     </nav>
   </div>
-  
+
   <!-- User Profile Section -->
   <div class="mt-auto border-t border-stone-200 p-4 user-profile">
     <div class="flex items-center">
@@ -429,7 +440,7 @@
         </div>
         <div class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"></div>
       </div>
-      <div *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200" 
+      <div *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200"
            [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
         <p class="text-sm font-medium text-stone-800 truncate max-w-[140px]">Admin User</p>
         <button (click)="logout()" class="mt-2 text-xs text-stone-500 hover:text-stone-800 underline decoration-dashed underline-offset-4">

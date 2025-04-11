@@ -1,0 +1,12 @@
+/* src/app/features/ecommerce/products/products.component.css */
+.product-row:hover {
+  background-color: #f9fafb;
+}
+
+.product-image {
+  transition: transform 0.2s;
+}
+
+.product-image:hover {
+  transform: scale(1.05);
+}

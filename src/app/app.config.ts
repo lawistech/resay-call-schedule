@@ -1,6 +1,7 @@
 // src/app/app.config.ts
 import { ApplicationConfig, APP_INITIALIZER } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app.routes';
 import { DateUtilsService } from './core/services/date-utils.service';
 import { ReminderService } from './core/services/reminder.service';
@@ -19,9 +20,10 @@ function initializeApp(dateUtils: DateUtilsService, reminderService: ReminderSer
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
+    provideAnimations(),
     {
       provide: APP_INITIALIZER,
-      useFactory: (dateUtils: DateUtilsService, reminderService: ReminderService) => 
+      useFactory: (dateUtils: DateUtilsService, reminderService: ReminderService) =>
         initializeApp(dateUtils, reminderService),
       deps: [DateUtilsService, ReminderService],
       multi: true
