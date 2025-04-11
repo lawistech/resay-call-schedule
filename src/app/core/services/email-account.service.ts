@@ -1,6 +1,6 @@
 // src/app/core/services/email-account.service.ts
 import { Injectable } from '@angular/core';
-import { Observable, from, throwError } from 'rxjs';
+import { Observable, from, throwError, of } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
 import { SupabaseService } from './supabase.service';
 import { NotificationService } from './notification.service';
@@ -203,6 +203,27 @@ export class EmailAccountService {
   }
 
   // Email Message Methods
+  getMessages(accountId: string, folderId: string, params: any = {}): Observable<EmailMessage[]> {
+    return from(this.supabaseService.supabaseClient
+      .from('email_messages')
+      .select('*')
+      .eq('account_id', accountId)
+      .eq('folder_id', folderId)
+      .order('received_at', { ascending: false })
+      .range(params.start || 0, (params.start || 0) + (params.limit || 20) - 1)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data.map(message => this.formatMessageFromDatabase(message));
+      }),
+      catchError(error => {
+        console.error('Error fetching messages:', error);
+        // Fall back to mock data for development
+        return of(this.generateMockMessages(accountId, folderId));
+      })
+    );
+  }
+
   getMessage(accountId: string, messageId: string): Observable<EmailMessage> {
     return from(this.supabaseService.supabaseClient
       .from('email_messages')
@@ -344,6 +365,62 @@ export class EmailAccountService {
       createdAt: data.created_at,
       url: data.url
     };
+  }
+
+  // Authentication methods
+  getGmailAuthUrl(): Observable<string> {
+    // In a real implementation, this would call an API
+    // For now, we'll just return a mock URL
+    return of('https://accounts.google.com/o/oauth2/auth?mock=true');
+  }
+
+  getMicrosoft365AuthUrl(): Observable<string> {
+    // In a real implementation, this would call an API
+    // For now, we'll just return a mock URL
+    return of('https://login.microsoftonline.com/common/oauth2/v2.0/authorize?mock=true');
+  }
+
+  // Generate mock data for development
+  private generateMockMessages(accountId: string, folderId: string): EmailMessage[] {
+    // Generate mock email messages for development
+    const mockMessages: EmailMessage[] = Array(20).fill(0).map((_, i) => ({
+      id: `msg-${i}`,
+      accountId,
+      folderId,
+      threadId: `thread-${Math.floor(i / 3)}`, // Group messages into threads
+      fromAddress: `sender${i % 5}@example.com`,
+      fromName: `Sender ${i % 5}`,
+      toAddresses: ['user@example.com'],
+      subject: `Test Email ${i}`,
+      plainBody: `This is a test email message ${i}...`,
+      isRead: i % 3 === 0,
+      isStarred: i % 7 === 0,
+      isImportant: i % 5 === 0,
+      hasAttachments: i % 4 === 0,
+      sentAt: new Date(Date.now() - i * 3600000).toISOString(),
+      receivedAt: new Date(Date.now() - i * 3600000 + 10000).toISOString()
+    }));
+
+    return mockMessages;
+  }
+
+  // Mark message as read
+  markMessageAsRead(accountId: string, messageId: string): Observable<void> {
+    return from(this.supabaseService.supabaseClient
+      .from('email_messages')
+      .update({ is_read: true })
+      .eq('account_id', accountId)
+      .eq('id', messageId)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return;
+      }),
+      catchError(error => {
+        console.error('Error marking message as read:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   private formatAccountFromDatabase(data: any): EmailAccount {

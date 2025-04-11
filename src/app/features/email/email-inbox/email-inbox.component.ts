@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EmailAccountService } from '../../../core/services/email-account.service';
-import { EmailInboxService } from '../../../core/services/email-inbox.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { EmailAccount, EmailFolder } from '../../../core/models/email-account.model';
 import { EmailThread, EmailMessage } from '../../../core/models/email-message.model';
@@ -36,7 +35,6 @@ export class EmailInboxComponent implements OnInit {
 
   constructor(
     private emailAccountService: EmailAccountService,
-    private emailInboxService: EmailInboxService,
     private notificationService: NotificationService,
     private router: Router
   ) {}
@@ -100,7 +98,7 @@ export class EmailInboxComponent implements OnInit {
 
   loadThreads(accountId: string, folderId: string): void {
     this.isLoading = true;
-    this.emailInboxService.getMessages(accountId, folderId).subscribe({
+    this.emailAccountService.getMessages(accountId, folderId).subscribe({
       next: (messages) => {
         // Group messages by thread
         const threadMap = new Map<string, EmailThread>();
@@ -167,7 +165,7 @@ export class EmailInboxComponent implements OnInit {
     if (thread.unreadCount > 0 && thread.messages) {
       thread.messages.forEach(message => {
         if (!message.isRead && this.selectedAccount) {
-          this.emailInboxService.markMessageAsRead(this.selectedAccount.id, message.id).subscribe();
+          this.emailAccountService.markMessageAsRead(this.selectedAccount.id, message.id).subscribe();
         }
       });
       thread.unreadCount = 0;
@@ -191,7 +189,7 @@ export class EmailInboxComponent implements OnInit {
     // For now, we'll just filter the existing threads
     if (this.selectedAccount && this.selectedFolder) {
       this.isLoading = true;
-      this.emailInboxService.getMessages(this.selectedAccount.id, this.selectedFolder.id).subscribe({
+      this.emailAccountService.getMessages(this.selectedAccount.id, this.selectedFolder.id).subscribe({
         next: (messages) => {
           const filteredMessages = messages.filter(message =>
             message.subject?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||

@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { EmailAccountService } from '../../../core/services/email-account.service';
-import { EmailProviderService } from '../../../core/services/email-provider.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { EmailAccount } from '../../../core/models/email-account.model';
 
@@ -32,7 +31,6 @@ export class EmailAccountSettingsComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private emailAccountService: EmailAccountService,
-    private emailProviderService: EmailProviderService,
     private notificationService: NotificationService
   ) {
     this.accountForm = this.fb.group({
@@ -83,14 +81,14 @@ export class EmailAccountSettingsComponent implements OnInit {
     this.isAdding = false;
     this.isEditing = true;
     this.selectedAccount = account;
-    
+
     // Populate form with account details
     this.accountForm.patchValue({
       name: account.name,
       email: account.email,
       provider: account.provider
     });
-    
+
     // If IMAP/SMTP provider, populate those fields
     if (account.provider === 'imap' && account.providerSettings) {
       this.accountForm.patchValue({
@@ -115,9 +113,9 @@ export class EmailAccountSettingsComponent implements OnInit {
       this.notificationService.error('Please fill in all required fields');
       return;
     }
-    
+
     const formValues = this.accountForm.value;
-    
+
     // Prepare account data
     const accountData: Partial<EmailAccount> = {
       name: formValues.name,
@@ -125,7 +123,7 @@ export class EmailAccountSettingsComponent implements OnInit {
       provider: formValues.provider,
       isActive: true
     };
-    
+
     // Add provider-specific settings
     if (formValues.provider === 'imap') {
       accountData.providerSettings = {
@@ -135,7 +133,7 @@ export class EmailAccountSettingsComponent implements OnInit {
         smtpPort: formValues.smtpPort,
         username: formValues.username
       };
-      
+
       // In a real implementation, we would securely handle the password
       if (formValues.password) {
         accountData.authCredentials = {
@@ -143,7 +141,7 @@ export class EmailAccountSettingsComponent implements OnInit {
         };
       }
     }
-    
+
     if (this.isAdding) {
       this.addAccount(accountData);
     } else if (this.isEditing && this.selectedAccount) {
@@ -158,7 +156,7 @@ export class EmailAccountSettingsComponent implements OnInit {
         this.accounts.push(account);
         this.isAdding = false;
         this.accountForm.reset();
-        
+
         // If OAuth provider, initiate OAuth flow
         if (account.provider === 'gmail') {
           this.authenticateGmail(account);
@@ -214,7 +212,7 @@ export class EmailAccountSettingsComponent implements OnInit {
 
   setDefaultAccount(account: EmailAccount): void {
     if (account.isDefault) return;
-    
+
     this.emailAccountService.updateEmailAccount(account.id, { isDefault: true }).subscribe({
       next: () => {
         this.notificationService.success(`${account.name} set as default account`);
@@ -230,7 +228,7 @@ export class EmailAccountSettingsComponent implements OnInit {
   }
 
   authenticateGmail(account: EmailAccount): void {
-    this.emailProviderService.getGmailAuthUrl().subscribe({
+    this.emailAccountService.getGmailAuthUrl().subscribe({
       next: (url) => {
         // Open the OAuth URL in a new window
         window.open(url, 'gmailAuth', 'width=600,height=700');
@@ -243,7 +241,7 @@ export class EmailAccountSettingsComponent implements OnInit {
   }
 
   authenticateMicrosoft365(account: EmailAccount): void {
-    this.emailProviderService.getMicrosoft365AuthUrl().subscribe({
+    this.emailAccountService.getMicrosoft365AuthUrl().subscribe({
       next: (url) => {
         // Open the OAuth URL in a new window
         window.open(url, 'microsoftAuth', 'width=600,height=700');
@@ -257,14 +255,14 @@ export class EmailAccountSettingsComponent implements OnInit {
 
   onProviderChange(): void {
     const provider = this.accountForm.get('provider')?.value;
-    
+
     if (provider === 'imap') {
       this.accountForm.get('imapHost')?.setValidators([Validators.required]);
       this.accountForm.get('imapPort')?.setValidators([Validators.required]);
       this.accountForm.get('smtpHost')?.setValidators([Validators.required]);
       this.accountForm.get('smtpPort')?.setValidators([Validators.required]);
       this.accountForm.get('username')?.setValidators([Validators.required]);
-      
+
       if (!this.isEditing) {
         this.accountForm.get('password')?.setValidators([Validators.required]);
       }
@@ -276,7 +274,7 @@ export class EmailAccountSettingsComponent implements OnInit {
       this.accountForm.get('username')?.clearValidators();
       this.accountForm.get('password')?.clearValidators();
     }
-    
+
     this.accountForm.get('imapHost')?.updateValueAndValidity();
     this.accountForm.get('imapPort')?.updateValueAndValidity();
     this.accountForm.get('smtpHost')?.updateValueAndValidity();
