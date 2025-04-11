@@ -97,7 +97,11 @@ export class EcommerceService {
       map(products => products.map(product => this.mapWooCommerceProductToModel(product, site))),
       catchError(error => {
         console.error(`Error fetching products from ${site}:`, error);
-        return throwError(() => new Error(`Failed to fetch products from ${site}`));
+        // Log more detailed error information
+        console.log(`API URL: ${url}`);
+        console.log(`Consumer Key: ${this.credentials[site].consumerKey}`);
+        console.log(`Consumer Secret: ${this.credentials[site].consumerSecret.substring(0, 5)}...`);
+        return throwError(() => new Error(`Failed to fetch products from ${site}: ${error.message || 'Unknown error'}`));
       })
     );
   }
@@ -208,7 +212,35 @@ export class EcommerceService {
     return this.http.get<any[]>(url, { params }).pipe(
       catchError(error => {
         console.error(`Error fetching categories from ${site}:`, error);
+        // Log more detailed error information
+        console.log(`API URL: ${url}`);
+        console.log(`Consumer Key: ${this.credentials[site].consumerKey}`);
+        console.log(`Consumer Secret: ${this.credentials[site].consumerSecret.substring(0, 5)}...`);
         return of([]);
+      })
+    );
+  }
+
+  /**
+   * Test API connectivity for a specific site
+   */
+  testApiConnection(site: string): Observable<{success: boolean, message: string}> {
+    const url = `${this.apiUrls[site]}/system_status`;
+    const params = new HttpParams()
+      .set('consumer_key', this.credentials[site].consumerKey)
+      .set('consumer_secret', this.credentials[site].consumerSecret);
+
+    return this.http.get<any>(url, { params }).pipe(
+      map(response => ({
+        success: true,
+        message: `Successfully connected to ${site} API`
+      })),
+      catchError(error => {
+        console.error(`Error connecting to ${site} API:`, error);
+        return of({
+          success: false,
+          message: `Failed to connect to ${site} API: ${error.message || 'Unknown error'}`
+        });
       })
     );
   }

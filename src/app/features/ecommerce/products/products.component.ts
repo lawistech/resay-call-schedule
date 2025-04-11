@@ -91,8 +91,9 @@ export class ProductsComponent implements OnInit {
         }),
         catchError(error => {
           console.error('Error loading products:', error);
-          // Show an error message to the user
-          alert('Failed to load products. Using mock data as fallback.');
+          // Show a more detailed error message to the user
+          const errorMessage = error.message || 'Unknown error';
+          alert(`Failed to load products: ${errorMessage}\n\nUsing mock data as fallback.`);
           // In case of error, we'll use mock data as a fallback
           return of(this.getMockProducts());
         })

@@ -4,8 +4,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { EcommerceService } from './ecommerce.service';
-import { forkJoin, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { forkJoin, of, from } from 'rxjs';
+import { map, catchError, concatMap, toArray } from 'rxjs/operators';
 
 @Component({
   selector: 'app-ecommerce',
@@ -30,7 +30,7 @@ export class EcommerceComponent implements OnInit {
     {
       id: 'androidEpos',
       name: 'Android EPOS',
-      url: 'https://android-epos.co.uk',
+      url: 'https://androidepos.co.uk',
       logo: 'assets/images/android-epos-logo.png',
       productCount: 0,
       recentOrders: 0,
@@ -39,7 +39,7 @@ export class EcommerceComponent implements OnInit {
     {
       id: 'barcode',
       name: 'BarcodeForBusiness',
-      url: 'https://barcodeforbusiness.co.uk',
+      url: 'https://barcodesforbusiness.co.uk',
       logo: 'assets/images/barcode-logo.png',
       productCount: 0,
       recentOrders: 0,
@@ -110,5 +110,32 @@ export class EcommerceComponent implements OnInit {
   getWebsiteById(id: string | null): any {
     if (!id) return null;
     return this.websites.find(w => w.id === id);
+  }
+
+  testApiConnections(): void {
+    // Test API connections for all websites
+    const sites = this.websites.map(website => website.id);
+    let results = '';
+
+    // Create a chain of observables to test each site sequentially
+    from(sites).pipe(
+      concatMap(site => this.ecommerceService.testApiConnection(site)),
+      toArray()
+    ).subscribe({
+      next: (responses) => {
+        // Format the results
+        responses.forEach((response, index) => {
+          const site = sites[index];
+          results += `${site}: ${response.success ? '✅ Connected' : '❌ Failed'} - ${response.message}\n`;
+        });
+
+        // Show the results
+        alert(`API Connection Test Results:\n\n${results}`);
+      },
+      error: (error) => {
+        console.error('Error testing API connections:', error);
+        alert('Error testing API connections. Check console for details.');
+      }
+    });
   }
 }
