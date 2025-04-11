@@ -1,11 +1,12 @@
 // src/app/core/services/email-account.service.ts
 import { Injectable } from '@angular/core';
-import { Observable, from, throwError, of } from 'rxjs';
+import { Observable, from, throwError } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
 import { SupabaseService } from './supabase.service';
 import { NotificationService } from './notification.service';
 import { AuthService } from './auth.service';
 import { EmailAccount, EmailFolder, EmailLabel, EmailAccess, EmailFilter } from '../models/email-account.model';
+import { EmailMessage, EmailAttachment } from '../models/email-message.model';
 
 @Injectable({
   providedIn: 'root'
@@ -201,12 +202,148 @@ export class EmailAccountService {
     );
   }
 
+  // Email Message Methods
+  getMessage(accountId: string, messageId: string): Observable<EmailMessage> {
+    return from(this.supabaseService.supabaseClient
+      .from('email_messages')
+      .select(`
+        *,
+        attachments:email_attachments(*)
+      `)
+      .eq('account_id', accountId)
+      .eq('id', messageId)
+      .single()
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return this.formatMessageFromDatabase(response.data);
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to fetch email message: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  sendEmail(accountId: string, message: Partial<EmailMessage>): Observable<EmailMessage> {
+    // In a real implementation, this would call the email provider API
+    // For now, we'll just save it to the database
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    return this.getEmailFolders(accountId).pipe(
+      switchMap(folders => {
+        const sentFolder = folders.find(folder => folder.type === 'sent');
+        if (!sentFolder) {
+          throw new Error('Sent folder not found');
+        }
+
+        const dbMessage = this.formatMessageForDatabase({
+          ...message,
+          accountId,
+          folderId: sentFolder.id,
+          isRead: true,
+          sentAt: new Date().toISOString()
+        });
+
+        return from(this.supabaseService.supabaseClient
+          .from('email_messages')
+          .insert(dbMessage)
+          .select()
+        );
+      }),
+      map(response => {
+        if (response.error) throw response.error;
+        this.notificationService.success('Email sent successfully');
+        return this.formatMessageFromDatabase(response.data[0]);
+      }),
+      catchError(error => {
+        this.notificationService.error(`Failed to send email: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
   // Helper Methods
   private getSharedAccountsQuery(): string {
     const user = this.authService.getCurrentUser();
     if (!user) return '';
 
     return `SELECT account_id FROM email_access WHERE user_id = '${user.id}'`;
+  }
+
+  private formatMessageFromDatabase(data: any): EmailMessage {
+    return {
+      id: data.id,
+      accountId: data.account_id,
+      folderId: data.folder_id,
+      threadId: data.thread_id,
+      providerId: data.provider_id,
+      messageId: data.message_id,
+      inReplyTo: data.in_reply_to,
+      references: data.references,
+      fromAddress: data.from_address,
+      fromName: data.from_name,
+      toAddresses: data.to_addresses || [],
+      ccAddresses: data.cc_addresses || [],
+      bccAddresses: data.bcc_addresses || [],
+      subject: data.subject,
+      htmlBody: data.html_body,
+      plainBody: data.plain_body,
+      isRead: data.is_read,
+      isStarred: data.is_starred,
+      isImportant: data.is_important,
+      hasAttachments: data.has_attachments,
+      sentAt: data.sent_at,
+      receivedAt: data.received_at,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at,
+      attachments: data.attachments ? data.attachments.map((att: any) => this.formatAttachmentFromDatabase(att)) : undefined
+    };
+  }
+
+  private formatMessageForDatabase(data: Partial<EmailMessage>): any {
+    const result: any = {};
+
+    if (data.accountId !== undefined) result.account_id = data.accountId;
+    if (data.folderId !== undefined) result.folder_id = data.folderId;
+    if (data.threadId !== undefined) result.thread_id = data.threadId;
+    if (data.providerId !== undefined) result.provider_id = data.providerId;
+    if (data.messageId !== undefined) result.message_id = data.messageId;
+    if (data.inReplyTo !== undefined) result.in_reply_to = data.inReplyTo;
+    if (data.references !== undefined) result.references = data.references;
+    if (data.fromAddress !== undefined) result.from_address = data.fromAddress;
+    if (data.fromName !== undefined) result.from_name = data.fromName;
+    if (data.toAddresses !== undefined) result.to_addresses = data.toAddresses;
+    if (data.ccAddresses !== undefined) result.cc_addresses = data.ccAddresses;
+    if (data.bccAddresses !== undefined) result.bcc_addresses = data.bccAddresses;
+    if (data.subject !== undefined) result.subject = data.subject;
+    if (data.htmlBody !== undefined) result.html_body = data.htmlBody;
+    if (data.plainBody !== undefined) result.plain_body = data.plainBody;
+    if (data.isRead !== undefined) result.is_read = data.isRead;
+    if (data.isStarred !== undefined) result.is_starred = data.isStarred;
+    if (data.isImportant !== undefined) result.is_important = data.isImportant;
+    if (data.hasAttachments !== undefined) result.has_attachments = data.hasAttachments;
+    if (data.sentAt !== undefined) result.sent_at = data.sentAt;
+    if (data.receivedAt !== undefined) result.received_at = data.receivedAt;
+
+    return result;
+  }
+
+  private formatAttachmentFromDatabase(data: any): EmailAttachment {
+    return {
+      id: data.id,
+      messageId: data.message_id,
+      filename: data.filename,
+      contentType: data.content_type,
+      size: data.size,
+      contentId: data.content_id,
+      storagePath: data.storage_path,
+      createdAt: data.created_at,
+      url: data.url
+    };
   }
 
   private formatAccountFromDatabase(data: any): EmailAccount {

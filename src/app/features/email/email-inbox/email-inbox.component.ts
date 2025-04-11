@@ -1,5 +1,5 @@
 // src/app/features/email/email-inbox/email-inbox.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +7,7 @@ import { EmailAccountService } from '../../../core/services/email-account.servic
 import { EmailInboxService } from '../../../core/services/email-inbox.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { EmailAccount, EmailFolder } from '../../../core/models/email-account.model';
-import { EmailThread } from '../../../core/models/email-message.model';
+import { EmailThread, EmailMessage } from '../../../core/models/email-message.model';
 import { EmailMessageListComponent } from './email-message-list/email-message-list.component';
 import { EmailMessageDetailComponent } from './email-message-detail/email-message-detail.component';
 
@@ -19,7 +19,9 @@ import { EmailMessageDetailComponent } from './email-message-detail/email-messag
   imports: [
     CommonModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    EmailMessageListComponent,
+    EmailMessageDetailComponent
   ]
 })
 export class EmailInboxComponent implements OnInit {
@@ -250,5 +252,41 @@ export class EmailInboxComponent implements OnInit {
 
   composeNewEmail(): void {
     this.router.navigate(['/email/compose']);
+  }
+
+  handleReply(message: EmailMessage): void {
+    if (!this.selectedAccount) {
+      this.notificationService.error('No email account selected');
+      return;
+    }
+    // Navigate to compose with reply parameters
+    this.router.navigate(['/email/compose'], {
+      queryParams: {
+        action: 'reply',
+        accountId: this.selectedAccount.id,
+        messageId: message.id
+      }
+    });
+  }
+
+  handleForward(message: EmailMessage): void {
+    if (!this.selectedAccount) {
+      this.notificationService.error('No email account selected');
+      return;
+    }
+    // Navigate to compose with forward parameters
+    this.router.navigate(['/email/compose'], {
+      queryParams: {
+        action: 'forward',
+        accountId: this.selectedAccount.id,
+        messageId: message.id
+      }
+    });
+  }
+
+  handleDownloadAttachment(attachment: any): void {
+    // In a real implementation, this would download the attachment
+    console.log('Downloading attachment:', attachment);
+    this.notificationService.info(`Downloading ${attachment.filename}...`);
   }
 }

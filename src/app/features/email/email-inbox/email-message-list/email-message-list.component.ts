@@ -1,6 +1,7 @@
 // src/app/features/email/email-inbox/email-message-list/email-message-list.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { EmailThread } from '../../../../core/models/email-message.model';
 
 @Component({
@@ -8,7 +9,7 @@ import { EmailThread } from '../../../../core/models/email-message.model';
   templateUrl: './email-message-list.component.html',
   styleUrls: ['./email-message-list.component.css'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, RouterModule]
 })
 export class EmailMessageListComponent {
   @Input() threads: EmailThread[] = [];

@@ -1,35 +1,42 @@
 // src/app/features/email/email-inbox/email-message-detail/email-message-detail.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { EmailThread, EmailMessage } from '../../../../core/models/email-message.model';
-import { EmailInboxService } from '../../../../core/services/email-inbox.service';
 
 @Component({
   selector: 'app-email-message-detail',
   templateUrl: './email-message-detail.component.html',
   styleUrls: ['./email-message-detail.component.css'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, RouterModule]
 })
 export class EmailMessageDetailComponent {
   @Input() thread: EmailThread | null = null;
   @Output() close = new EventEmitter<void>();
+  @Output() reply = new EventEmitter<EmailMessage>();
+  @Output() forward = new EventEmitter<EmailMessage>();
+  @Output() downloadAttach = new EventEmitter<any>();
 
-  constructor(private emailInboxService: EmailInboxService) {}
+  constructor() {}
 
   closeDetail(): void {
     this.close.emit();
   }
 
   replyToEmail(): void {
-    // Implement reply functionality
+    if (this.thread && this.thread.messages && this.thread.messages.length > 0) {
+      this.reply.emit(this.thread.messages[this.thread.messages.length - 1]);
+    }
   }
 
   forwardEmail(): void {
-    // Implement forward functionality
+    if (this.thread && this.thread.messages && this.thread.messages.length > 0) {
+      this.forward.emit(this.thread.messages[this.thread.messages.length - 1]);
+    }
   }
 
   downloadAttachment(attachment: any): void {
-    // Implement attachment download
+    this.downloadAttach.emit(attachment);
   }
 }

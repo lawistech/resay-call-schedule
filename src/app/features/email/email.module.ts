@@ -1,6 +1,8 @@
 // src/app/features/email/email.module.ts
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { EmailDashboardComponent } from './components';
 import { EmailInboxComponent } from './email-inbox/email-inbox.component';
 import { EmailComposeComponent } from './email-compose/email-compose.component';
@@ -15,11 +17,9 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forChild(routes),
-    EmailDashboardComponent,
-    EmailInboxComponent,
-    EmailComposeComponent,
-    EmailAccountSettingsComponent
+    CommonModule,
+    FormsModule,
+    RouterModule.forChild(routes)
   ]
 })
 export class EmailModule { }

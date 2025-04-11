@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { EmailAccountService } from '../../../core/services/email-account.service';
-import { EmailInboxService } from '../../../core/services/email-inbox.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { EmailAccount } from '../../../core/models/email-account.model';
 import { EmailMessage } from '../../../core/models/email-message.model';
@@ -30,7 +29,6 @@ export class EmailComposeComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private emailAccountService: EmailAccountService,
-    private emailInboxService: EmailInboxService,
     private notificationService: NotificationService
   ) {
     this.composeForm = this.fb.group({
@@ -44,13 +42,13 @@ export class EmailComposeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAccounts();
-    
+
     // Check if we're replying to or forwarding an email
     this.route.queryParams.subscribe(params => {
       if (params['mode']) {
         this.mode = params['mode'] as 'new' | 'reply' | 'forward';
       }
-      
+
       if (params['messageId'] && params['accountId']) {
         this.loadOriginalMessage(params['accountId'], params['messageId']);
       }
@@ -77,7 +75,7 @@ export class EmailComposeComponent implements OnInit {
 
   loadOriginalMessage(accountId: string, messageId: string): void {
     this.isLoading = true;
-    this.emailInboxService.getMessage(accountId, messageId).subscribe({
+    this.emailAccountService.getMessage(accountId, messageId).subscribe({
       next: (message) => {
         this.originalMessage = message;
         this.prepareForm();
@@ -93,7 +91,7 @@ export class EmailComposeComponent implements OnInit {
 
   prepareForm(): void {
     if (!this.originalMessage) return;
-    
+
     if (this.mode === 'reply') {
       // Set recipient to the original sender
       this.composeForm.patchValue({
@@ -112,10 +110,10 @@ export class EmailComposeComponent implements OnInit {
 
   getReplyBody(): string {
     if (!this.originalMessage) return '';
-    
+
     const originalDate = this.originalMessage.sentAt || this.originalMessage.receivedAt || '';
     const formattedDate = originalDate ? new Date(originalDate).toLocaleString() : '';
-    
+
     return `\n\n\n-------- Original Message --------
 From: ${this.originalMessage.fromName || this.originalMessage.fromAddress}
 Date: ${formattedDate}
@@ -126,10 +124,10 @@ ${this.originalMessage.plainBody || ''}`;
 
   getForwardBody(): string {
     if (!this.originalMessage) return '';
-    
+
     const originalDate = this.originalMessage.sentAt || this.originalMessage.receivedAt || '';
     const formattedDate = originalDate ? new Date(originalDate).toLocaleString() : '';
-    
+
     return `\n\n\n-------- Forwarded Message --------
 From: ${this.originalMessage.fromName || this.originalMessage.fromAddress}
 Date: ${formattedDate}
@@ -145,21 +143,21 @@ ${this.originalMessage.plainBody || ''}`;
       this.notificationService.error('Please fill in all required fields');
       return;
     }
-    
+
     if (!this.selectedAccount) {
       this.notificationService.error('Please select an email account');
       return;
     }
-    
+
     this.isSending = true;
-    
+
     const formValues = this.composeForm.value;
-    
+
     // Parse recipients
     const toAddresses = formValues.to.split(',').map((email: string) => email.trim());
     const ccAddresses = formValues.cc ? formValues.cc.split(',').map((email: string) => email.trim()) : [];
     const bccAddresses = formValues.bcc ? formValues.bcc.split(',').map((email: string) => email.trim()) : [];
-    
+
     const message: Partial<EmailMessage> = {
       fromAddress: this.selectedAccount.email,
       fromName: this.selectedAccount.name,
@@ -172,8 +170,8 @@ ${this.originalMessage.plainBody || ''}`;
       htmlBody: `<div>${formValues.body.replace(/\n/g, '<br>')}</div>`,
       hasAttachments: false
     };
-    
-    this.emailInboxService.sendEmail(this.selectedAccount.id, message).subscribe({
+
+    this.emailAccountService.sendEmail(this.selectedAccount.id, message).subscribe({
       next: () => {
         this.notificationService.success('Email sent successfully');
         this.isSending = false;
