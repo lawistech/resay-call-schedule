@@ -1,0 +1,151 @@
+<!-- src/app/features/email/email-templates/email-template-form/email-template-form.component.html -->
+<div class="container mx-auto px-4 py-6">
+  <div class="flex items-center mb-6">
+    <a routerLink="/email/templates" class="mr-4 text-gray-500 hover:text-gray-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+    </a>
+    <h1 class="text-2xl font-bold text-gray-800">{{ isEditMode ? 'Edit Email Template' : 'Create Email Template' }}</h1>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+
+  <div *ngIf="!isLoading" class="bg-white rounded-lg shadow-md p-6">
+    <form [formGroup]="templateForm" (ngSubmit)="onSubmit()">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Template Name -->
+        <div class="col-span-1">
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Template Name *</label>
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            [ngClass]="{'border-red-500': isFieldInvalid('name')}"
+          />
+          <p *ngIf="isFieldInvalid('name')" class="mt-1 text-sm text-red-600">
+            {{ getErrorMessage('name') }}
+          </p>
+        </div>
+
+        <!-- Category -->
+        <div class="col-span-1">
+          <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select
+            id="category"
+            formControlName="category"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+            <option value="">Select a category</option>
+            <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+          </select>
+        </div>
+
+        <!-- Subject -->
+        <div class="col-span-2">
+          <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Email Subject *</label>
+          <input
+            type="text"
+            id="subject"
+            formControlName="subject"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            [ngClass]="{'border-red-500': isFieldInvalid('subject')}"
+          />
+          <p *ngIf="isFieldInvalid('subject')" class="mt-1 text-sm text-red-600">
+            {{ getErrorMessage('subject') }}
+          </p>
+        </div>
+
+        <!-- Description -->
+        <div class="col-span-2">
+          <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="3"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          ></textarea>
+        </div>
+
+        <!-- HTML Content -->
+        <div class="col-span-2">
+          <label for="htmlContent" class="block text-sm font-medium text-gray-700 mb-1">HTML Content *</label>
+          <textarea
+            id="htmlContent"
+            formControlName="htmlContent"
+            rows="10"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono"
+            [ngClass]="{'border-red-500': isFieldInvalid('htmlContent')}"
+          ></textarea>
+          <p *ngIf="isFieldInvalid('htmlContent')" class="mt-1 text-sm text-red-600">
+            {{ getErrorMessage('htmlContent') }}
+          </p>
+          <p class="mt-1 text-xs text-gray-500">
+            Use HTML to format your email. You can use variables like {{'{{firstName}}'}} and {{'{{lastName}}'}}.
+          </p>
+        </div>
+
+        <!-- Plain Text Content -->
+        <div class="col-span-2">
+          <label for="plainContent" class="block text-sm font-medium text-gray-700 mb-1">Plain Text Content</label>
+          <textarea
+            id="plainContent"
+            formControlName="plainContent"
+            rows="5"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono"
+          ></textarea>
+          <p class="mt-1 text-xs text-gray-500">
+            Plain text version of your email for clients that don't support HTML.
+          </p>
+        </div>
+
+        <!-- Variables -->
+        <div class="col-span-1">
+          <label for="variables" class="block text-sm font-medium text-gray-700 mb-1">Variables</label>
+          <input
+            type="text"
+            id="variables"
+            formControlName="variables"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+          <p class="mt-1 text-xs text-gray-500">
+            Comma-separated list of variables used in the template (e.g., firstName, lastName, companyName)
+          </p>
+        </div>
+
+        <!-- Tags -->
+        <div class="col-span-1">
+          <label for="tags" class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+          <input
+            type="text"
+            id="tags"
+            formControlName="tags"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+          <p class="mt-1 text-xs text-gray-500">
+            Comma-separated list of tags for categorizing this template
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-8 flex justify-end space-x-3">
+        <a routerLink="/email/templates" class="btn-secondary">
+          Cancel
+        </a>
+        <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="mr-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </span>
+          {{ isEditMode ? 'Update Template' : 'Create Template' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

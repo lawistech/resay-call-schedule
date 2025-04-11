@@ -98,6 +98,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.expandedSection = 'tasks';
     } else if (route.includes('/accounts')) {
       this.expandedSection = 'contacts';
+    } else if (route.includes('/email')) {
+      this.expandedSection = 'email';
     } else if (route === '/websites') {
       this.expandedSection = 'websites';
     }
