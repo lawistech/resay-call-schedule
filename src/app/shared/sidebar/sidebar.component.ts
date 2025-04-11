@@ -102,6 +102,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.expandedSection = 'email';
     } else if (route === '/websites') {
       this.expandedSection = 'websites';
+    } else if (route.includes('/ecommerce')) {
+      this.expandedSection = 'ecommerce';
     }
 
     // Store the active section in localStorage for persistence

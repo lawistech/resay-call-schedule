@@ -1,0 +1,261 @@
+<!-- src/app/features/ecommerce/product-catalog/product-catalog.component.html -->
+<div class="container mx-auto px-4 py-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Product Catalog</h1>
+    <button (click)="openForm()" class="btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Add Product
+    </button>
+  </div>
+
+  <!-- Search and Filter -->
+  <div class="mb-6 bg-white rounded-lg shadow-md p-4">
+    <div class="flex flex-col md:flex-row gap-4">
+      <div class="flex-1">
+        <div class="relative">
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm" 
+            (input)="filterProducts()"
+            placeholder="Search products..." 
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="md:w-1/4">
+        <select 
+          [(ngModel)]="supplierFilter" 
+          (change)="filterProducts()"
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All Suppliers</option>
+          <option *ngFor="let supplier of suppliers" [value]="supplier.id">{{ supplier.name }}</option>
+        </select>
+      </div>
+      <div class="md:w-1/4">
+        <select 
+          [(ngModel)]="categoryFilter" 
+          (change)="filterProducts()"
+          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">All Categories</option>
+          <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+
+  <!-- Products List -->
+  <div *ngIf="!isLoading" class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div *ngIf="filteredProducts.length === 0" class="p-6 text-center text-gray-500">
+      No products found. Add your first product to get started.
+    </div>
+
+    <div *ngIf="filteredProducts.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+      <div *ngFor="let product of filteredProducts" class="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+        <div class="relative h-48 bg-gray-100">
+          <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name" class="w-full h-full object-cover">
+          <div *ngIf="!product.imageUrl" class="w-full h-full flex items-center justify-center text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div class="absolute top-2 right-2">
+            <span class="px-2 py-1 text-xs font-semibold rounded-full"
+                  [ngClass]="product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+              {{ product.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 truncate">{{ product.name }}</h3>
+              <p class="text-sm text-gray-500">SKU: {{ product.sku }}</p>
+            </div>
+            <div class="text-lg font-bold text-blue-600">£{{ formatPrice(product.price) }}</div>
+          </div>
+          <p *ngIf="product.supplierName" class="mt-1 text-sm text-gray-600">
+            Supplier: {{ product.supplierName }}
+          </p>
+          <p *ngIf="product.category" class="mt-1 text-sm text-gray-600">
+            Category: {{ product.category }}
+          </p>
+          <p *ngIf="product.description" class="mt-2 text-sm text-gray-600 line-clamp-2">
+            {{ product.description }}
+          </p>
+          <div *ngIf="product.tags && product.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+            <span *ngFor="let tag of product.tags" class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+              {{ tag }}
+            </span>
+          </div>
+          <div class="mt-4 flex justify-end space-x-2">
+            <button (click)="openForm(product)" class="btn-secondary">
+              Edit
+            </button>
+            <button (click)="deleteProduct(product)" class="btn-danger">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Form Modal -->
+  <div *ngIf="showForm" class="fixed inset-0 overflow-y-auto z-50">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+      </div>
+      
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                  {{ isEditing ? 'Edit Product' : 'Add Product' }}
+                </h3>
+                
+                <div class="mt-4 space-y-4">
+                  <!-- Supplier -->
+                  <div>
+                    <label for="supplierId" class="block text-sm font-medium text-gray-700">Supplier *</label>
+                    <select id="supplierId" formControlName="supplierId" 
+                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                      <option [value]="''">Select a supplier</option>
+                      <option *ngFor="let supplier of suppliers" [value]="supplier.id">{{ supplier.name }}</option>
+                    </select>
+                    <div *ngIf="productForm.get('supplierId')?.invalid && productForm.get('supplierId')?.touched" class="text-red-500 text-xs mt-1">
+                      Supplier is required
+                    </div>
+                  </div>
+                  
+                  <!-- Name -->
+                  <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Name *</label>
+                    <input type="text" id="name" formControlName="name" 
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <div *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched" class="text-red-500 text-xs mt-1">
+                      Name is required
+                    </div>
+                  </div>
+                  
+                  <!-- SKU -->
+                  <div>
+                    <label for="sku" class="block text-sm font-medium text-gray-700">SKU *</label>
+                    <input type="text" id="sku" formControlName="sku" 
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <div *ngIf="productForm.get('sku')?.invalid && productForm.get('sku')?.touched" class="text-red-500 text-xs mt-1">
+                      SKU is required
+                    </div>
+                  </div>
+                  
+                  <!-- Description -->
+                  <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea id="description" formControlName="description" rows="3"
+                              class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                  </div>
+                  
+                  <!-- Price and Cost -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="price" class="block text-sm font-medium text-gray-700">Price *</label>
+                      <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <span class="text-gray-500 sm:text-sm">£</span>
+                        </div>
+                        <input type="number" id="price" formControlName="price" min="0" step="0.01"
+                               class="pl-7 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                      </div>
+                      <div *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched" class="text-red-500 text-xs mt-1">
+                        Price is required and must be at least 0
+                      </div>
+                    </div>
+                    <div>
+                      <label for="cost" class="block text-sm font-medium text-gray-700">Cost</label>
+                      <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <span class="text-gray-500 sm:text-sm">£</span>
+                        </div>
+                        <input type="number" id="cost" formControlName="cost" min="0" step="0.01"
+                               class="pl-7 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                      </div>
+                      <div *ngIf="productForm.get('cost')?.invalid && productForm.get('cost')?.touched" class="text-red-500 text-xs mt-1">
+                        Cost must be at least 0
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Stock Quantity -->
+                  <div>
+                    <label for="stockQuantity" class="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                    <input type="number" id="stockQuantity" formControlName="stockQuantity" min="0" step="1"
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <div *ngIf="productForm.get('stockQuantity')?.invalid && productForm.get('stockQuantity')?.touched" class="text-red-500 text-xs mt-1">
+                      Stock quantity must be at least 0
+                    </div>
+                  </div>
+                  
+                  <!-- Category -->
+                  <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <input type="text" id="category" formControlName="category" 
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                  </div>
+                  
+                  <!-- Tags -->
+                  <div>
+                    <label for="tags" class="block text-sm font-medium text-gray-700">Tags (comma-separated)</label>
+                    <input type="text" id="tags" formControlName="tags" 
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                  </div>
+                  
+                  <!-- Image URL -->
+                  <div>
+                    <label for="imageUrl" class="block text-sm font-medium text-gray-700">Image URL</label>
+                    <input type="text" id="imageUrl" formControlName="imageUrl" 
+                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                  </div>
+                  
+                  <!-- Active Status -->
+                  <div class="flex items-center">
+                    <input type="checkbox" id="isActive" formControlName="isActive" 
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="isActive" class="ml-2 block text-sm text-gray-900">Active</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button type="submit" [disabled]="productForm.invalid"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    [ngClass]="{'opacity-50 cursor-not-allowed': productForm.invalid}">
+              {{ isEditing ? 'Update' : 'Create' }}
+            </button>
+            <button type="button" (click)="closeForm()"
+                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -51,6 +51,11 @@ export const routes: Routes = [
     loadChildren: () => import('./features/email/email.module').then(m => m.EmailModule)
   },
   {
+    path: 'ecommerce',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./features/ecommerce/ecommerce.module').then(m => m.EcommerceModule)
+  },
+  {
     path: 'settings',
     canActivate: [AuthGuard],
     loadChildren: () => import('./features/settings/settings.module').then(m => m.SettingsModule)

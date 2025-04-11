@@ -298,7 +298,82 @@
         </div>
       </div>
 
+      <!-- Ecommerce Module -->
+      <div class="nav-section relative">
+        <button (click)="toggleSection('ecommerce')"
+                class="nav-item relative w-full flex items-center justify-between px-3 py-3 rounded-md text-stone-600
+                       hover:bg-stone-50 transition-all duration-150 group"
+                [ngClass]="{'bg-emerald-50 text-emerald-700': expandedSection === 'ecommerce'}">
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" [ngClass]="{'text-emerald-600': expandedSection === 'ecommerce'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            <span *ngIf="expanded || tempExpanded" class="ml-3 font-medium transition-all duration-200"
+                  [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+              Ecommerce
+            </span>
+          </div>
+          <div *ngIf="expanded || tempExpanded" class="transition-all duration-200"
+               [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 [ngClass]="{'rotate-180': expandedSection === 'ecommerce'}"
+                 class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
 
+          <!-- Tooltip for collapsed state -->
+          <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
+            Ecommerce
+          </div>
+        </button>
+
+        <!-- Ecommerce submenu -->
+        <div *ngIf="expandedSection === 'ecommerce' && (expanded || tempExpanded)"
+             [@submenuAnimation]
+             class="ml-4 pl-4 border-l-2 border-emerald-100 mt-1 space-y-1">
+          <a routerLink="/ecommerce"
+             [class.text-emerald-700]="isRouteActive('/ecommerce') && !isRouteActive('/ecommerce/products') && !isRouteActive('/ecommerce/suppliers') && !isRouteActive('/ecommerce/product-catalog')"
+             [class.font-medium]="isRouteActive('/ecommerce') && !isRouteActive('/ecommerce/products') && !isRouteActive('/ecommerce/suppliers') && !isRouteActive('/ecommerce/product-catalog')"
+             [class.bg-emerald-50]="isRouteActive('/ecommerce') && !isRouteActive('/ecommerce/products') && !isRouteActive('/ecommerce/suppliers') && !isRouteActive('/ecommerce/product-catalog')"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Dashboard
+          </a>
+          <a routerLink="/ecommerce/products"
+             [class.text-emerald-700]="isRouteActive('/ecommerce/products')"
+             [class.font-medium]="isRouteActive('/ecommerce/products')"
+             [class.bg-emerald-50]="isRouteActive('/ecommerce/products')"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+            WooCommerce Products
+          </a>
+          <a routerLink="/ecommerce/product-catalog"
+             [class.text-emerald-700]="isRouteActive('/ecommerce/product-catalog')"
+             [class.font-medium]="isRouteActive('/ecommerce/product-catalog')"
+             [class.bg-emerald-50]="isRouteActive('/ecommerce/product-catalog')"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Product Catalog
+          </a>
+          <a routerLink="/ecommerce/suppliers"
+             [class.text-emerald-700]="isRouteActive('/ecommerce/suppliers')"
+             [class.font-medium]="isRouteActive('/ecommerce/suppliers')"
+             [class.bg-emerald-50]="isRouteActive('/ecommerce/suppliers')"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Suppliers
+          </a>
+        </div>
+      </div>
 
       <!-- Email Module -->
       <div class="nav-section relative">

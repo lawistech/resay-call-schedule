@@ -19,7 +19,12 @@ export class EcommerceService {
   };
 
   // WooCommerce API credentials from environment
-  private credentials: { [key: string]: WooCommerceCredentials } = environment.woocommerceCredentials;
+  private credentials: { [key: string]: WooCommerceCredentials } = environment.woocommerceCredentials || {
+    resay: {
+      consumerKey: '',
+      consumerSecret: ''
+    }
+  };
 
   constructor(private http: HttpClient) {}
 
@@ -229,7 +234,7 @@ export class EcommerceService {
       .set('consumer_secret', this.credentials[site].consumerSecret);
 
     return this.http.get<any>(url, { params }).pipe(
-      map(response => ({
+      map(() => ({
         success: true,
         message: `Successfully connected to ${site} API`
       })),
