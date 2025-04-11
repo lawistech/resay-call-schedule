@@ -1,0 +1,68 @@
+<!-- src/app/features/email/email-inbox/email-message-detail/email-message-detail.component.html -->
+<div *ngIf="thread" class="h-full flex flex-col">
+  <div class="flex-1 overflow-y-auto p-6">
+    <div class="mb-6 flex justify-between items-center">
+      <h1 class="text-xl font-semibold text-gray-900">{{ thread.subject || '(No subject)' }}</h1>
+      <button (click)="closeDetail()" class="text-gray-500 hover:text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <div *ngFor="let message of thread.messages" class="mb-8 border-b border-gray-200 pb-6 last:border-0 last:pb-0">
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex items-start">
+          <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold mr-3">
+            {{ message.fromName?.[0] || message.fromAddress[0] || '?' }}
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">{{ message.fromName || message.fromAddress }}</h3>
+            <p class="text-xs text-gray-500">To: {{ message.toAddresses.join(', ') }}</p>
+            <p *ngIf="message.ccAddresses && message.ccAddresses.length > 0" class="text-xs text-gray-500">
+              Cc: {{ message.ccAddresses.join(', ') }}
+            </p>
+          </div>
+        </div>
+        <div class="text-xs text-gray-500">
+          {{ message.receivedAt || message.sentAt | date:'medium' }}
+        </div>
+      </div>
+      
+      <div class="message-body" [innerHTML]="message.htmlBody || message.plainBody"></div>
+      
+      <div *ngIf="message.hasAttachments && message.attachments && message.attachments.length > 0" class="mt-4">
+        <h4 class="text-sm font-semibold text-gray-700 mb-2">Attachments</h4>
+        <div class="flex flex-wrap gap-2">
+          <div *ngFor="let attachment of message.attachments" class="border border-gray-200 rounded-md p-2 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+            </svg>
+            <div>
+              <p class="text-xs font-medium text-gray-700">{{ attachment.filename }}</p>
+              <p class="text-xs text-gray-500">{{ attachment.size | number }} bytes</p>
+            </div>
+            <button (click)="downloadAttachment(attachment)" class="ml-2 text-xs text-blue-600 hover:text-blue-800">
+              Download
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-6">
+      <button (click)="replyToEmail()" class="btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+        </svg>
+        Reply
+      </button>
+      <button (click)="forwardEmail()" class="btn-secondary ml-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+        Forward
+      </button>
+    </div>
+  </div>
+</div>

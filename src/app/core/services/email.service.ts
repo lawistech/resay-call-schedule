@@ -169,7 +169,7 @@ export class EmailService {
         if (response.error) throw response.error;
 
         // Convert snake_case to camelCase for frontend use
-        return response.data.map(signature => this.formatSignatureFromDatabase(signature));
+        return response.data.map((signature: any) => this.formatSignatureFromDatabase(signature));
       }),
       catchError(error => {
         this.notificationService.error(`Failed to fetch email signatures: ${error.message}`);

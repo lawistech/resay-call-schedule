@@ -1,0 +1,263 @@
+<!-- src/app/features/email/email-inbox/email-inbox.component.html -->
+<div class="flex h-screen overflow-hidden bg-gray-100">
+  <!-- Sidebar -->
+  <div class="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <!-- Account Selector -->
+    <div class="p-4 border-b border-gray-200">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold text-gray-800">Email</h2>
+        <button (click)="composeNewEmail()" class="btn-primary text-sm px-3 py-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Compose
+        </button>
+      </div>
+      
+      <select 
+        *ngIf="accounts.length > 0"
+        [(ngModel)]="selectedAccount" 
+        (ngModelChange)="selectAccount($event)"
+        class="w-full p-2 border border-gray-300 rounded-md text-sm">
+        <option *ngFor="let account of accounts" [ngValue]="account">
+          {{ account.name }} ({{ account.email }})
+        </option>
+      </select>
+      
+      <div *ngIf="accounts.length === 0 && !isLoading" class="text-center py-2 text-gray-500 text-sm">
+        No email accounts configured
+      </div>
+    </div>
+    
+    <!-- Folders -->
+    <div class="flex-1 overflow-y-auto">
+      <div class="p-4">
+        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Folders</h3>
+        <ul class="space-y-1">
+          <li *ngFor="let folder of folders">
+            <button 
+              (click)="selectFolder(folder)"
+              [class.bg-blue-50]="selectedFolder?.id === folder.id"
+              [class.text-blue-600]="selectedFolder?.id === folder.id"
+              class="flex items-center w-full px-2 py-1.5 text-sm text-gray-700 rounded-md hover:bg-gray-100">
+              
+              <!-- Folder Icon -->
+              <svg *ngIf="folder.type === 'inbox'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              
+              <svg *ngIf="folder.type === 'sent'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              
+              <svg *ngIf="folder.type === 'drafts'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              
+              <svg *ngIf="folder.type === 'trash'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              
+              <svg *ngIf="folder.type === 'spam'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              
+              <svg *ngIf="folder.type === 'custom'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              
+              <span>{{ folder.name }}</span>
+              
+              <!-- Unread Count Badge -->
+              <span *ngIf="folder.unreadCount > 0" class="ml-auto bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+                {{ folder.unreadCount }}
+              </span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- Account Actions -->
+    <div class="p-4 border-t border-gray-200">
+      <a routerLink="/email/accounts/settings" class="text-sm text-blue-600 hover:text-blue-800 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        Account Settings
+      </a>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Toolbar -->
+    <div class="bg-white border-b border-gray-200 p-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <button (click)="refreshInbox()" class="p-2 rounded-md hover:bg-gray-100 mr-2" title="Refresh">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+          
+          <div class="relative">
+            <input 
+              type="text" 
+              [(ngModel)]="searchTerm"
+              (keyup.enter)="searchEmails()"
+              placeholder="Search emails..." 
+              class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <span *ngIf="selectedFolder" class="text-sm text-gray-600">
+            {{ selectedFolder.name }} ({{ threads.length }} {{ threads.length === 1 ? 'conversation' : 'conversations' }})
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Email Content -->
+    <div class="flex-1 flex overflow-hidden">
+      <!-- Email List -->
+      <div [class.hidden]="selectedThread !== null" [class.flex]="selectedThread === null" class="w-full md:w-2/5 border-r border-gray-200 flex flex-col">
+        <div *ngIf="isLoading" class="flex-1 flex items-center justify-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+        
+        <div *ngIf="!isLoading && threads.length === 0" class="flex-1 flex items-center justify-center">
+          <div class="text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <p class="text-gray-600">No emails found</p>
+            <button (click)="refreshInbox()" class="mt-2 text-sm text-blue-600 hover:text-blue-800">Refresh</button>
+          </div>
+        </div>
+        
+        <div *ngIf="!isLoading && threads.length > 0" class="flex-1 overflow-y-auto">
+          <div 
+            *ngFor="let thread of threads" 
+            (click)="selectThread(thread)"
+            [class.bg-blue-50]="selectedThread?.id === thread.id"
+            class="border-b border-gray-200 hover:bg-gray-50 cursor-pointer">
+            <div class="p-4">
+              <div class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <p [class.font-semibold]="thread.unreadCount > 0" [class.text-gray-900]="thread.unreadCount > 0" [class.text-gray-600]="thread.unreadCount === 0" class="text-sm truncate">
+                    {{ thread.subject || '(No subject)' }}
+                  </p>
+                  <p class="text-xs text-gray-500 mt-1 truncate">
+                    {{ thread.participants?.[0] || 'Unknown' }}
+                  </p>
+                </div>
+                <div class="ml-2 flex-shrink-0">
+                  <p class="text-xs text-gray-500">
+                    {{ thread.latestMessageAt | date:'shortTime' }}
+                  </p>
+                </div>
+              </div>
+              <p class="mt-1 text-xs text-gray-500 line-clamp-2">
+                {{ thread.snippet || 'No preview available' }}
+              </p>
+              <div class="mt-2 flex items-center">
+                <span *ngIf="thread.isStarred" class="mr-2 text-yellow-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </span>
+                <span *ngIf="thread.isImportant" class="mr-2 text-red-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                  </svg>
+                </span>
+                <span *ngIf="thread.hasAttachments" class="mr-2 text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg>
+                </span>
+                <span *ngIf="thread.unreadCount > 0" class="ml-auto bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+                  {{ thread.unreadCount }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Email Detail -->
+      <div [class.hidden]="selectedThread === null" [class.flex]="selectedThread !== null" class="w-full md:w-3/5 flex-col">
+        <div *ngIf="selectedThread" class="flex-1 overflow-y-auto p-6">
+          <div class="mb-6 flex justify-between items-center">
+            <h1 class="text-xl font-semibold text-gray-900">{{ selectedThread.subject || '(No subject)' }}</h1>
+            <button (click)="selectedThread = null" class="text-gray-500 hover:text-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div *ngFor="let message of selectedThread.messages" class="mb-8 border-b border-gray-200 pb-6 last:border-0 last:pb-0">
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex items-start">
+                <div class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold mr-3">
+                  {{ message.fromName?.[0] || message.fromAddress[0] || '?' }}
+                </div>
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-900">{{ message.fromName || message.fromAddress }}</h3>
+                  <p class="text-xs text-gray-500">To: {{ message.toAddresses.join(', ') }}</p>
+                  <p *ngIf="message.ccAddresses && message.ccAddresses.length > 0" class="text-xs text-gray-500">
+                    Cc: {{ message.ccAddresses.join(', ') }}
+                  </p>
+                </div>
+              </div>
+              <div class="text-xs text-gray-500">
+                {{ message.receivedAt || message.sentAt | date:'medium' }}
+              </div>
+            </div>
+            
+            <div class="message-body" [innerHTML]="message.htmlBody || message.plainBody"></div>
+            
+            <div *ngIf="message.hasAttachments && message.attachments && message.attachments.length > 0" class="mt-4">
+              <h4 class="text-sm font-semibold text-gray-700 mb-2">Attachments</h4>
+              <div class="flex flex-wrap gap-2">
+                <div *ngFor="let attachment of message.attachments" class="border border-gray-200 rounded-md p-2 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg>
+                  <div>
+                    <p class="text-xs font-medium text-gray-700">{{ attachment.filename }}</p>
+                    <p class="text-xs text-gray-500">{{ attachment.size | number }} bytes</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6">
+            <button class="btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+              </svg>
+              Reply
+            </button>
+            <button class="btn-secondary ml-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+              Forward
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

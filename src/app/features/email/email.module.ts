@@ -7,9 +7,15 @@ import {
   EmailTemplateFormComponent,
   EmailTemplateDetailComponent
 } from './components';
+import { EmailInboxComponent } from './email-inbox/email-inbox.component';
+import { EmailComposeComponent } from './email-compose/email-compose.component';
+import { EmailAccountSettingsComponent } from './email-accounts/email-account-settings.component';
 
 const routes: Routes = [
   { path: '', component: EmailDashboardComponent },
+  { path: 'inbox', component: EmailInboxComponent },
+  { path: 'compose', component: EmailComposeComponent },
+  { path: 'accounts/settings', component: EmailAccountSettingsComponent },
   { path: 'templates', component: EmailTemplatesComponent },
   { path: 'templates/new', component: EmailTemplateFormComponent },
   { path: 'templates/:id', component: EmailTemplateDetailComponent },
@@ -22,7 +28,10 @@ const routes: Routes = [
     EmailDashboardComponent,
     EmailTemplatesComponent,
     EmailTemplateFormComponent,
-    EmailTemplateDetailComponent
+    EmailTemplateDetailComponent,
+    EmailInboxComponent,
+    EmailComposeComponent,
+    EmailAccountSettingsComponent
   ]
 })
 export class EmailModule { }
