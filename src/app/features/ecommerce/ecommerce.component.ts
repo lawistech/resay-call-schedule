@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { EcommerceService } from './ecommerce.service';
+import { forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-ecommerce',
@@ -26,7 +28,7 @@ export class EcommerceComponent implements OnInit {
       revenue: 0
     },
     {
-      id: 'android-epos',
+      id: 'androidEpos',
       name: 'Android EPOS',
       url: 'https://android-epos.co.uk',
       logo: 'assets/images/android-epos-logo.png',
@@ -56,23 +58,37 @@ export class EcommerceComponent implements OnInit {
   loadWebsiteData(): void {
     this.isLoading = true;
 
-    // Simulate loading data for each website
-    // In a real implementation, you would call your WooCommerce API
-    setTimeout(() => {
-      this.websites[0].productCount = 42;
-      this.websites[0].recentOrders = 8;
-      this.websites[0].revenue = 1250;
+    // Create an array of observables for each website's stats
+    const statsRequests = this.websites.map(website =>
+      this.ecommerceService.getWebsiteStats(website.id).pipe(
+        map(stats => {
+          // Update the website object with the stats
+          website.productCount = stats.productCount;
+          website.recentOrders = stats.recentOrders;
+          website.revenue = stats.revenue;
+          return website;
+        })
+      )
+    );
 
-      this.websites[1].productCount = 36;
-      this.websites[1].recentOrders = 5;
-      this.websites[1].revenue = 980;
-
-      this.websites[2].productCount = 28;
-      this.websites[2].recentOrders = 3;
-      this.websites[2].revenue = 750;
-
-      this.isLoading = false;
-    }, 1000);
+    // Execute all requests in parallel
+    forkJoin(statsRequests)
+      .pipe(
+        catchError(error => {
+          console.error('Error loading website data:', error);
+          // In case of error, we'll still hide the loading indicator
+          this.isLoading = false;
+          return of(this.websites);
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.isLoading = false;
+        },
+        error: () => {
+          this.isLoading = false;
+        }
+      });
   }
 
   selectWebsite(websiteId: string): void {

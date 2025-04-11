@@ -68,11 +68,16 @@
             class="w-full py-2 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           >
             <option value="">All Categories</option>
-            <option value="Hardware">Hardware</option>
-            <option value="Software">Software</option>
-            <option value="Phones">Phones</option>
-            <option value="Accessories">Accessories</option>
-            <option value="Business">Business</option>
+            <option *ngIf="isLoadingCategories">Loading categories...</option>
+            <option *ngFor="let category of categories" [value]="category.name">
+              {{ category.name }} ({{ category.count }})
+            </option>
+            <!-- Fallback options if no categories are loaded -->
+            <option *ngIf="categories.length === 0 && !isLoadingCategories" value="Hardware">Hardware</option>
+            <option *ngIf="categories.length === 0 && !isLoadingCategories" value="Software">Software</option>
+            <option *ngIf="categories.length === 0 && !isLoadingCategories" value="Phones">Phones</option>
+            <option *ngIf="categories.length === 0 && !isLoadingCategories" value="Accessories">Accessories</option>
+            <option *ngIf="categories.length === 0 && !isLoadingCategories" value="Business">Business</option>
           </select>
         </div>
 

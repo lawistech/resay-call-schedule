@@ -7,6 +7,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { EcommerceService } from '../ecommerce.service';
 import { Product } from '../models/product.model';
 import { ProductDetailComponent } from './product-detail/product-detail.component';
+import { finalize, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-products',
@@ -36,9 +38,13 @@ export class ProductsComponent implements OnInit {
   selectedProduct: Product | null = null;
   showProductDetails = false;
 
+  // Available categories
+  categories: { name: string, count: number }[] = [];
+  isLoadingCategories = false;
+
   websites = [
     { id: 'resay', name: 'Resay' },
-    { id: 'android-epos', name: 'Android EPOS' },
+    { id: 'androidEpos', name: 'Android EPOS' },
     { id: 'barcode', name: 'BarcodeForBusiness' }
   ];
 
@@ -51,6 +57,7 @@ export class ProductsComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (params['site']) {
         this.selectedSite = params['site'];
+        this.loadCategories();
       }
       this.loadProducts();
     });
@@ -58,25 +65,54 @@ export class ProductsComponent implements OnInit {
 
   loadProducts(): void {
     this.isLoading = true;
+    this.products = [];
+    this.filteredProducts = [];
 
-    // In a real implementation, you would call your WooCommerce API
-    // For now, we'll use mock data
-    setTimeout(() => {
-      this.products = this.getMockProducts();
-      this.applyFilters();
-      this.isLoading = false;
-    }, 1000);
+    // Convert stock filter to WooCommerce stock_status format
+    let stockStatus: string | undefined;
+    if (this.stockFilter === 'inStock') {
+      stockStatus = 'instock';
+    } else if (this.stockFilter === 'outOfStock') {
+      stockStatus = 'outofstock';
+    }
+
+    // Get products from the selected site or all sites if none selected
+    // Pass pagination, category, and stock status parameters to the API
+    this.ecommerceService.getProducts(
+      this.selectedSite,
+      this.currentPage,
+      this.itemsPerPage,
+      this.categoryFilter,
+      stockStatus
+    )
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        }),
+        catchError(error => {
+          console.error('Error loading products:', error);
+          // Show an error message to the user
+          alert('Failed to load products. Using mock data as fallback.');
+          // In case of error, we'll use mock data as a fallback
+          return of(this.getMockProducts());
+        })
+      )
+      .subscribe(products => {
+        if (products.length === 0 && this.currentPage === 1) {
+          // If no products are returned and we're on the first page, show mock data
+          console.log('No products found, using mock data');
+          this.products = this.getMockProducts();
+        } else {
+          this.products = products;
+        }
+        this.applyFilters();
+      });
   }
 
   applyFilters(): void {
     let filtered = [...this.products];
 
-    // Apply site filter
-    if (this.selectedSite) {
-      filtered = filtered.filter(product => product.site === this.selectedSite);
-    }
-
-    // Apply search filter
+    // Apply search filter locally (the API doesn't support text search well)
     if (this.searchTerm) {
       const search = this.searchTerm.toLowerCase();
       filtered = filtered.filter(product =>
@@ -86,54 +122,70 @@ export class ProductsComponent implements OnInit {
       );
     }
 
-    // Apply category filter
-    if (this.categoryFilter) {
-      filtered = filtered.filter(product =>
-        product.categories.some(cat => cat.toLowerCase() === this.categoryFilter.toLowerCase())
-      );
-    }
-
-    // Apply stock filter
-    if (this.stockFilter === 'inStock') {
-      filtered = filtered.filter(product => product.stockStatus === 'instock');
-    } else if (this.stockFilter === 'outOfStock') {
-      filtered = filtered.filter(product => product.stockStatus === 'outofstock');
-    } else if (this.stockFilter === 'lowStock') {
+    // Handle low stock filter locally (since WooCommerce API doesn't have a direct parameter for this)
+    if (this.stockFilter === 'lowStock') {
       filtered = filtered.filter(product =>
         product.stockStatus === 'instock' && product.stockQuantity && product.stockQuantity < 5
       );
     }
 
     this.totalItems = filtered.length;
-
-    // Apply pagination
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.filteredProducts = filtered.slice(startIndex, startIndex + this.itemsPerPage);
+    this.filteredProducts = filtered;
   }
 
   onSearch(): void {
     this.currentPage = 1;
+    // For search, we'll apply filters locally since the API doesn't support text search
     this.applyFilters();
   }
 
   onCategoryChange(): void {
     this.currentPage = 1;
-    this.applyFilters();
+    // Reset to page 1 and reload products
+    this.loadProducts();
   }
 
   onStockFilterChange(): void {
     this.currentPage = 1;
-    this.applyFilters();
+    // Reset to page 1 and reload products
+    this.loadProducts();
   }
 
   onSiteChange(): void {
     this.currentPage = 1;
-    this.applyFilters();
+    this.loadCategories();
+    this.loadProducts();
+  }
+
+  loadCategories(): void {
+    if (!this.selectedSite) {
+      this.categories = [];
+      return;
+    }
+
+    this.isLoadingCategories = true;
+    this.ecommerceService.getCategories(this.selectedSite)
+      .pipe(
+        finalize(() => {
+          this.isLoadingCategories = false;
+        }),
+        catchError(error => {
+          console.error('Error loading categories:', error);
+          return of([]);
+        })
+      )
+      .subscribe(categories => {
+        this.categories = categories.map(cat => ({
+          name: cat.name,
+          count: cat.count
+        }));
+      });
   }
 
   onPageChange(page: number): void {
     this.currentPage = page;
-    this.applyFilters();
+    // Reload products from the API with the new page number
+    this.loadProducts();
   }
 
   viewProductDetails(product: Product): void {
@@ -240,7 +292,7 @@ export class ProductsComponent implements OnInit {
     mockProducts.push(
       {
         id: '4',
-        site: 'android-epos',
+        site: 'androidEpos',
         name: 'Android EPOS Terminal',
         sku: 'AEPOS-001',
         price: 499.99,
@@ -257,7 +309,7 @@ export class ProductsComponent implements OnInit {
       },
       {
         id: '5',
-        site: 'android-epos',
+        site: 'androidEpos',
         name: 'Receipt Printer',
         sku: 'AEPOS-002',
         price: 89.99,
@@ -274,7 +326,7 @@ export class ProductsComponent implements OnInit {
       },
       {
         id: '6',
-        site: 'android-epos',
+        site: 'androidEpos',
         name: 'Cash Drawer',
         sku: 'AEPOS-003',
         price: 79.99,
