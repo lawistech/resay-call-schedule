@@ -30,7 +30,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   expandedSection: string | null = null;
   routeSubscription: Subscription | null = null;
   // Removed upcomingCallsCount and pendingTasksCount
-  
+
   // Controls hover expand functionality - can be set via settings
   hoverMode = true;
   expandTimer: any = null;
@@ -46,7 +46,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadSidebarState();
     this.setupRouteListener();
-    
+
     // Initialize the current route
     this.currentRoute = this.router.url;
     this.setActiveSection(this.currentRoute);
@@ -56,7 +56,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
-    
+
     this.clearTimers();
   }
 
@@ -66,7 +66,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       clearTimeout(this.expandTimer);
       this.expandTimer = null;
     }
-    
+
     if (this.collapseTimer) {
       clearTimeout(this.collapseTimer);
       this.collapseTimer = null;
@@ -87,9 +87,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private setActiveSection(route: string): void {
     // Reset the expanded section first
     this.expandedSection = null;
-    
+
     // Check for more specific paths first to avoid incorrect matches
-    if (route.includes('/schedule') || route.includes('/call-history') || 
+    if (route.includes('/schedule') || route.includes('/call-history') ||
         route.includes('/contacts') || route.includes('/reports')) {
       this.expandedSection = 'calls';
     } else if (route.includes('/leads') || route.includes('/opportunities') || route.includes('/pipeline')) {
@@ -98,12 +98,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.expandedSection = 'tasks';
     } else if (route.includes('/accounts')) {
       this.expandedSection = 'contacts';
-    } else if (route.includes('/products') || route.includes('/orders') || route.includes('/inventory') || 
-              route.includes('/ecommerce') || 
-              route === '/discounts' || route === '/customers' || route === '/categories') {
-      this.expandedSection = 'ecommerce';
+    } else if (route === '/websites') {
+      this.expandedSection = 'websites';
     }
-    
+
     // Store the active section in localStorage for persistence
     localStorage.setItem('expandedSection', this.expandedSection || '');
   }
@@ -123,19 +121,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (routePath === '/reports' && this.currentRoute.includes('/reports')) {
       return true;
     }
-    
+
     return this.currentRoute.includes(routePath);
   }
 
   // Toggle sidebar expanded/collapsed state
   toggleSidebar(): void {
     this.expanded = !this.expanded;
-    
+
     // Reset temp expanded state when manually toggling
     if (this.expanded) {
       this.tempExpanded = false;
     }
-    
+
     localStorage.setItem('sidebarExpanded', this.expanded.toString());
   }
 
@@ -144,31 +142,31 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.expandedSection = (this.expandedSection === section) ? null : section;
     localStorage.setItem('expandedSection', this.expandedSection || '');
   }
-  
+
   // Load sidebar state from localStorage
   private loadSidebarState(): void {
     const savedExpanded = localStorage.getItem('sidebarExpanded');
     if (savedExpanded !== null) {
       this.expanded = savedExpanded === 'true';
     }
-    
+
     const savedSection = localStorage.getItem('expandedSection');
     if (savedSection) {
       this.expandedSection = savedSection;
     }
   }
-  
+
   // Fetch the user's first initial for the avatar
   get userInitial(): string {
     const user = this.authService.getCurrentUser();
     return user?.email ? user.email.charAt(0).toUpperCase() : 'U';
   }
-  
+
   // Temporarily expand the sidebar on hover
   temporarilyExpand(): void {
     // Clear any existing timers first
     this.clearTimers();
-    
+
     if (this.hoverMode && !this.expanded) {
       // Set a small delay before expanding to prevent unwanted expansions
       this.expandTimer = setTimeout(() => {
@@ -176,12 +174,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       }, 200);
     }
   }
-  
+
   // Collapse when mouse leaves
   collapseTemporary(): void {
     // Clear any existing timers first
     this.clearTimers();
-    
+
     if (this.hoverMode && !this.expanded) {
       // Set a small delay before collapsing to prevent flickering
       this.collapseTimer = setTimeout(() => {
@@ -189,7 +187,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       }, 300);
     }
   }
-  
+
   // Logout handler
   logout(): void {
     this.authService.signOut();

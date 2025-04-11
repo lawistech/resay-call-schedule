@@ -90,16 +90,7 @@ export const routes: Routes = [
     component: PipelineKanbanComponent,
     canActivate: [AuthGuard]
   },
-  {
-    path: 'ecommerce',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./features/ecommerce/ecommerce.component').then(m => m.EcommerceComponent)
-  },
-  {
-    path: 'products',
-    canActivate: [AuthGuard],
-    loadComponent: () => import('./features/ecommerce/products/products.component').then(m => m.ProductsComponent)
-  },
+
   {
     path: '**',
     redirectTo: 'dashboard'
