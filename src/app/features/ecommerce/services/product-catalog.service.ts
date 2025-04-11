@@ -28,11 +28,24 @@ export class ProductCatalogService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
-        
-        // Format the data to include supplier name
-        return response.data.map(product => ({
-          ...product,
-          supplierName: product.suppliers ? product.suppliers.name : undefined
+
+        // Convert snake_case to camelCase for frontend
+        return response.data.map(dbProduct => ({
+          id: dbProduct.id,
+          supplierId: dbProduct.supplier_id,
+          supplierName: dbProduct.suppliers ? dbProduct.suppliers.name : undefined,
+          name: dbProduct.name,
+          sku: dbProduct.sku,
+          description: dbProduct.description,
+          price: dbProduct.price,
+          cost: dbProduct.cost,
+          stockQuantity: dbProduct.stock_quantity,
+          category: dbProduct.category,
+          tags: dbProduct.tags,
+          imageUrl: dbProduct.image_url,
+          isActive: dbProduct.is_active,
+          createdAt: dbProduct.created_at,
+          updatedAt: dbProduct.updated_at
         }));
       }),
       catchError(error => {
@@ -54,11 +67,25 @@ export class ProductCatalogService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
-        
-        // Format the data to include supplier name
+
+        // Convert snake_case to camelCase for frontend
+        const dbProduct = response.data;
         return {
-          ...response.data,
-          supplierName: response.data.suppliers ? response.data.suppliers.name : undefined
+          id: dbProduct.id,
+          supplierId: dbProduct.supplier_id,
+          supplierName: dbProduct.suppliers ? dbProduct.suppliers.name : undefined,
+          name: dbProduct.name,
+          sku: dbProduct.sku,
+          description: dbProduct.description,
+          price: dbProduct.price,
+          cost: dbProduct.cost,
+          stockQuantity: dbProduct.stock_quantity,
+          category: dbProduct.category,
+          tags: dbProduct.tags,
+          imageUrl: dbProduct.image_url,
+          isActive: dbProduct.is_active,
+          createdAt: dbProduct.created_at,
+          updatedAt: dbProduct.updated_at
         };
       }),
       catchError(error => {
@@ -70,17 +97,32 @@ export class ProductCatalogService {
 
   createProduct(product: Omit<ProductCatalog, 'id' | 'createdAt' | 'updatedAt'>): Observable<ProductCatalog> {
     const currentUser = this.authService.getCurrentUser();
-    
+
     if (!currentUser) {
       return throwError(() => new Error('User must be logged in to create products'));
     }
-    
+
     // Remove supplierName as it's not a database field
     const { supplierName, ...productData } = product as any;
-    
+
+    // Convert camelCase to snake_case for database
+    const dbProduct = {
+      supplier_id: productData.supplierId,
+      name: productData.name,
+      sku: productData.sku,
+      description: productData.description,
+      price: productData.price,
+      cost: productData.cost,
+      stock_quantity: productData.stockQuantity,
+      category: productData.category,
+      tags: productData.tags,
+      image_url: productData.imageUrl,
+      is_active: productData.isActive
+    };
+
     return from(this.supabaseService.supabaseClient
       .from('product_catalog')
-      .insert(productData)
+      .insert(dbProduct)
       .select(`
         *,
         suppliers(id, name)
@@ -89,11 +131,25 @@ export class ProductCatalogService {
       map(response => {
         if (response.error) throw response.error;
         this.notificationService.success('Product created successfully');
-        
-        // Format the data to include supplier name
+
+        // Convert snake_case to camelCase for frontend
+        const dbProduct = response.data[0];
         return {
-          ...response.data[0],
-          supplierName: response.data[0].suppliers ? response.data[0].suppliers.name : undefined
+          id: dbProduct.id,
+          supplierId: dbProduct.supplier_id,
+          supplierName: dbProduct.suppliers ? dbProduct.suppliers.name : undefined,
+          name: dbProduct.name,
+          sku: dbProduct.sku,
+          description: dbProduct.description,
+          price: dbProduct.price,
+          cost: dbProduct.cost,
+          stockQuantity: dbProduct.stock_quantity,
+          category: dbProduct.category,
+          tags: dbProduct.tags,
+          imageUrl: dbProduct.image_url,
+          isActive: dbProduct.is_active,
+          createdAt: dbProduct.created_at,
+          updatedAt: dbProduct.updated_at
         };
       }),
       catchError(error => {
@@ -106,10 +162,25 @@ export class ProductCatalogService {
   updateProduct(id: string, product: Partial<ProductCatalog>): Observable<ProductCatalog> {
     // Remove supplierName as it's not a database field
     const { supplierName, ...productData } = product as any;
-    
+
+    // Convert camelCase to snake_case for database
+    const dbProduct: any = {};
+
+    if (productData.supplierId !== undefined) dbProduct.supplier_id = productData.supplierId;
+    if (productData.name !== undefined) dbProduct.name = productData.name;
+    if (productData.sku !== undefined) dbProduct.sku = productData.sku;
+    if (productData.description !== undefined) dbProduct.description = productData.description;
+    if (productData.price !== undefined) dbProduct.price = productData.price;
+    if (productData.cost !== undefined) dbProduct.cost = productData.cost;
+    if (productData.stockQuantity !== undefined) dbProduct.stock_quantity = productData.stockQuantity;
+    if (productData.category !== undefined) dbProduct.category = productData.category;
+    if (productData.tags !== undefined) dbProduct.tags = productData.tags;
+    if (productData.imageUrl !== undefined) dbProduct.image_url = productData.imageUrl;
+    if (productData.isActive !== undefined) dbProduct.is_active = productData.isActive;
+
     return from(this.supabaseService.supabaseClient
       .from('product_catalog')
-      .update(productData)
+      .update(dbProduct)
       .eq('id', id)
       .select(`
         *,
@@ -119,11 +190,25 @@ export class ProductCatalogService {
       map(response => {
         if (response.error) throw response.error;
         this.notificationService.success('Product updated successfully');
-        
-        // Format the data to include supplier name
+
+        // Convert snake_case to camelCase for frontend
+        const dbProduct = response.data[0];
         return {
-          ...response.data[0],
-          supplierName: response.data[0].suppliers ? response.data[0].suppliers.name : undefined
+          id: dbProduct.id,
+          supplierId: dbProduct.supplier_id,
+          supplierName: dbProduct.suppliers ? dbProduct.suppliers.name : undefined,
+          name: dbProduct.name,
+          sku: dbProduct.sku,
+          description: dbProduct.description,
+          price: dbProduct.price,
+          cost: dbProduct.cost,
+          stockQuantity: dbProduct.stock_quantity,
+          category: dbProduct.category,
+          tags: dbProduct.tags,
+          imageUrl: dbProduct.image_url,
+          isActive: dbProduct.is_active,
+          createdAt: dbProduct.created_at,
+          updatedAt: dbProduct.updated_at
         };
       }),
       catchError(error => {
@@ -163,7 +248,7 @@ export class ProductCatalogService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
-        
+
         // Format the data to include supplier name
         return response.data.map(product => ({
           ...product,
@@ -186,7 +271,7 @@ export class ProductCatalogService {
       price,
       total: quantity * price
     };
-    
+
     return from(this.supabaseService.supabaseClient
       .from('quotation_products')
       .insert(attachment)

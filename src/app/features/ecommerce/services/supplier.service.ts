@@ -25,7 +25,21 @@ export class SupplierService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
-        return response.data;
+
+        // Convert snake_case to camelCase for frontend
+        return response.data.map(dbSupplier => ({
+          id: dbSupplier.id,
+          name: dbSupplier.name,
+          contactName: dbSupplier.contact_name,
+          email: dbSupplier.email,
+          phone: dbSupplier.phone,
+          website: dbSupplier.website,
+          address: dbSupplier.address,
+          notes: dbSupplier.notes,
+          isActive: dbSupplier.is_active,
+          createdAt: dbSupplier.created_at,
+          updatedAt: dbSupplier.updated_at
+        }));
       }),
       catchError(error => {
         this.notificationService.error(`Failed to fetch suppliers: ${error.message}`);
@@ -43,7 +57,22 @@ export class SupplierService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
-        return response.data;
+
+        // Convert snake_case to camelCase for frontend
+        const dbSupplier = response.data;
+        return {
+          id: dbSupplier.id,
+          name: dbSupplier.name,
+          contactName: dbSupplier.contact_name,
+          email: dbSupplier.email,
+          phone: dbSupplier.phone,
+          website: dbSupplier.website,
+          address: dbSupplier.address,
+          notes: dbSupplier.notes,
+          isActive: dbSupplier.is_active,
+          createdAt: dbSupplier.created_at,
+          updatedAt: dbSupplier.updated_at
+        };
       }),
       catchError(error => {
         this.notificationService.error(`Failed to fetch supplier: ${error.message}`);
@@ -54,20 +83,47 @@ export class SupplierService {
 
   createSupplier(supplier: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>): Observable<Supplier> {
     const currentUser = this.authService.getCurrentUser();
-    
+
     if (!currentUser) {
       return throwError(() => new Error('User must be logged in to create suppliers'));
     }
-    
+
+    // Convert camelCase to snake_case for database
+    const dbSupplier = {
+      name: supplier.name,
+      contact_name: supplier.contactName,
+      email: supplier.email,
+      phone: supplier.phone,
+      website: supplier.website,
+      address: supplier.address,
+      notes: supplier.notes,
+      is_active: supplier.isActive
+    };
+
     return from(this.supabaseService.supabaseClient
       .from('suppliers')
-      .insert(supplier)
+      .insert(dbSupplier)
       .select()
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
         this.notificationService.success('Supplier created successfully');
-        return response.data[0];
+
+        // Convert snake_case to camelCase for frontend
+        const dbSupplier = response.data[0];
+        return {
+          id: dbSupplier.id,
+          name: dbSupplier.name,
+          contactName: dbSupplier.contact_name,
+          email: dbSupplier.email,
+          phone: dbSupplier.phone,
+          website: dbSupplier.website,
+          address: dbSupplier.address,
+          notes: dbSupplier.notes,
+          isActive: dbSupplier.is_active,
+          createdAt: dbSupplier.created_at,
+          updatedAt: dbSupplier.updated_at
+        };
       }),
       catchError(error => {
         this.notificationService.error(`Failed to create supplier: ${error.message}`);
@@ -77,16 +133,43 @@ export class SupplierService {
   }
 
   updateSupplier(id: string, supplier: Partial<Supplier>): Observable<Supplier> {
+    // Convert camelCase to snake_case for database
+    const dbSupplier: any = {};
+
+    if (supplier.name !== undefined) dbSupplier.name = supplier.name;
+    if (supplier.contactName !== undefined) dbSupplier.contact_name = supplier.contactName;
+    if (supplier.email !== undefined) dbSupplier.email = supplier.email;
+    if (supplier.phone !== undefined) dbSupplier.phone = supplier.phone;
+    if (supplier.website !== undefined) dbSupplier.website = supplier.website;
+    if (supplier.address !== undefined) dbSupplier.address = supplier.address;
+    if (supplier.notes !== undefined) dbSupplier.notes = supplier.notes;
+    if (supplier.isActive !== undefined) dbSupplier.is_active = supplier.isActive;
+
     return from(this.supabaseService.supabaseClient
       .from('suppliers')
-      .update(supplier)
+      .update(dbSupplier)
       .eq('id', id)
       .select()
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
         this.notificationService.success('Supplier updated successfully');
-        return response.data[0];
+
+        // Convert snake_case to camelCase for frontend
+        const dbSupplier = response.data[0];
+        return {
+          id: dbSupplier.id,
+          name: dbSupplier.name,
+          contactName: dbSupplier.contact_name,
+          email: dbSupplier.email,
+          phone: dbSupplier.phone,
+          website: dbSupplier.website,
+          address: dbSupplier.address,
+          notes: dbSupplier.notes,
+          isActive: dbSupplier.is_active,
+          createdAt: dbSupplier.created_at,
+          updatedAt: dbSupplier.updated_at
+        };
       }),
       catchError(error => {
         this.notificationService.error(`Failed to update supplier: ${error.message}`);
