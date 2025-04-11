@@ -4,8 +4,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { EcommerceService } from './ecommerce.service';
-import { forkJoin, of, from } from 'rxjs';
-import { map, catchError, concatMap, toArray } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-ecommerce',
@@ -23,24 +23,6 @@ export class EcommerceComponent implements OnInit {
       name: 'Resay',
       url: 'https://resay.co.uk',
       logo: 'assets/images/resay-logo.png',
-      productCount: 0,
-      recentOrders: 0,
-      revenue: 0
-    },
-    {
-      id: 'androidEpos',
-      name: 'Android EPOS',
-      url: 'https://androidepos.co.uk',
-      logo: 'assets/images/android-epos-logo.png',
-      productCount: 0,
-      recentOrders: 0,
-      revenue: 0
-    },
-    {
-      id: 'barcode',
-      name: 'BarcodeForBusiness',
-      url: 'https://barcodesforbusiness.co.uk',
-      logo: 'assets/images/barcode-logo.png',
       productCount: 0,
       recentOrders: 0,
       revenue: 0
@@ -113,28 +95,18 @@ export class EcommerceComponent implements OnInit {
   }
 
   testApiConnections(): void {
-    // Test API connections for all websites
-    const sites = this.websites.map(website => website.id);
-    let results = '';
+    // Test API connection for Resay website
+    const site = 'resay';
 
-    // Create a chain of observables to test each site sequentially
-    from(sites).pipe(
-      concatMap(site => this.ecommerceService.testApiConnection(site)),
-      toArray()
-    ).subscribe({
-      next: (responses) => {
-        // Format the results
-        responses.forEach((response, index) => {
-          const site = sites[index];
-          results += `${site}: ${response.success ? '✅ Connected' : '❌ Failed'} - ${response.message}\n`;
-        });
-
-        // Show the results
-        alert(`API Connection Test Results:\n\n${results}`);
+    this.ecommerceService.testApiConnection(site).subscribe({
+      next: (response) => {
+        // Show the result
+        const result = `${site}: ${response.success ? '✅ Connected' : '❌ Failed'} - ${response.message}`;
+        alert(`API Connection Test Result:\n\n${result}`);
       },
       error: (error) => {
-        console.error('Error testing API connections:', error);
-        alert('Error testing API connections. Check console for details.');
+        console.error('Error testing API connection:', error);
+        alert('Error testing API connection. Check console for details.');
       }
     });
   }

@@ -43,9 +43,7 @@ export class ProductsComponent implements OnInit {
   isLoadingCategories = false;
 
   websites = [
-    { id: 'resay', name: 'Resay' },
-    { id: 'androidEpos', name: 'Android EPOS' },
-    { id: 'barcode', name: 'BarcodeForBusiness' }
+    { id: 'resay', name: 'Resay' }
   ];
 
   constructor(
@@ -399,6 +397,7 @@ export class ProductsComponent implements OnInit {
       }
     );
 
-    return mockProducts;
+    // Filter to only return Resay products
+    return mockProducts.filter(product => product.site === 'resay');
   }
 }

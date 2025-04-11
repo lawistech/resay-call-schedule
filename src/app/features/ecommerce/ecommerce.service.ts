@@ -13,11 +13,9 @@ interface WooCommerceCredentials {
 
 @Injectable()
 export class EcommerceService {
-  // WooCommerce API endpoints
+  // WooCommerce API endpoint
   private apiUrls: { [key: string]: string } = {
-    resay: 'https://resay.co.uk/wp-json/wc/v3',
-    androidEpos: 'https://android-epos.co.uk/wp-json/wc/v3',
-    barcode: 'https://barcodeforbusiness.co.uk/wp-json/wc/v3'
+    resay: 'https://resay.co.uk/wp-json/wc/v3'
   };
 
   // WooCommerce API credentials from environment
