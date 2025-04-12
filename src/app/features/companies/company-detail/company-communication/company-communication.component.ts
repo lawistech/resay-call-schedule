@@ -13,17 +13,20 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 })
 export class CompanyCommunicationComponent implements OnInit {
   @Input() companyId: string = '';
-  
+
   communications: CompanyCommunication[] = [];
   isLoading = true;
-  
+
   // For filtering
   filterType: 'all' | 'email' | 'call' | 'meeting' | 'note' = 'all';
-  
+
   // For adding new communication
   showAddForm = false;
   communicationForm!: FormGroup;
   isSubmitting = false;
+
+  // Store contacts for reference
+  contacts: {[id: string]: {first_name: string, last_name: string}} = {};
 
   constructor(
     private companyService: CompanyService,
@@ -33,8 +36,36 @@ export class CompanyCommunicationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadContacts();
     this.loadCommunications();
     this.initForm();
+  }
+
+  loadContacts(): void {
+    if (!this.companyId) return;
+
+    this.companyService.getCompanyContacts(this.companyId).subscribe({
+      next: (contacts) => {
+        // Create a map of contact IDs to contact names for easy lookup
+        contacts.forEach(contact => {
+          this.contacts[contact.id] = {
+            first_name: contact.first_name,
+            last_name: contact.last_name
+          };
+        });
+        console.log('Loaded contacts for reference:', this.contacts);
+      },
+      error: (error) => {
+        console.error('Error loading contacts:', error);
+      }
+    });
+  }
+
+  getContactName(contactId: string): string {
+    if (!contactId || !this.contacts[contactId]) return 'Unknown Contact';
+
+    const contact = this.contacts[contactId];
+    return `${contact.first_name} ${contact.last_name}`;
   }
 
   initForm(): void {
@@ -51,10 +82,12 @@ export class CompanyCommunicationComponent implements OnInit {
     this.isLoading = true;
     this.companyService.getCompanyCommunications(this.companyId).subscribe({
       next: (communications) => {
+        console.log('Loaded communications:', communications);
         this.communications = communications;
         this.isLoading = false;
       },
       error: (error) => {
+        console.error('Error loading communications:', error);
         this.notificationService.error('Failed to load communications');
         this.isLoading = false;
       }
@@ -88,7 +121,7 @@ export class CompanyCommunicationComponent implements OnInit {
     }
 
     this.isSubmitting = true;
-    
+
     // In a real implementation, this would call a service method to save the communication
     // For now, we'll simulate adding it to the list
     const newCommunication: CompanyCommunication = {
@@ -102,7 +135,7 @@ export class CompanyCommunicationComponent implements OnInit {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    
+
     // Simulate API call
     setTimeout(() => {
       this.communications.unshift(newCommunication);
@@ -113,7 +146,20 @@ export class CompanyCommunicationComponent implements OnInit {
   }
 
   formatDate(date: string): string {
-    return new Date(date).toLocaleDateString();
+    if (!date) return 'N/A';
+
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return 'Invalid date';
+
+    // Format: Jan 1, 2023 at 2:30 PM
+    return dateObj.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }).replace(',', ' at');
   }
 
   getTypeIcon(type: string): string {

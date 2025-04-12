@@ -1,6 +1,6 @@
 // src/app/features/companies/services/company.service.ts
 import { Injectable } from '@angular/core';
-import { Observable, from, throwError, map, catchError, switchMap } from 'rxjs';
+import { Observable, from, throwError, map, catchError, switchMap, of } from 'rxjs';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -41,9 +41,10 @@ export class CompanyService {
     );
   }
 
-  // Get companies with scheduled activities (calls or contacts with schedule)
+  // Get companies with scheduled activities (calls or contacts with scheduled status)
   getCompaniesWithScheduledCalls(): Observable<{companies: Company[], scheduledActivitiesMap: {[companyId: string]: number}}> {
     // First get all companies
+    console.log('Getting companies with scheduled calls');
     return this.getCompanies().pipe(
       switchMap(companies => {
         // Get all scheduled calls
@@ -56,18 +57,20 @@ export class CompanyService {
           .eq('status', 'scheduled')
           .gte('scheduled_at', new Date().toISOString());
 
-        // Get all contacts with schedule
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        // Get all contacts with scheduled status
         const contactsPromise = this.supabaseService.supabaseClient
           .from('contacts')
-          .select('id, company_id, schedule')
-          .gte('schedule', today);
+          .select('id, company_id, schedule, status')
+          .eq('status', 'scheduled');
 
         // Combine both promises
         return from(Promise.all([callsPromise, contactsPromise])).pipe(
           map(([callsResponse, contactsResponse]) => {
             if (callsResponse.error) throw callsResponse.error;
             if (contactsResponse.error) throw contactsResponse.error;
+
+            console.log('Scheduled calls data:', callsResponse.data);
+            console.log('Scheduled contacts data:', contactsResponse.data);
 
             // Create a map of company IDs to scheduled activities count
             const scheduledActivitiesMap: {[companyId: string]: number} = {};
@@ -77,14 +80,16 @@ export class CompanyService {
               if (call.contact && call.contact.company_id) {
                 const companyId = call.contact.company_id;
                 scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
+                console.log(`Added scheduled call for company ${companyId}`);
               }
             });
 
-            // Count scheduled contacts for each company
+            // Count contacts with scheduled status for each company
             contactsResponse.data.forEach(contact => {
-              if (contact.company_id && contact.schedule) {
+              if (contact.company_id) {
                 const companyId = contact.company_id;
                 scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
+                console.log(`Added contact with scheduled status for company ${companyId}`);
               }
             });
 
@@ -221,35 +226,78 @@ export class CompanyService {
 
   // Company Communications operations
   getCompanyCommunications(companyId: string): Observable<CompanyCommunication[]> {
-    // This would need a new table in the database
-    // For now, we'll simulate with calls and other data
-    return from(this.supabaseService.supabaseClient
-      .from('calls')
-      .select(`
-        *,
-        contact:contacts(id, first_name, last_name, company_id)
-      `)
-      .eq('contact.company_id', companyId)
-      .order('scheduled_at', { ascending: false })
-    ).pipe(
-      map(response => {
-        if (response.error) throw response.error;
+    console.log(`Getting communications for company ID: ${companyId}`);
 
-        // Convert call data to CompanyCommunication format
-        return response.data.map(call => ({
-          id: call.id,
-          companyId: call.contact.company_id,
-          type: 'call' as 'email' | 'call' | 'meeting' | 'note',
-          date: call.scheduled_at,
-          summary: call.notes || `Call with ${call.contact.first_name} ${call.contact.last_name}`,
-          contactId: call.contact_id,
-          userId: call.user_id,
-          followUpDate: call.follow_up_date,
-          created_at: call.created_at,
-          updated_at: call.updated_at
-        }));
+    // First get all contacts for this company
+    return this.getCompanyContacts(companyId).pipe(
+      switchMap(contacts => {
+        // Extract contact IDs
+        const contactIds = contacts.map(contact => contact.id);
+        console.log(`Found ${contactIds.length} contacts for company ID: ${companyId}`);
+
+        if (contactIds.length === 0) {
+          // No contacts, return empty array
+          return of([]);
+        }
+
+        // Get all calls for these contacts
+        return from(this.supabaseService.supabaseClient
+          .from('calls')
+          .select(`
+            *,
+            contact:contacts(id, first_name, last_name, company_id)
+          `)
+          .in('contact_id', contactIds)
+          .order('scheduled_at', { ascending: false })
+        ).pipe(
+          map(response => {
+            if (response.error) throw response.error;
+
+            console.log(`Found ${response.data.length} calls for company ID: ${companyId}`);
+            console.log('Call data:', response.data);
+
+            // Convert call data to CompanyCommunication format
+            return response.data.map(call => {
+              // Determine the summary based on call status and notes
+              let summary = '';
+              if (call.notes) {
+                summary = call.notes;
+              } else if (call.contact) {
+                const contactName = `${call.contact.first_name} ${call.contact.last_name}`;
+                if (call.status === 'completed') {
+                  summary = `Completed call with ${contactName}`;
+                } else if (call.status === 'scheduled') {
+                  summary = `Scheduled call with ${contactName}`;
+                } else if (call.status === 'missed') {
+                  summary = `Missed call with ${contactName}`;
+                } else {
+                  summary = `Call with ${contactName} (${call.status})`;
+                }
+
+                // Add reason if available
+                if (call.reason) {
+                  summary += ` - ${call.reason}`;
+                }
+              }
+
+              return {
+                id: call.id,
+                companyId: companyId,
+                type: 'call' as 'email' | 'call' | 'meeting' | 'note',
+                date: call.scheduled_at,
+                summary: summary,
+                contactId: call.contact_id,
+                userId: call.user_id,
+                followUpDate: call.follow_up_date,
+                created_at: call.created_at,
+                updated_at: call.updated_at
+              };
+            });
+          })
+        );
       }),
       catchError(error => {
+        console.error('Error fetching company communications:', error);
         this.notificationService.error(`Failed to fetch company communications: ${error.message}`);
         return throwError(() => error);
       })

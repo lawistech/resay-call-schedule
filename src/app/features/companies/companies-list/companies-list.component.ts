@@ -31,6 +31,39 @@ export class CompaniesListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCompanies();
+
+    // For testing purposes, add a button to add a test scheduled activity
+    setTimeout(() => {
+      console.log('Adding test button for scheduled activities');
+      const container = document.querySelector('.container');
+      if (container) {
+        const testButton = document.createElement('button');
+        testButton.textContent = 'Add Test Scheduled Activity';
+        testButton.className = 'btn-primary mt-4';
+        testButton.addEventListener('click', () => this.addTestScheduledActivity());
+        container.prepend(testButton);
+      }
+    }, 1000);
+  }
+
+  // Test function to add a scheduled activity
+  addTestScheduledActivity(): void {
+    if (this.companies.length === 0) {
+      this.notificationService.error('No companies available');
+      return;
+    }
+
+    // Get the first company
+    const company = this.companies[0];
+    console.log(`Adding test scheduled activity for company: ${company.name} (${company.id})`);
+
+    // Update the scheduledActivitiesMap
+    this.scheduledActivitiesMap[company.id] = (this.scheduledActivitiesMap[company.id] || 0) + 1;
+    console.log('Updated scheduledActivitiesMap:', this.scheduledActivitiesMap);
+
+    // Force a refresh of the component
+    this.filteredCompanies = [...this.companies];
+    this.notificationService.success(`Added test scheduled activity for ${company.name}`);
   }
 
   loadCompanies(): void {
@@ -41,6 +74,14 @@ export class CompaniesListComponent implements OnInit {
         this.scheduledActivitiesMap = data.scheduledActivitiesMap;
         this.filteredCompanies = [...this.companies];
         console.log('Companies loaded with scheduled activities:', this.scheduledActivitiesMap);
+
+        // Log which companies have scheduled activities
+        this.companies.forEach(company => {
+          if (this.hasScheduledActivities(company.id)) {
+            console.log(`Company ${company.name} (${company.id}) has ${this.getScheduledActivitiesCount(company.id)} scheduled activities`);
+          }
+        });
+
         this.isLoading = false;
       },
       error: (error) => {
@@ -106,11 +147,15 @@ export class CompaniesListComponent implements OnInit {
 
   // Check if a company has scheduled activities
   hasScheduledActivities(companyId: string): boolean {
-    return !!this.scheduledActivitiesMap[companyId];
+    const hasActivities = !!this.scheduledActivitiesMap[companyId];
+    console.log(`Checking if company ${companyId} has activities: ${hasActivities}`);
+    return hasActivities;
   }
 
   // Get the number of scheduled activities for a company
   getScheduledActivitiesCount(companyId: string): number {
-    return this.scheduledActivitiesMap[companyId] || 0;
+    const count = this.scheduledActivitiesMap[companyId] || 0;
+    console.log(`Getting activity count for company ${companyId}: ${count}`);
+    return count;
   }
 }
