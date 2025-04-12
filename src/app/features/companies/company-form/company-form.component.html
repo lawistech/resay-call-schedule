@@ -1,0 +1,112 @@
+<!-- src/app/features/companies/company-form/company-form.component.html -->
+<div class="container mx-auto px-4 py-6">
+  <div class="flex items-center mb-6">
+    <button (click)="cancel()" class="mr-4 text-gray-600 hover:text-gray-900">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+    </button>
+    <h1 class="text-2xl font-bold text-gray-800">{{ isEditMode ? 'Edit' : 'Add' }} Company</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  </div>
+
+  <!-- Company Form -->
+  <div *ngIf="!isLoading" class="bg-white rounded-lg shadow-md p-6">
+    <form [formGroup]="companyForm" (ngSubmit)="onSubmit()">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Company Name -->
+        <div class="col-span-2">
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Company Name <span class="text-red-600">*</span></label>
+          <input 
+            type="text" 
+            id="name" 
+            formControlName="name" 
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [ngClass]="{'border-red-500': companyForm.get('name')?.invalid && companyForm.get('name')?.touched}"
+          >
+          <div *ngIf="companyForm.get('name')?.invalid && companyForm.get('name')?.touched" class="text-red-600 text-sm mt-1">
+            Company name is required
+          </div>
+        </div>
+
+        <!-- Industry -->
+        <div>
+          <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+          <select 
+            id="industry" 
+            formControlName="industry" 
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">-- Select Industry --</option>
+            <option *ngFor="let industry of industries" [value]="industry">{{ industry }}</option>
+          </select>
+        </div>
+
+        <!-- Website -->
+        <div>
+          <label for="website" class="block text-sm font-medium text-gray-700 mb-1">Website</label>
+          <input 
+            type="url" 
+            id="website" 
+            formControlName="website" 
+            placeholder="https://example.com"
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+
+        <!-- Address -->
+        <div class="col-span-2">
+          <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+          <textarea 
+            id="address" 
+            formControlName="address" 
+            rows="2"
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+        </div>
+
+        <!-- Notes -->
+        <div class="col-span-2">
+          <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <textarea 
+            id="notes" 
+            formControlName="notes" 
+            rows="4"
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="mt-8 flex justify-end space-x-3">
+        <button 
+          type="button" 
+          (click)="cancel()" 
+          class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          class="px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-stone-800 hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500"
+          [disabled]="isSubmitting"
+        >
+          <span *ngIf="isSubmitting" class="inline-block mr-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </span>
+          {{ isEditMode ? 'Update' : 'Create' }} Company
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

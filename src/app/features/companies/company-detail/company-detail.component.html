@@ -1,0 +1,213 @@
+<!-- src/app/features/companies/company-detail/company-detail.component.html -->
+<div class="container mx-auto px-4 py-6">
+  <!-- Back Button and Actions -->
+  <div class="flex justify-between items-center mb-6">
+    <div class="flex items-center">
+      <button routerLink="/companies" class="mr-4 text-gray-600 hover:text-gray-900">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </button>
+      <h1 class="text-2xl font-bold text-gray-800">Company Details</h1>
+    </div>
+    <div class="flex space-x-2">
+      <button (click)="editCompany()" class="btn-secondary flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        Edit
+      </button>
+      <button (click)="deleteCompany()" class="btn-danger flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        Delete
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  </div>
+
+  <!-- Company Details -->
+  <div *ngIf="!isLoading && company">
+    <!-- Company Header -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="flex flex-col md:flex-row md:items-center">
+        <!-- Company Logo/Icon -->
+        <div class="flex-shrink-0 w-16 h-16 bg-stone-800 rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4 md:mb-0 md:mr-6">
+          {{ company?.name?.charAt(0) || 'C' }}
+        </div>
+
+        <!-- Company Info -->
+        <div class="flex-1">
+          <h2 class="text-2xl font-bold text-gray-900">{{ company?.name || 'Company' }}</h2>
+          <p *ngIf="company?.industry" class="text-gray-600 mt-1">{{ company?.industry }}</p>
+
+          <div class="flex flex-wrap mt-2 gap-4">
+            <div *ngIf="company?.website" class="flex items-center text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+              <a href="{{ company?.website }}" target="_blank" class="text-blue-600 hover:underline">{{ company?.website }}</a>
+            </div>
+            <div *ngIf="company?.address" class="flex items-center text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span class="text-gray-600">{{ company?.address }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Company Metrics -->
+        <div class="grid grid-cols-2 gap-4 mt-4 md:mt-0 md:ml-6">
+          <div class="bg-gray-50 p-3 rounded-lg text-center">
+            <p class="text-xs text-gray-500 mb-1">Total Orders Value</p>
+            <p class="text-lg font-semibold">${{ company?.metrics?.totalOrderValue || 0 }}</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg text-center">
+            <p class="text-xs text-gray-500 mb-1">Active Quotations</p>
+            <p class="text-lg font-semibold">{{ company?.metrics?.activeQuotations || 0 }}</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg text-center">
+            <p class="text-xs text-gray-500 mb-1">Contacts</p>
+            <p class="text-lg font-semibold">{{ company?.metrics?.contactCount || 0 }}</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg text-center">
+            <p class="text-xs text-gray-500 mb-1">Last Contact</p>
+            <p class="text-lg font-semibold">{{ company?.metrics?.lastContactDate || 'N/A' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="bg-white rounded-t-lg shadow-md mb-0">
+      <div class="border-b border-gray-200">
+        <nav class="flex -mb-px">
+          <button
+            (click)="setActiveTab('overview')"
+            class="py-4 px-6 text-center border-b-2 font-medium text-sm focus:outline-none"
+            [class.border-stone-800]="activeTab === 'overview'"
+            [class.text-stone-800]="activeTab === 'overview'"
+            [class.border-transparent]="activeTab !== 'overview'"
+            [class.text-gray-500]="activeTab !== 'overview'"
+            [class.hover:text-gray-700]="activeTab !== 'overview'"
+            [class.hover:border-gray-300]="activeTab !== 'overview'"
+          >
+            Overview
+          </button>
+          <button
+            (click)="setActiveTab('people')"
+            class="py-4 px-6 text-center border-b-2 font-medium text-sm focus:outline-none"
+            [class.border-stone-800]="activeTab === 'people'"
+            [class.text-stone-800]="activeTab === 'people'"
+            [class.border-transparent]="activeTab !== 'people'"
+            [class.text-gray-500]="activeTab !== 'people'"
+            [class.hover:text-gray-700]="activeTab !== 'people'"
+            [class.hover:border-gray-300]="activeTab !== 'people'"
+          >
+            People
+          </button>
+          <button
+            (click)="setActiveTab('communication')"
+            class="py-4 px-6 text-center border-b-2 font-medium text-sm focus:outline-none"
+            [class.border-stone-800]="activeTab === 'communication'"
+            [class.text-stone-800]="activeTab === 'communication'"
+            [class.border-transparent]="activeTab !== 'communication'"
+            [class.text-gray-500]="activeTab !== 'communication'"
+            [class.hover:text-gray-700]="activeTab !== 'communication'"
+            [class.hover:border-gray-300]="activeTab !== 'communication'"
+          >
+            Communication
+          </button>
+          <button
+            (click)="setActiveTab('opportunities')"
+            class="py-4 px-6 text-center border-b-2 font-medium text-sm focus:outline-none"
+            [class.border-stone-800]="activeTab === 'opportunities'"
+            [class.text-stone-800]="activeTab === 'opportunities'"
+            [class.border-transparent]="activeTab !== 'opportunities'"
+            [class.text-gray-500]="activeTab !== 'opportunities'"
+            [class.hover:text-gray-700]="activeTab !== 'opportunities'"
+            [class.hover:border-gray-300]="activeTab !== 'opportunities'"
+          >
+            Products & Opportunities
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="bg-white rounded-b-lg shadow-md p-6">
+      <!-- Overview Tab -->
+      <div *ngIf="activeTab === 'overview'">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Company Information -->
+          <div class="md:col-span-2">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Company Information</h3>
+
+            <div *ngIf="company?.notes" class="mb-6">
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Notes</h4>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-gray-700 whitespace-pre-line">{{ company?.notes }}</p>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Details</h4>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <p class="text-xs text-gray-500">Industry</p>
+                    <p class="text-gray-700">{{ company?.industry || 'N/A' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Website</p>
+                    <p class="text-gray-700">
+                      <a *ngIf="company?.website" href="{{ company?.website }}" target="_blank" class="text-blue-600 hover:underline">{{ company?.website }}</a>
+                      <span *ngIf="!company?.website">N/A</span>
+                    </p>
+                  </div>
+                  <div class="col-span-2">
+                    <p class="text-xs text-gray-500">Address</p>
+                    <p class="text-gray-700">{{ company?.address || 'N/A' }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+            <div class="bg-gray-50 p-4 rounded-lg h-64 flex items-center justify-center">
+              <p class="text-gray-500 text-center">Activity timeline will be displayed here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- People Tab -->
+      <div *ngIf="activeTab === 'people'">
+        <app-company-people [companyId]="companyId"></app-company-people>
+      </div>
+
+      <!-- Communication Tab -->
+      <div *ngIf="activeTab === 'communication'">
+        <app-company-communication [companyId]="companyId"></app-company-communication>
+      </div>
+
+      <!-- Products & Opportunities Tab -->
+      <div *ngIf="activeTab === 'opportunities'">
+        <app-company-opportunities [companyId]="companyId"></app-company-opportunities>
+      </div>
+    </div>
+  </div>
+</div>

@@ -19,11 +19,11 @@
       <div class="flex-1 min-w-[200px]">
         <label for="search" class="block text-xs text-stone-500 uppercase font-semibold mb-1">Search</label>
         <div class="relative">
-          <input 
-            type="text" 
+          <input
+            type="text"
             id="search"
             [(ngModel)]="searchTerm"
-            placeholder="Search opportunities..." 
+            placeholder="Search opportunities..."
             class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pl-8"
           >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 absolute left-2 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -31,35 +31,35 @@
           </svg>
         </div>
       </div>
-      
+
       <!-- Min Amount -->
       <div class="w-32">
         <label for="minAmount" class="block text-xs text-stone-500 uppercase font-semibold mb-1">Min Amount</label>
-        <input 
-          type="number" 
+        <input
+          type="number"
           id="minAmount"
           [(ngModel)]="minAmount"
-          placeholder="Min £" 
+          placeholder="Min £"
           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
       </div>
-      
+
       <!-- Max Amount -->
       <div class="w-32">
         <label for="maxAmount" class="block text-xs text-stone-500 uppercase font-semibold mb-1">Max Amount</label>
-        <input 
-          type="number" 
+        <input
+          type="number"
           id="maxAmount"
           [(ngModel)]="maxAmount"
-          placeholder="Max £" 
+          placeholder="Max £"
           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         >
       </div>
-      
+
       <!-- Status Filter -->
       <div class="w-40">
         <label for="status" class="block text-xs text-stone-500 uppercase font-semibold mb-1">Status</label>
-        <select 
+        <select
           id="status"
           [(ngModel)]="statusFilter"
           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -71,17 +71,17 @@
           <option value="Lost">Lost</option>
         </select>
       </div>
-      
+
       <!-- Action Buttons -->
       <div class="flex items-end space-x-2">
-        <button 
-          (click)="applyFilters()" 
+        <button
+          (click)="applyFilters()"
           class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           Apply Filters
         </button>
-        <button 
-          (click)="resetFilters()" 
+        <button
+          (click)="resetFilters()"
           class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400"
         >
           Reset
@@ -121,7 +121,7 @@
 
   <!-- Kanban Board -->
   <div *ngIf="!isLoading" class="kanban-board flex gap-4 overflow-x-auto pb-4">
-    <div *ngFor="let stage of stages" 
+    <div *ngFor="let stage of stages"
          class="stage-container min-w-[300px] w-[300px] bg-stone-50 rounded-lg shadow-sm flex flex-col">
       <!-- Stage Header -->
       <div class="p-3 border-b border-stone-200 flex justify-between items-center sticky top-0 bg-stone-50 rounded-t-lg z-10">
@@ -145,7 +145,7 @@
           'bg-emerald-400': stage === 'Closed-Won'
         }"></div>
       </div>
-      
+
       <!-- Dropzone for cards -->
       <div class="flex-1 min-h-[70vh] p-3 overflow-y-auto"
            cdkDropList
@@ -153,34 +153,34 @@
            [cdkDropListData]="opportunitiesByStage[stage]"
            [cdkDropListConnectedTo]="getConnectedLists()"
            (cdkDropListDropped)="drop($event)">
-        
+
         <!-- Empty state -->
         <div *ngIf="!opportunitiesByStage[stage]?.length" class="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
           </svg>
           <p class="text-sm">No opportunities in {{stage}}</p>
-          <button *ngIf="stage === 'Prospecting'" 
-                  (click)="createNewOpportunity()" 
+          <button *ngIf="stage === 'Prospecting'"
+                  (click)="createNewOpportunity()"
                   class="mt-4 px-3 py-1.5 bg-stone-800 text-white text-sm rounded-md hover:bg-stone-700 transition-colors">
             Add opportunity
           </button>
         </div>
-        
+
         <!-- Opportunity Cards -->
-        <div *ngFor="let opportunity of opportunitiesByStage[stage]" 
+        <div *ngFor="let opportunity of opportunitiesByStage[stage]"
              cdkDrag
              [cdkDragData]="opportunity"
              class="opportunity-item bg-white mb-3 rounded-lg border border-stone-200 hover:border-stone-300 overflow-hidden cursor-move transition-all"
-             [ngClass]="{'high-value-opportunity': opportunity.amount > 50000, 'medium-value-opportunity': opportunity.amount > 20000 && opportunity.amount <= 50000}">
-          
+             [ngClass]="{'high-value-opportunity': opportunity.amount && opportunity.amount > 50000, 'medium-value-opportunity': opportunity.amount && opportunity.amount > 20000 && opportunity.amount <= 50000}">
+
           <!-- Card Drag Preview -->
           <div *cdkDragPreview class="bg-white p-4 rounded-lg shadow-lg border border-stone-200 w-[280px]">
             <div class="font-medium text-stone-800">{{opportunity.title}}</div>
             <div class="text-sm text-stone-600 mt-1">{{opportunity.companyId}}</div>
-            <div class="text-sm text-green-600 font-semibold mt-2">£{{opportunity.amount.toLocaleString()}}</div>
+            <div class="text-sm text-green-600 font-semibold mt-2">£{{(opportunity.amount || 0).toLocaleString()}}</div>
           </div>
-          
+
           <!-- Card Content -->
           <div class="p-4" (click)="openOpportunityDetail(opportunity); $event.stopPropagation()">
             <div class="flex justify-between items-start">
@@ -194,16 +194,16 @@
                 {{opportunity.status}}
               </span>
             </div>
-            
+
             <!-- <div class="text-sm text-stone-600 mt-1">{{opportunity.companyName || 'Company'}}</div> -->
             <div class="text-sm text-stone-600 mt-1">Company</div>
             <div *ngIf="opportunity.description" class="mt-3 text-xs text-stone-500 line-clamp-2">
               {{opportunity.description}}
             </div>
-            
+
             <div class="mt-3 flex items-center justify-between">
-              <div class="text-sm font-medium text-green-600">£{{opportunity.amount.toLocaleString()}}</div>
-              
+              <div class="text-sm font-medium text-green-600">£{{(opportunity.amount || 0).toLocaleString()}}</div>
+
               <div class="flex items-center">
                 <div class="text-xs text-stone-500 mr-2">{{opportunity.probability}}%</div>
                 <div class="w-16 h-1.5 bg-stone-100 rounded-full overflow-hidden">
@@ -211,7 +211,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Card Footer -->
             <div class="mt-3 pt-3 border-t border-stone-100 flex justify-between items-center">
               <div class="text-xs text-stone-500">

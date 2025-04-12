@@ -1,9 +1,50 @@
 export interface Company {
   id: string;
   name: string;
+  logo?: string;
   website?: string;
   industry?: string;
   address?: string;
+  notes?: string;
+  metrics?: {
+    totalOrderValue?: number;
+    activeQuotations?: number;
+    contactCount?: number;
+    lastContactDate?: string;
+  };
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CompanyContact {
+  id: string;
+  companyId: string;
+  contactId: string;
+  role: string; // 'primary', 'technical', 'finance', 'other'
+  department?: string;
+  isDecisionMaker?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CompanyCommunication {
+  id: string;
+  companyId: string;
+  type: 'email' | 'call' | 'meeting' | 'note';
+  date: string;
+  summary: string;
+  contactId?: string;
+  userId?: string;
+  followUpDate?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ProductInterest {
+  id: string;
+  companyId: string;
+  productId: string;
+  lastViewed: string;
   notes?: string;
   created_at?: string;
   updated_at?: string;
@@ -15,13 +56,13 @@ export interface Opportunity {
   description?: string;
   status: 'New' | 'In Progress' | 'Won' | 'Lost';
   probability?: number;
-  expectedCloseDate: string | Date; // Changed from Date to string | Date to handle both
-  amount: number;
+  expectedCloseDate: string | Date; // Can handle both string and Date
+  amount?: number;
   companyId: string;
-  stage: string;
+  stage?: string;
   value: number;
-  closeDate: string | Date; // Changed from Date to string | Date
+  closeDate?: string | Date;
   notes?: string;
-  createdAt: string | Date; // Changed from Date to string | Date
-  updatedAt: string | Date; // Changed from Date to string | Date
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }

@@ -1,0 +1,8 @@
+// src/app/features/companies/company-detail/company-detail.component.scss
+.btn-secondary {
+  @apply bg-white border border-stone-300 hover:bg-stone-50 text-stone-700 font-medium py-2 px-4 rounded-md transition-colors;
+}
+
+.btn-danger {
+  @apply bg-white border border-red-300 hover:bg-red-50 text-red-700 font-medium py-2 px-4 rounded-md transition-colors;
+}

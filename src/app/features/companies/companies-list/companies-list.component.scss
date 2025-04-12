@@ -1,0 +1,8 @@
+// src/app/features/companies/companies-list/companies-list.component.scss
+.btn-primary {
+  @apply bg-stone-800 hover:bg-stone-700 text-white font-medium py-2 px-4 rounded-md transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-white border border-stone-300 hover:bg-stone-50 text-stone-700 font-medium py-2 px-4 rounded-md transition-colors;
+}

@@ -61,6 +61,11 @@ export const routes: Routes = [
     loadChildren: () => import('./features/settings/settings.module').then(m => m.SettingsModule)
   },
   {
+    path: 'companies',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./features/companies/companies.module').then(m => m.CompaniesModule)
+  },
+  {
     path: 'tasks',
     children: [
       {
