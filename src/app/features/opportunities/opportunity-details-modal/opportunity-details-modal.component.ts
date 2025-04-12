@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, OnInit, OnDestroy, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Opportunity } from '../../../core/models/company.model';
@@ -16,7 +16,7 @@ import { OrderService } from '../../orders/order.service';
   templateUrl: './opportunity-details-modal.component.html',
   styleUrls: ['./opportunity-details-modal.component.css']
 })
-export class OpportunityDetailsModalComponent implements OnChanges {
+export class OpportunityDetailsModalComponent implements OnChanges, OnInit, OnDestroy {
   @Input() show: boolean = false;
   @Input() opportunity: Opportunity | null = null;
   @Output() closeEvent = new EventEmitter<boolean>();
@@ -37,6 +37,13 @@ export class OpportunityDetailsModalComponent implements OnChanges {
   // Success modal
   showSuccessModal = false;
 
+  // Document click handler
+  @HostListener('document:click')
+  onDocumentClick() {
+    // Close dropdowns when clicking outside
+    this.closeAllDropdowns();
+  }
+
   constructor(
     private opportunitiesService: OpportunitiesService,
     private notificationService: NotificationService,
@@ -48,7 +55,13 @@ export class OpportunityDetailsModalComponent implements OnChanges {
     this.closeEvent.emit(false);
   }
 
-  toggleStatusDropdown() {
+  closeAllDropdowns() {
+    this.showStatusDropdown = false;
+    this.showStageDropdown = false;
+  }
+
+  toggleStatusDropdown(event: Event) {
+    event.stopPropagation();
     this.showStatusDropdown = !this.showStatusDropdown;
     // Close the other dropdown if it's open
     if (this.showStatusDropdown) {
@@ -56,7 +69,8 @@ export class OpportunityDetailsModalComponent implements OnChanges {
     }
   }
 
-  toggleStageDropdown() {
+  toggleStageDropdown(event: Event) {
+    event.stopPropagation();
     this.showStageDropdown = !this.showStageDropdown;
     // Close the other dropdown if it's open
     if (this.showStageDropdown) {
@@ -177,11 +191,21 @@ export class OpportunityDetailsModalComponent implements OnChanges {
       });
   }
 
+  ngOnInit(): void {
+    // Initialize component
+    console.log('Opportunity details modal initialized');
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     // If opportunity changes and we have a valid opportunity, load its history
     if (changes['opportunity'] && this.opportunity && this.opportunity.id) {
       this.loadOpportunityHistory();
     }
+  }
+
+  ngOnDestroy(): void {
+    // Clean up any subscriptions or event listeners
+    console.log('Opportunity details modal destroyed');
   }
 
   toggleHistory() {
