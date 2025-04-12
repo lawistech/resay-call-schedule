@@ -63,6 +63,18 @@ export interface Opportunity {
   value: number;
   closeDate?: string | Date;
   notes?: string;
+  products?: OpportunityProduct[];
   createdAt?: string | Date;
   updatedAt?: string | Date;
+}
+
+export interface OpportunityProduct {
+  id?: string;
+  opportunityId?: string;
+  productId: string;
+  productName?: string;
+  quantity: number;
+  price: number;
+  total: number;
+  notes?: string;
 }

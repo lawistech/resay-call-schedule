@@ -1,0 +1,64 @@
+/* Form Styling */
+.form-container {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Product List Animations */
+.product-item {
+  transition: all 0.2s ease-in-out;
+}
+
+.product-item:hover {
+  background-color: rgba(243, 244, 246, 0.8);
+}
+
+/* Product Selector Animations */
+.product-selector-item {
+  transition: all 0.15s ease-in-out;
+}
+
+.product-selector-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Probability Bar Animation */
+.probability-bar {
+  transition: width 0.5s ease-in-out;
+}
+
+/* Modal Animation */
+.modal-enter {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Input Focus Effects */
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  outline: none;
+}
+
+/* Button Hover Effects */
+button.btn-primary {
+  transition: all 0.2s ease;
+}
+
+button.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+button.btn-primary:active {
+  transform: translateY(0);
+}

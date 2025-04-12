@@ -1,5 +1,5 @@
-<div class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-  <div class="relative mx-auto p-6 border w-full max-w-lg shadow-lg rounded-lg bg-white">
+<div class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50 modal-enter">
+  <div class="relative mx-auto p-6 border w-full max-w-2xl shadow-lg rounded-lg bg-white form-container">
     <!-- Close Button -->
     <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" (click)="onCancel()">
       <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -12,115 +12,261 @@
     </h2>
 
     <form [formGroup]="opportunityForm" (ngSubmit)="onSubmit()" class="space-y-4">
-      <!-- Title -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Title*</label>
-        <input type="text" formControlName="title" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-        <div *ngIf="opportunityForm.get('title')?.errors?.['required'] && opportunityForm.get('title')?.touched" 
-             class="text-red-500 text-xs mt-1">
-          Title is required
-        </div>
-      </div>
-
-      <!-- Description -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Description</label>
-        <textarea formControlName="description" rows="3" 
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
-      </div>
-
-      <!-- Company Dropdown -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Company*</label>
-        <select formControlName="companyId" 
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          <option value="">-- Select Company --</option>
-          <option *ngFor="let company of companies" [value]="company.id">{{company.name}}</option>
-        </select>
-        <div *ngIf="opportunityForm.get('companyId')?.errors?.['required'] && opportunityForm.get('companyId')?.touched" 
-             class="text-red-500 text-xs mt-1">
-          Company is required
-        </div>
-        <div *ngIf="isLoadingCompanies" class="text-xs text-gray-500 mt-1">Loading companies...</div>
-      </div>
-
-      <!-- Stage -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Stage*</label>
-        <select formControlName="stage" 
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          <option *ngFor="let stage of stages" [value]="stage">{{stage}}</option>
-        </select>
-      </div>
-
-      <!-- Status -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Status*</label>
-        <select formControlName="status" 
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          <option *ngFor="let status of statuses" [value]="status">{{status}}</option>
-        </select>
-      </div>
-
-      <!-- Amount -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Amount*</label>
-        <div class="mt-1 relative rounded-md shadow-sm">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span class="text-gray-500 sm:text-sm">£</span>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-4 md:col-span-1">
+          <!-- Left Column -->
+          <!-- Title -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Title*</label>
+            <input type="text" formControlName="title"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <div *ngIf="opportunityForm.get('title')?.errors?.['required'] && opportunityForm.get('title')?.touched"
+                class="text-red-500 text-xs mt-1">
+              Title is required
+            </div>
           </div>
-          <input type="number" formControlName="amount" 
-                 class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-        </div>
-        <div *ngIf="opportunityForm.get('amount')?.errors?.['required'] && opportunityForm.get('amount')?.touched" 
-             class="text-red-500 text-xs mt-1">
-          Amount is required
-        </div>
-      </div>
 
-      <!-- Probability -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Probability (%)</label>
-        <div class="mt-1">
-          <input type="number" formControlName="probability" min="0" max="100"
-                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          <!-- Visual probability bar -->
-          <div class="mt-2 w-full bg-gray-200 rounded-full h-2.5">
-            <div class="bg-blue-600 h-2.5 rounded-full" [style.width.%]="opportunityForm.get('probability')?.value"></div>
+          <!-- Company Dropdown -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Company*</label>
+            <select formControlName="companyId"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+              <option value="">-- Select Company --</option>
+              <option *ngFor="let company of companies" [value]="company.id">{{company.name}}</option>
+            </select>
+            <div *ngIf="opportunityForm.get('companyId')?.errors?.['required'] && opportunityForm.get('companyId')?.touched"
+                class="text-red-500 text-xs mt-1">
+              Company is required
+            </div>
+            <div *ngIf="isLoadingCompanies" class="text-xs text-gray-500 mt-1">Loading companies...</div>
+          </div>
+
+          <!-- Stage -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Stage*</label>
+            <select formControlName="stage"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+              <option *ngFor="let stage of stages" [value]="stage">{{stage}}</option>
+            </select>
+          </div>
+
+          <!-- Status -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Status*</label>
+            <select formControlName="status"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+              <option *ngFor="let status of statuses" [value]="status">{{status}}</option>
+            </select>
+          </div>
+
+          <!-- Expected Close Date -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Expected Close Date*</label>
+            <input type="date" formControlName="expectedCloseDate"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <div *ngIf="opportunityForm.get('expectedCloseDate')?.errors?.['required'] && opportunityForm.get('expectedCloseDate')?.touched"
+                class="text-red-500 text-xs mt-1">
+              Close date is required
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Expected Close Date -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Expected Close Date*</label>
-        <input type="date" formControlName="expectedCloseDate" 
-               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-        <div *ngIf="opportunityForm.get('expectedCloseDate')?.errors?.['required'] && opportunityForm.get('expectedCloseDate')?.touched" 
-             class="text-red-500 text-xs mt-1">
-          Close date is required
+        <div class="space-y-4 md:col-span-1">
+          <!-- Right Column -->
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea formControlName="description" rows="3"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+          </div>
+
+          <!-- Amount -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Amount*</label>
+            <div class="mt-1 relative rounded-md shadow-sm">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-500 sm:text-sm">£</span>
+              </div>
+              <input type="number" formControlName="amount"
+                    class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div *ngIf="opportunityForm.get('amount')?.errors?.['required'] && opportunityForm.get('amount')?.touched"
+                class="text-red-500 text-xs mt-1">
+              Amount is required
+            </div>
+          </div>
+
+          <!-- Probability -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Probability (%)</label>
+            <div class="mt-1">
+              <input type="number" formControlName="probability" min="0" max="100"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+              <!-- Visual probability bar -->
+              <div class="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-600 h-2.5 rounded-full probability-bar" [style.width.%]="opportunityForm.get('probability')?.value"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Notes</label>
+            <textarea formControlName="notes" rows="3"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+          </div>
         </div>
       </div>
 
-      <!-- Notes -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Notes</label>
-        <textarea formControlName="notes" rows="3" 
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+      <!-- Products Section -->
+      <div class="mt-6 border-t pt-4">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-lg font-medium text-gray-900">Products</h3>
+          <button type="button" (click)="openProductSelector()"
+                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Add Product
+          </button>
+        </div>
+
+        <!-- Products List -->
+        <div *ngIf="productsArray.length > 0" class="bg-white shadow overflow-hidden rounded-md">
+          <ul class="divide-y divide-gray-200">
+            <li *ngFor="let productControl of productsArray.controls; let i = index" class="px-4 py-3 product-item">
+              <div class="flex justify-between items-center">
+                <div class="flex-1">
+                  <div class="flex items-center">
+                    <span class="font-medium text-gray-900">{{ productControl.get('productName')?.value }}</span>
+                    <span class="ml-2 text-sm text-gray-500">x{{ productControl.get('quantity')?.value }}</span>
+                  </div>
+                  <div class="mt-1 flex items-center text-sm text-gray-500">
+                    <span>£{{ productControl.get('price')?.value }} each</span>
+                    <span class="mx-2">•</span>
+                    <span class="font-medium text-gray-900">Total: £{{ productControl.get('total')?.value }}</span>
+                  </div>
+                  <div *ngIf="productControl.get('notes')?.value" class="mt-1 text-sm text-gray-500">
+                    {{ productControl.get('notes')?.value }}
+                  </div>
+                </div>
+                <button type="button" (click)="removeProduct(i)" class="text-red-500 hover:text-red-700">
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Empty Products State -->
+        <div *ngIf="productsArray.length === 0" class="text-center py-6 bg-gray-50 rounded-md border border-dashed border-gray-300">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">No products added</h3>
+          <p class="mt-1 text-sm text-gray-500">Add products to this opportunity to track what the customer is interested in.</p>
+          <div class="mt-4">
+            <button type="button" (click)="openProductSelector()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              Add Product
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Form Actions -->
-      <div class="flex justify-end space-x-3 pt-4">
+      <div class="flex justify-end space-x-3 pt-4 border-t mt-6">
         <button type="button" (click)="onCancel()"
                 class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
           Cancel
         </button>
-        <button type="submit" [disabled]="!opportunityForm.valid || isSaving" 
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50">
+        <button type="submit" [disabled]="!opportunityForm.valid || isSaving"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 btn-primary">
           {{ isSaving ? 'Saving...' : (opportunity ? 'Update' : 'Create') }}
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Product Selector Modal -->
+<div *ngIf="showProductSelector" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50 modal-enter">
+  <div class="relative mx-auto p-6 border w-full max-w-lg shadow-lg rounded-lg bg-white">
+    <!-- Close Button -->
+    <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" (click)="closeProductSelector()">
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <h2 class="text-xl font-semibold mb-4 pb-2 border-b">Add Product</h2>
+
+    <!-- Product Selection -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Select Product</label>
+      <div class="max-h-60 overflow-y-auto border rounded-md">
+        <ul class="divide-y divide-gray-200">
+          <li *ngFor="let product of products"
+              (click)="selectProduct(product)"
+              class="p-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 ease-in-out product-selector-item"
+              [class.bg-blue-50]="selectedProduct?.id === product.id">
+            <div class="flex justify-between">
+              <div>
+                <div class="font-medium text-gray-900">{{ product.name }}</div>
+                <div class="text-sm text-gray-500">{{ product.sku }}</div>
+              </div>
+              <div class="text-sm font-medium text-gray-900">£{{ product.price }}</div>
+            </div>
+          </li>
+        </ul>
+        <div *ngIf="isLoadingProducts" class="p-4 text-center text-gray-500">Loading products...</div>
+        <div *ngIf="!isLoadingProducts && products.length === 0" class="p-4 text-center text-gray-500">No products available</div>
+      </div>
+    </div>
+
+    <!-- Product Details Form -->
+    <div *ngIf="selectedProduct" class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Quantity</label>
+          <input type="number" [(ngModel)]="productQuantity" min="1"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Price (£)</label>
+          <input type="number" [(ngModel)]="productPrice" min="0" step="0.01"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Notes</label>
+        <textarea [(ngModel)]="productNotes" rows="2"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+      </div>
+
+      <div class="bg-gray-50 p-3 rounded-md">
+        <div class="flex justify-between items-center">
+          <span class="text-sm font-medium text-gray-700">Total:</span>
+          <span class="text-lg font-bold text-gray-900">£{{ productQuantity * productPrice }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-end space-x-3 mt-6">
+      <button type="button" (click)="closeProductSelector()"
+              class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+        Cancel
+      </button>
+      <button type="button" (click)="addSelectedProduct()" [disabled]="!selectedProduct"
+              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 btn-primary">
+        Add Product
+      </button>
+    </div>
   </div>
 </div>
