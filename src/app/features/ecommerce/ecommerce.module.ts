@@ -8,6 +8,7 @@ import { HttpClientModule } from '@angular/common/http';
 // Removed WooCommerce components
 import { SuppliersComponent } from './suppliers/suppliers.component';
 import { ProductCatalogComponent } from './product-catalog/product-catalog.component';
+import { TestProductImportComponent } from './product-catalog/test-product-import.component';
 import { SupplierService } from './services/supplier.service';
 import { ProductCatalogService } from './services/product-catalog.service';
 import { ProductAttachmentService } from './services/product-attachment.service';
@@ -15,7 +16,8 @@ import { ProductAttachmentService } from './services/product-attachment.service'
 const routes: Routes = [
   { path: '', redirectTo: 'product-catalog', pathMatch: 'full' },
   { path: 'suppliers', component: SuppliersComponent },
-  { path: 'product-catalog', component: ProductCatalogComponent }
+  { path: 'product-catalog', component: ProductCatalogComponent },
+  { path: 'test-import', component: TestProductImportComponent }
 ];
 
 @NgModule({
@@ -26,7 +28,8 @@ const routes: Routes = [
     HttpClientModule,
     RouterModule.forChild(routes),
     SuppliersComponent,
-    ProductCatalogComponent
+    ProductCatalogComponent,
+    TestProductImportComponent
   ],
   providers: [
     SupplierService,

@@ -15,11 +15,11 @@
     <div class="flex flex-col md:flex-row gap-4">
       <div class="flex-1">
         <div class="relative">
-          <input 
-            type="text" 
-            [(ngModel)]="searchTerm" 
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
             (input)="filterProducts()"
-            placeholder="Search products..." 
+            placeholder="Search products..."
             class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,8 +28,8 @@
         </div>
       </div>
       <div class="md:w-1/4">
-        <select 
-          [(ngModel)]="supplierFilter" 
+        <select
+          [(ngModel)]="supplierFilter"
           (change)="filterProducts()"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
@@ -38,8 +38,8 @@
         </select>
       </div>
       <div class="md:w-1/4">
-        <select 
-          [(ngModel)]="categoryFilter" 
+        <select
+          [(ngModel)]="categoryFilter"
           (change)="filterProducts()"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
@@ -118,9 +118,9 @@
       <div class="fixed inset-0 transition-opacity" aria-hidden="true">
         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
       </div>
-      
+
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-      
+
       <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
         <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
@@ -129,12 +129,39 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900">
                   {{ isEditing ? 'Edit Product' : 'Add Product' }}
                 </h3>
-                
+
                 <div class="mt-4 space-y-4">
+                  <!-- Product URL Scraper -->
+                  <div class="bg-yellow-50 p-4 border border-yellow-200 rounded-md">
+                    <h4 class="font-medium text-yellow-800 mb-2">Auto-Import from URL</h4>
+                    <label for="productUrl" class="block text-sm font-medium text-gray-700">Product URL</label>
+                    <div class="mt-1 flex rounded-md shadow-sm">
+                      <input type="text" id="productUrl" [(ngModel)]="productUrl" [ngModelOptions]="{standalone: true}"
+                             placeholder="Paste product URL here (e.g., https://resay.co.uk/product/product-1/)"
+                             class="flex-1 block w-full border border-gray-300 rounded-l-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                      <button type="button" (click)="scrapeProduct()" [disabled]="isScrapingProduct"
+                              class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <span *ngIf="!isScrapingProduct">Import</span>
+                        <span *ngIf="isScrapingProduct" class="flex items-center">
+                          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Importing...
+                        </span>
+                      </button>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Paste a product URL to automatically fill in product details</p>
+                    <p class="mt-2 text-xs text-gray-700">Example URLs:
+                      <button type="button" (click)="setExampleUrl('https://resay.co.uk/product/product-1/')" class="text-blue-500 hover:underline bg-transparent border-0 p-0">Product 1</button> |
+                      <button type="button" (click)="setExampleUrl('https://resay.co.uk/product/product-2/')" class="text-blue-500 hover:underline bg-transparent border-0 p-0">Product 2</button>
+                    </p>
+                  </div>
+
                   <!-- Supplier -->
                   <div>
                     <label for="supplierId" class="block text-sm font-medium text-gray-700">Supplier *</label>
-                    <select id="supplierId" formControlName="supplierId" 
+                    <select id="supplierId" formControlName="supplierId"
                             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                       <option [value]="''">Select a supplier</option>
                       <option *ngFor="let supplier of suppliers" [value]="supplier.id">{{ supplier.name }}</option>
@@ -143,34 +170,34 @@
                       Supplier is required
                     </div>
                   </div>
-                  
+
                   <!-- Name -->
                   <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name *</label>
-                    <input type="text" id="name" formControlName="name" 
+                    <input type="text" id="name" formControlName="name"
                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                     <div *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched" class="text-red-500 text-xs mt-1">
                       Name is required
                     </div>
                   </div>
-                  
+
                   <!-- SKU -->
                   <div>
                     <label for="sku" class="block text-sm font-medium text-gray-700">SKU *</label>
-                    <input type="text" id="sku" formControlName="sku" 
+                    <input type="text" id="sku" formControlName="sku"
                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                     <div *ngIf="productForm.get('sku')?.invalid && productForm.get('sku')?.touched" class="text-red-500 text-xs mt-1">
                       SKU is required
                     </div>
                   </div>
-                  
+
                   <!-- Description -->
                   <div>
                     <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
                     <textarea id="description" formControlName="description" rows="3"
                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
                   </div>
-                  
+
                   <!-- Price and Cost -->
                   <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -200,7 +227,7 @@
                       </div>
                     </div>
                   </div>
-                  
+
                   <!-- Stock Quantity -->
                   <div>
                     <label for="stockQuantity" class="block text-sm font-medium text-gray-700">Stock Quantity</label>
@@ -210,31 +237,31 @@
                       Stock quantity must be at least 0
                     </div>
                   </div>
-                  
+
                   <!-- Category -->
                   <div>
                     <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-                    <input type="text" id="category" formControlName="category" 
+                    <input type="text" id="category" formControlName="category"
                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                   </div>
-                  
+
                   <!-- Tags -->
                   <div>
                     <label for="tags" class="block text-sm font-medium text-gray-700">Tags (comma-separated)</label>
-                    <input type="text" id="tags" formControlName="tags" 
+                    <input type="text" id="tags" formControlName="tags"
                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                   </div>
-                  
+
                   <!-- Image URL -->
                   <div>
                     <label for="imageUrl" class="block text-sm font-medium text-gray-700">Image URL</label>
-                    <input type="text" id="imageUrl" formControlName="imageUrl" 
+                    <input type="text" id="imageUrl" formControlName="imageUrl"
                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                   </div>
-                  
+
                   <!-- Active Status -->
                   <div class="flex items-center">
-                    <input type="checkbox" id="isActive" formControlName="isActive" 
+                    <input type="checkbox" id="isActive" formControlName="isActive"
                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                     <label for="isActive" class="ml-2 block text-sm text-gray-900">Active</label>
                   </div>
@@ -242,7 +269,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button type="submit" [disabled]="productForm.invalid"
                     class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"

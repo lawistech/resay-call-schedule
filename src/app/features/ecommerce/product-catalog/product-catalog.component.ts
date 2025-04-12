@@ -2,18 +2,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 import { ProductCatalogService } from '../services/product-catalog.service';
 import { SupplierService } from '../services/supplier.service';
+import { ProductScraperService, ScrapedProduct } from '../services/product-scraper.service';
 import { ProductCatalog } from '../models/product-catalog.model';
 import { Supplier } from '../models/supplier.model';
 import { NotificationService } from '../../../core/services/notification.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-catalog',
   templateUrl: './product-catalog.component.html',
   styleUrls: ['./product-catalog.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, HttpClientModule]
 })
 export class ProductCatalogComponent implements OnInit {
   products: ProductCatalog[] = [];
@@ -30,9 +33,14 @@ export class ProductCatalogComponent implements OnInit {
   filteredProducts: ProductCatalog[] = [];
   categories: string[] = [];
 
+  // Product URL scraping
+  productUrl = '';
+  isScrapingProduct = false;
+
   constructor(
     private productService: ProductCatalogService,
     private supplierService: SupplierService,
+    private productScraperService: ProductScraperService,
     private fb: FormBuilder,
     private notificationService: NotificationService
   ) {
@@ -102,7 +110,7 @@ export class ProductCatalogComponent implements OnInit {
     // Filter by search term
     if (this.searchTerm.trim()) {
       const search = this.searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(product => 
+      filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(search) ||
         product.sku.toLowerCase().includes(search) ||
         (product.description && product.description.toLowerCase().includes(search))
@@ -170,7 +178,7 @@ export class ProductCatalogComponent implements OnInit {
     }
 
     const productData = { ...this.productForm.value };
-    
+
     // Convert tags from comma-separated string to array
     if (productData.tags) {
       productData.tags = productData.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag);
@@ -221,5 +229,56 @@ export class ProductCatalogComponent implements OnInit {
 
   formatPrice(price: number): string {
     return price.toFixed(2);
+  }
+
+  /**
+   * Set an example URL for product scraping
+   */
+  setExampleUrl(url: string): void {
+    this.productUrl = url;
+  }
+
+  /**
+   * Scrape product information from a URL
+   * This will populate the product form with the scraped data
+   */
+  scrapeProduct(): void {
+    console.log('Scraping product from URL:', this.productUrl);
+
+    if (!this.productUrl) {
+      this.notificationService.warning('Please enter a product URL');
+      return;
+    }
+
+    this.isScrapingProduct = true;
+    this.notificationService.info('Importing product information...');
+
+    this.productScraperService.scrapeProductFromUrl(this.productUrl)
+      .pipe(finalize(() => {
+        console.log('Scraping completed');
+        this.isScrapingProduct = false;
+      }))
+      .subscribe({
+        next: (scrapedProduct: ScrapedProduct) => {
+          console.log('Product scraped successfully:', scrapedProduct);
+
+          // Populate the form with the scraped data
+          this.productForm.patchValue({
+            name: scrapedProduct.name,
+            sku: scrapedProduct.sku,
+            description: scrapedProduct.description || '',
+            price: scrapedProduct.price,
+            category: scrapedProduct.category || '',
+            tags: scrapedProduct.tags ? scrapedProduct.tags.join(', ') : '',
+            imageUrl: scrapedProduct.imageUrl || ''
+          });
+
+          this.notificationService.success('Product information imported successfully');
+        },
+        error: (error: any) => {
+          console.error('Error scraping product:', error);
+          this.notificationService.error(`Failed to import product information: ${error?.message || 'Unknown error'}`);
+        }
+      });
   }
 }
