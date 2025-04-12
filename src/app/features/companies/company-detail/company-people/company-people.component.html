@@ -33,43 +33,13 @@
   <!-- Organization Chart View -->
   <div *ngIf="!isLoading && contacts.length > 0" class="mb-8">
     <h4 class="text-md font-medium text-gray-700 mb-4">Organization Chart</h4>
-    
+
     <div class="bg-gray-50 rounded-lg p-6">
-      <!-- Primary Contact -->
-      <div *ngIf="primaryContact" class="mb-6">
-        <h5 class="text-sm font-medium text-gray-600 mb-2">Primary Contact</h5>
-        <div (click)="viewContact(primaryContact.id)" class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500 cursor-pointer hover:shadow-md transition-shadow">
-          <div class="flex items-start">
-            <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
-              {{ primaryContact.first_name.charAt(0) }}{{ primaryContact.last_name.charAt(0) }}
-            </div>
-            <div class="ml-3">
-              <h6 class="text-md font-semibold">{{ getFullName(primaryContact) }}</h6>
-              <p class="text-sm text-gray-600">{{ primaryContact.job_title || 'No title' }}</p>
-              <div class="mt-1 flex items-center space-x-4 text-sm">
-                <a *ngIf="primaryContact.email" href="mailto:{{ primaryContact.email }}" class="text-blue-600 hover:underline flex items-center" (click)="$event.stopPropagation()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  Email
-                </a>
-                <a *ngIf="primaryContact.phone" href="tel:{{ primaryContact.phone }}" class="text-blue-600 hover:underline flex items-center" (click)="$event.stopPropagation()">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  Call
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       <!-- Decision Makers -->
       <div *ngIf="decisionMakers.length > 0" class="mb-6">
         <h5 class="text-sm font-medium text-gray-600 mb-2">Decision Makers</h5>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div *ngFor="let contact of decisionMakers" 
+          <div *ngFor="let contact of decisionMakers"
                (click)="viewContact(contact.id)"
                class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-amber-500 cursor-pointer hover:shadow-md transition-shadow">
             <div class="flex items-start">
@@ -98,12 +68,12 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Department Contacts -->
       <div *ngFor="let department of getDepartments()" class="mb-6">
         <h5 class="text-sm font-medium text-gray-600 mb-2">{{ department }} Department</h5>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div *ngFor="let contact of departmentContacts[department]" 
+          <div *ngFor="let contact of departmentContacts[department]"
                (click)="viewContact(contact.id)"
                class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500 cursor-pointer hover:shadow-md transition-shadow">
             <div class="flex items-start">
@@ -138,7 +108,7 @@
   <!-- Contact List View -->
   <div *ngIf="!isLoading && contacts.length > 0" class="mt-8">
     <h4 class="text-md font-medium text-gray-700 mb-4">All Contacts</h4>
-    
+
     <div class="bg-white rounded-lg shadow overflow-hidden">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">

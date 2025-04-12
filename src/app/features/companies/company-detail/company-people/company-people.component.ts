@@ -17,7 +17,6 @@ export class CompanyPeopleComponent implements OnInit {
   isLoading = true;
 
   // For organization chart view
-  primaryContact: Contact | null = null;
   decisionMakers: Contact[] = [];
   departmentContacts: { [department: string]: Contact[] } = {};
 
@@ -60,12 +59,7 @@ export class CompanyPeopleComponent implements OnInit {
     // For demo purposes, we'll simulate roles based on job titles
     // In a real implementation, this would use the CompanyContact relationship data
 
-    // Find primary contact (first contact or one with "Manager" in title)
-    this.primaryContact = this.contacts.find(c =>
-      c.job_title?.toLowerCase().includes('manager') ||
-      c.job_title?.toLowerCase().includes('director') ||
-      c.job_title?.toLowerCase().includes('ceo')
-    ) || this.contacts[0] || null;
+    // Primary contact section has been removed
 
     // Find decision makers (based on job titles)
     this.decisionMakers = this.contacts.filter(c =>
