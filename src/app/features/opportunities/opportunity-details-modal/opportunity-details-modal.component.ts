@@ -238,13 +238,15 @@ export class OpportunityDetailsModalComponent implements OnChanges {
                 console.log('Opportunity deleted after order creation');
                 // Emit event to notify parent that an order was created and opportunity deleted
                 this.orderCreated.emit(true);
-                this.close(); // Close the opportunity details modal
+                // Don't close the modal automatically - let the user close it manually
+                // this.close();
               },
               error: (error) => {
                 console.error('Error deleting opportunity:', error);
                 // Still emit the order created event even if deletion fails
                 this.orderCreated.emit(true);
-                this.close();
+                // Don't close the modal automatically - let the user close it manually
+                // this.close();
               }
             });
         },

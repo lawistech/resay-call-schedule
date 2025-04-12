@@ -360,6 +360,7 @@ export class CompanyService {
       .from('opportunities')
       .select('*')
       .eq('company_id', companyId)
+      .neq('status', 'Won') // Exclude opportunities with 'Won' status
       .order('created_at', { ascending: false })
     ).pipe(
       map(response => {
