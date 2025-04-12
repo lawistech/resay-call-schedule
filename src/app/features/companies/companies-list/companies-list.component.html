@@ -75,19 +75,19 @@
   <div *ngIf="!isLoading && filteredCompanies.length > 0 && viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div *ngFor="let company of filteredCompanies"
          (click)="viewCompany(company.id)"
-         [class.border-l-4]="hasScheduledCalls(company.id)"
-         [class.border-amber-500]="hasScheduledCalls(company.id)"
+         [class.border-l-4]="hasScheduledActivities(company.id)"
+         [class.border-amber-500]="hasScheduledActivities(company.id)"
          class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
       <div class="p-6">
         <div class="flex justify-between items-start">
           <div>
             <div class="flex items-center">
               <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ company.name }}</h3>
-              <div *ngIf="hasScheduledCalls(company.id)" class="ml-2 px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-medium rounded-full flex items-center">
+              <div *ngIf="hasScheduledActivities(company.id)" class="ml-2 px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-medium rounded-full flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {{ getScheduledCallsCount(company.id) }} call{{ getScheduledCallsCount(company.id) > 1 ? 's' : '' }}
+                {{ getScheduledActivitiesCount(company.id) }} activity{{ getScheduledActivitiesCount(company.id) > 1 ? 'ies' : '' }}
               </div>
             </div>
             <p *ngIf="company.industry" class="text-sm text-gray-600 mb-2">{{ company.industry }}</p>
@@ -146,23 +146,23 @@
           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Industry</th>
           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Website</th>
           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacts</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled Calls</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled Activities</th>
           <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
         <tr *ngFor="let company of filteredCompanies" (click)="viewCompany(company.id)"
-            [class.border-l-4]="hasScheduledCalls(company.id)"
-            [class.border-amber-500]="hasScheduledCalls(company.id)"
+            [class.border-l-4]="hasScheduledActivities(company.id)"
+            [class.border-amber-500]="hasScheduledActivities(company.id)"
             class="hover:bg-gray-50 cursor-pointer">
           <td class="px-6 py-4 whitespace-nowrap">
             <div class="flex items-center">
               <div class="text-sm font-medium text-gray-900">{{ company.name }}</div>
-              <div *ngIf="hasScheduledCalls(company.id)" class="ml-2 px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-medium rounded-full flex items-center">
+              <div *ngIf="hasScheduledActivities(company.id)" class="ml-2 px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-medium rounded-full flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {{ getScheduledCallsCount(company.id) }}
+                {{ getScheduledActivitiesCount(company.id) }}
               </div>
             </div>
           </td>
@@ -177,13 +177,13 @@
             <div class="text-sm text-gray-500">{{ company.metrics?.contactCount || 0 }}</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <div *ngIf="hasScheduledCalls(company.id)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+            <div *ngIf="hasScheduledActivities(company.id)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {{ getScheduledCallsCount(company.id) }}
+              {{ getScheduledActivitiesCount(company.id) }}
             </div>
-            <div *ngIf="!hasScheduledCalls(company.id)" class="text-sm text-gray-500">0</div>
+            <div *ngIf="!hasScheduledActivities(company.id)" class="text-sm text-gray-500">0</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
             <button (click)="editCompany(company.id, $event)" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>

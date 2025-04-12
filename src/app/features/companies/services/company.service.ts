@@ -41,61 +41,82 @@ export class CompanyService {
     );
   }
 
-  // Get companies with scheduled calls
-  getCompaniesWithScheduledCalls(): Observable<{companies: Company[], scheduledCallsMap: {[companyId: string]: number}}> {
+  // Get companies with scheduled activities (calls or contacts with schedule)
+  getCompaniesWithScheduledCalls(): Observable<{companies: Company[], scheduledActivitiesMap: {[companyId: string]: number}}> {
     // First get all companies
     return this.getCompanies().pipe(
       switchMap(companies => {
-        // Then get all scheduled calls
-        return from(this.supabaseService.supabaseClient
+        // Get all scheduled calls
+        const callsPromise = this.supabaseService.supabaseClient
           .from('calls')
           .select(`
             *,
             contact:contacts(id, company_id)
           `)
           .eq('status', 'scheduled')
-          .gte('scheduled_at', new Date().toISOString())
-        ).pipe(
-          map(response => {
-            if (response.error) throw response.error;
+          .gte('scheduled_at', new Date().toISOString());
 
-            // Create a map of company IDs to call counts
-            const scheduledCallsMap: {[companyId: string]: number} = {};
+        // Get all contacts with schedule
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        const contactsPromise = this.supabaseService.supabaseClient
+          .from('contacts')
+          .select('id, company_id, schedule')
+          .gte('schedule', today);
+
+        // Combine both promises
+        return from(Promise.all([callsPromise, contactsPromise])).pipe(
+          map(([callsResponse, contactsResponse]) => {
+            if (callsResponse.error) throw callsResponse.error;
+            if (contactsResponse.error) throw contactsResponse.error;
+
+            // Create a map of company IDs to scheduled activities count
+            const scheduledActivitiesMap: {[companyId: string]: number} = {};
 
             // Count scheduled calls for each company
-            response.data.forEach(call => {
+            callsResponse.data.forEach(call => {
               if (call.contact && call.contact.company_id) {
                 const companyId = call.contact.company_id;
-                scheduledCallsMap[companyId] = (scheduledCallsMap[companyId] || 0) + 1;
+                scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
               }
             });
 
-            // Sort companies by scheduled calls (companies with calls first)
+            // Count scheduled contacts for each company
+            contactsResponse.data.forEach(contact => {
+              if (contact.company_id && contact.schedule) {
+                const companyId = contact.company_id;
+                scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
+              }
+            });
+
+            console.log('Scheduled activities map:', scheduledActivitiesMap);
+
+            // Sort companies by scheduled activities (companies with activities first)
             const sortedCompanies = [...companies].sort((a, b) => {
-              const aHasCalls = scheduledCallsMap[a.id] ? 1 : 0;
-              const bHasCalls = scheduledCallsMap[b.id] ? 1 : 0;
+              const aHasActivities = scheduledActivitiesMap[a.id] ? 1 : 0;
+              const bHasActivities = scheduledActivitiesMap[b.id] ? 1 : 0;
 
-              // First sort by whether they have calls
-              if (aHasCalls !== bHasCalls) {
-                return bHasCalls - aHasCalls;
+              // First sort by whether they have activities
+              if (aHasActivities !== bHasActivities) {
+                return bHasActivities - aHasActivities;
               }
 
-              // If both have calls, sort by number of calls
-              if (aHasCalls && bHasCalls) {
-                return scheduledCallsMap[b.id] - scheduledCallsMap[a.id];
+              // If both have activities, sort by number of activities
+              if (aHasActivities && bHasActivities) {
+                return scheduledActivitiesMap[b.id] - scheduledActivitiesMap[a.id];
               }
 
-              // If neither has calls, sort alphabetically
+              // If neither has activities, sort alphabetically
               return a.name.localeCompare(b.name);
             });
 
             return {
               companies: sortedCompanies,
-              scheduledCallsMap
+              scheduledActivitiesMap
             };
           }),
           catchError(error => {
-            this.notificationService.error(`Failed to fetch scheduled calls: ${error.message}`);
+            console.error('Error fetching scheduled activities:', error);
+            this.notificationService.error(`Failed to fetch scheduled activities: ${error.message}`);
             return throwError(() => error);
           })
         );

@@ -20,8 +20,8 @@ export class CompaniesListComponent implements OnInit {
   // View mode toggle
   viewMode: 'grid' | 'table' = 'grid';
 
-  // Scheduled calls tracking
-  scheduledCallsMap: {[companyId: string]: number} = {};
+  // Scheduled activities tracking
+  scheduledActivitiesMap: {[companyId: string]: number} = {};
 
   constructor(
     private companyService: CompanyService,
@@ -38,11 +38,13 @@ export class CompaniesListComponent implements OnInit {
     this.companyService.getCompaniesWithScheduledCalls().subscribe({
       next: (data) => {
         this.companies = data.companies;
-        this.scheduledCallsMap = data.scheduledCallsMap;
+        this.scheduledActivitiesMap = data.scheduledActivitiesMap;
         this.filteredCompanies = [...this.companies];
+        console.log('Companies loaded with scheduled activities:', this.scheduledActivitiesMap);
         this.isLoading = false;
       },
       error: (error) => {
+        console.error('Error loading companies:', error);
         this.notificationService.error('Failed to load companies');
         this.isLoading = false;
       }
@@ -102,13 +104,13 @@ export class CompaniesListComponent implements OnInit {
     return [...new Set(industries)].sort();
   }
 
-  // Check if a company has scheduled calls
-  hasScheduledCalls(companyId: string): boolean {
-    return !!this.scheduledCallsMap[companyId];
+  // Check if a company has scheduled activities
+  hasScheduledActivities(companyId: string): boolean {
+    return !!this.scheduledActivitiesMap[companyId];
   }
 
-  // Get the number of scheduled calls for a company
-  getScheduledCallsCount(companyId: string): number {
-    return this.scheduledCallsMap[companyId] || 0;
+  // Get the number of scheduled activities for a company
+  getScheduledActivitiesCount(companyId: string): number {
+    return this.scheduledActivitiesMap[companyId] || 0;
   }
 }
