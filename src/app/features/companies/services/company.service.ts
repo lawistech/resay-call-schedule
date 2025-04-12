@@ -1,6 +1,6 @@
 // src/app/features/companies/services/company.service.ts
 import { Injectable } from '@angular/core';
-import { Observable, from, throwError, map, catchError } from 'rxjs';
+import { Observable, from, throwError, map, catchError, switchMap } from 'rxjs';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -37,6 +37,68 @@ export class CompanyService {
       catchError(error => {
         this.notificationService.error(`Failed to fetch companies: ${error.message}`);
         return throwError(() => error);
+      })
+    );
+  }
+
+  // Get companies with scheduled calls
+  getCompaniesWithScheduledCalls(): Observable<{companies: Company[], scheduledCallsMap: {[companyId: string]: number}}> {
+    // First get all companies
+    return this.getCompanies().pipe(
+      switchMap(companies => {
+        // Then get all scheduled calls
+        return from(this.supabaseService.supabaseClient
+          .from('calls')
+          .select(`
+            *,
+            contact:contacts(id, company_id)
+          `)
+          .eq('status', 'scheduled')
+          .gte('scheduled_at', new Date().toISOString())
+        ).pipe(
+          map(response => {
+            if (response.error) throw response.error;
+
+            // Create a map of company IDs to call counts
+            const scheduledCallsMap: {[companyId: string]: number} = {};
+
+            // Count scheduled calls for each company
+            response.data.forEach(call => {
+              if (call.contact && call.contact.company_id) {
+                const companyId = call.contact.company_id;
+                scheduledCallsMap[companyId] = (scheduledCallsMap[companyId] || 0) + 1;
+              }
+            });
+
+            // Sort companies by scheduled calls (companies with calls first)
+            const sortedCompanies = [...companies].sort((a, b) => {
+              const aHasCalls = scheduledCallsMap[a.id] ? 1 : 0;
+              const bHasCalls = scheduledCallsMap[b.id] ? 1 : 0;
+
+              // First sort by whether they have calls
+              if (aHasCalls !== bHasCalls) {
+                return bHasCalls - aHasCalls;
+              }
+
+              // If both have calls, sort by number of calls
+              if (aHasCalls && bHasCalls) {
+                return scheduledCallsMap[b.id] - scheduledCallsMap[a.id];
+              }
+
+              // If neither has calls, sort alphabetically
+              return a.name.localeCompare(b.name);
+            });
+
+            return {
+              companies: sortedCompanies,
+              scheduledCallsMap
+            };
+          }),
+          catchError(error => {
+            this.notificationService.error(`Failed to fetch scheduled calls: ${error.message}`);
+            return throwError(() => error);
+          })
+        );
       })
     );
   }
@@ -115,6 +177,8 @@ export class CompanyService {
 
   // Company Contacts operations
   getCompanyContacts(companyId: string): Observable<Contact[]> {
+    console.log('Getting contacts for company ID:', companyId);
+
     return from(this.supabaseService.supabaseClient
       .from('contacts')
       .select('*')
@@ -122,10 +186,12 @@ export class CompanyService {
       .order('first_name', { ascending: true })
     ).pipe(
       map(response => {
+        console.log('Contacts response:', response);
         if (response.error) throw response.error;
         return response.data;
       }),
       catchError(error => {
+        console.error('Error fetching contacts:', error);
         this.notificationService.error(`Failed to fetch company contacts: ${error.message}`);
         return throwError(() => error);
       })

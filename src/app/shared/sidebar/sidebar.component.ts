@@ -92,7 +92,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (route.includes('/schedule') || route.includes('/call-history') ||
         route.includes('/contacts') || route.includes('/reports')) {
       this.expandedSection = 'calls';
-    } else if (route.includes('/leads') || route.includes('/opportunities') || route.includes('/pipeline') || route.includes('/companies')) {
+    } else if (route.includes('/leads') || route.includes('/opportunities') || route.includes('/pipeline')) {
       this.expandedSection = 'sales';
     } else if (route.startsWith('/tasks')) {
       this.expandedSection = 'tasks';

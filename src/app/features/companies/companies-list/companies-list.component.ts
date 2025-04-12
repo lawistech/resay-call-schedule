@@ -16,9 +16,12 @@ export class CompaniesListComponent implements OnInit {
   isLoading = true;
   searchTerm = '';
   selectedIndustry = '';
-  
+
   // View mode toggle
   viewMode: 'grid' | 'table' = 'grid';
+
+  // Scheduled calls tracking
+  scheduledCallsMap: {[companyId: string]: number} = {};
 
   constructor(
     private companyService: CompanyService,
@@ -32,9 +35,10 @@ export class CompaniesListComponent implements OnInit {
 
   loadCompanies(): void {
     this.isLoading = true;
-    this.companyService.getCompanies().subscribe({
+    this.companyService.getCompaniesWithScheduledCalls().subscribe({
       next: (data) => {
-        this.companies = data;
+        this.companies = data.companies;
+        this.scheduledCallsMap = data.scheduledCallsMap;
         this.filteredCompanies = [...this.companies];
         this.isLoading = false;
       },
@@ -47,14 +51,14 @@ export class CompaniesListComponent implements OnInit {
 
   filterCompanies(): void {
     this.filteredCompanies = this.companies.filter(company => {
-      const matchesSearch = !this.searchTerm || 
+      const matchesSearch = !this.searchTerm ||
         company.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         company.industry?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         company.website?.toLowerCase().includes(this.searchTerm.toLowerCase());
-      
-      const matchesIndustry = !this.selectedIndustry || 
+
+      const matchesIndustry = !this.selectedIndustry ||
         company.industry === this.selectedIndustry;
-      
+
       return matchesSearch && matchesIndustry;
     });
   }
@@ -94,7 +98,17 @@ export class CompaniesListComponent implements OnInit {
     const industries = this.companies
       .map(company => company.industry || '')
       .filter(industry => industry !== '');
-    
+
     return [...new Set(industries)].sort();
+  }
+
+  // Check if a company has scheduled calls
+  hasScheduledCalls(companyId: string): boolean {
+    return !!this.scheduledCallsMap[companyId];
+  }
+
+  // Get the number of scheduled calls for a company
+  getScheduledCallsCount(companyId: string): number {
+    return this.scheduledCallsMap[companyId] || 0;
   }
 }

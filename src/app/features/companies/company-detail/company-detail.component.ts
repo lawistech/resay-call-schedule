@@ -28,6 +28,7 @@ export class CompanyDetailComponent implements OnInit {
       const id = params.get('id');
       if (id) {
         this.companyId = id;
+        console.log('Company ID set:', this.companyId);
         this.loadCompany(id);
       } else {
         this.router.navigate(['/companies']);
@@ -48,7 +49,7 @@ export class CompanyDetailComponent implements OnInit {
     this.companyService.getCompanyById(id).subscribe({
       next: (company) => {
         this.company = company;
-        
+
         // Load company metrics
         this.companyService.calculateCompanyMetrics(id).subscribe({
           next: (metrics) => {
@@ -71,8 +72,9 @@ export class CompanyDetailComponent implements OnInit {
   }
 
   setActiveTab(tab: 'overview' | 'people' | 'communication' | 'opportunities'): void {
+    console.log('Setting active tab:', tab);
     this.activeTab = tab;
-    
+
     // Update URL without navigation
     this.router.navigate([], {
       relativeTo: this.route,

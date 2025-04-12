@@ -12,10 +12,10 @@ import { Router } from '@angular/router';
 })
 export class CompanyPeopleComponent implements OnInit {
   @Input() companyId: string = '';
-  
+
   contacts: Contact[] = [];
   isLoading = true;
-  
+
   // For organization chart view
   primaryContact: Contact | null = null;
   decisionMakers: Contact[] = [];
@@ -33,13 +33,23 @@ export class CompanyPeopleComponent implements OnInit {
 
   loadContacts(): void {
     this.isLoading = true;
+    console.log('Loading contacts for company ID:', this.companyId);
+
+    if (!this.companyId) {
+      this.notificationService.error('Company ID is missing');
+      this.isLoading = false;
+      return;
+    }
+
     this.companyService.getCompanyContacts(this.companyId).subscribe({
       next: (contacts) => {
+        console.log('Contacts loaded:', contacts);
         this.contacts = contacts;
         this.organizeContacts();
         this.isLoading = false;
       },
       error: (error) => {
+        console.error('Error loading contacts:', error);
         this.notificationService.error('Failed to load company contacts');
         this.isLoading = false;
       }
@@ -49,43 +59,43 @@ export class CompanyPeopleComponent implements OnInit {
   organizeContacts(): void {
     // For demo purposes, we'll simulate roles based on job titles
     // In a real implementation, this would use the CompanyContact relationship data
-    
+
     // Find primary contact (first contact or one with "Manager" in title)
-    this.primaryContact = this.contacts.find(c => 
-      c.job_title?.toLowerCase().includes('manager') || 
+    this.primaryContact = this.contacts.find(c =>
+      c.job_title?.toLowerCase().includes('manager') ||
       c.job_title?.toLowerCase().includes('director') ||
       c.job_title?.toLowerCase().includes('ceo')
     ) || this.contacts[0] || null;
-    
+
     // Find decision makers (based on job titles)
-    this.decisionMakers = this.contacts.filter(c => 
+    this.decisionMakers = this.contacts.filter(c =>
       c.job_title?.toLowerCase().includes('director') ||
       c.job_title?.toLowerCase().includes('ceo') ||
       c.job_title?.toLowerCase().includes('cfo') ||
       c.job_title?.toLowerCase().includes('cto') ||
       c.job_title?.toLowerCase().includes('president')
     );
-    
+
     // Group by departments (simulated from job titles)
     this.departmentContacts = {};
-    
+
     this.contacts.forEach(contact => {
       let department = 'General';
-      
+
       if (contact.job_title) {
         const title = contact.job_title.toLowerCase();
-        
+
         if (title.includes('sales')) department = 'Sales';
         else if (title.includes('market')) department = 'Marketing';
         else if (title.includes('tech') || title.includes('it') || title.includes('develop')) department = 'Technical';
         else if (title.includes('finance') || title.includes('account')) department = 'Finance';
         else if (title.includes('hr') || title.includes('human')) department = 'HR';
       }
-      
+
       if (!this.departmentContacts[department]) {
         this.departmentContacts[department] = [];
       }
-      
+
       this.departmentContacts[department].push(contact);
     });
   }
@@ -96,8 +106,8 @@ export class CompanyPeopleComponent implements OnInit {
 
   addContact(): void {
     // Navigate to contact form with company pre-selected
-    this.router.navigate(['/contacts/add-contact'], { 
-      queryParams: { company_id: this.companyId } 
+    this.router.navigate(['/contacts/add-contact'], {
+      queryParams: { company_id: this.companyId }
     });
   }
 
