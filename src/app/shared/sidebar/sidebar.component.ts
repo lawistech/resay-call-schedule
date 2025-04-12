@@ -100,8 +100,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.expandedSection = 'contacts';
     } else if (route.includes('/email')) {
       this.expandedSection = 'email';
-    } else if (route === '/websites') {
-      this.expandedSection = 'websites';
     } else if (route.includes('/ecommerce')) {
       this.expandedSection = 'ecommerce';
     }
@@ -124,6 +122,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
     // Special case for reports/analytics route
     if (routePath === '/reports' && this.currentRoute.includes('/reports')) {
       return true;
+    }
+
+    // Special case for ecommerce routes
+    if (routePath === '/ecommerce/product-catalog' && this.currentRoute === '/ecommerce') {
+      return true; // Default ecommerce route should highlight product catalog
+    }
+
+    // Special case for email routes
+    if (routePath === '/email' && this.currentRoute === '/email') {
+      return true; // Exact match for email dashboard
     }
 
     return this.currentRoute.includes(routePath);
