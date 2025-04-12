@@ -9,11 +9,11 @@
   <!-- Search and Filter Row -->
   <div class="mb-6 flex flex-wrap items-center gap-4">
     <div class="relative flex-grow sm:flex-grow-0 sm:w-64">
-      <input 
-        type="text" 
-        placeholder="Search by title..." 
-        class="w-full border border-gray-300 rounded-md px-3 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-        [(ngModel)]="searchTerm" 
+      <input
+        type="text"
+        placeholder="Search by title..."
+        class="w-full border border-gray-300 rounded-md px-3 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        [(ngModel)]="searchTerm"
         (input)="filterOpportunities()">
       <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
@@ -21,10 +21,10 @@
     </div>
     <div class="flex items-center">
       <label for="statusFilter" class="mr-2 text-sm font-medium text-gray-700">Status:</label>
-      <select 
-        id="statusFilter" 
-        class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-        [(ngModel)]="statusFilter" 
+      <select
+        id="statusFilter"
+        class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        [(ngModel)]="statusFilter"
         (change)="filterOpportunities()">
         <option value="">All</option>
         <option value="New">New</option>
@@ -36,16 +36,16 @@
   </div>
 
   <!-- Opportunities Grid -->
-  <div *ngIf="filteredOpportunities.length > 0; else noOpportunities" 
+  <div *ngIf="filteredOpportunities.length > 0; else noOpportunities"
        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let opportunity of filteredOpportunities" 
+    <div *ngFor="let opportunity of filteredOpportunities"
          class="bg-white p-5 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between"
          (click)="openDetailsModal(opportunity)">
-      
+
       <!-- Card Header -->
       <div class="flex justify-between items-start mb-3">
         <h3 class="text-lg font-semibold text-gray-800 mr-2">{{ opportunity.title }}</h3>
-        <span [class]="getStatusClass(opportunity.status)" 
+        <span [class]="getStatusClass(opportunity.status)"
               class="px-2.5 py-1 text-xs font-medium rounded-full whitespace-nowrap flex-shrink-0">
           {{ opportunity.status }}
         </span>
@@ -56,11 +56,11 @@
         <p class="text-sm text-gray-600 line-clamp-2 mb-3">{{ opportunity.description || 'No description.' }}</p>
         <div class="text-sm text-gray-500 space-y-1">
           <div class="flex items-center">
-            <span class="font-medium text-gray-700 w-24">Probability:</span> 
+            <span class="font-medium text-gray-700 w-24">Probability:</span>
             <span>{{ opportunity.probability || 0 }}%</span>
           </div>
           <div class="flex items-center">
-            <span class="font-medium text-gray-700 w-24">Exp. Close:</span> 
+            <span class="font-medium text-gray-700 w-24">Exp. Close:</span>
             <span>{{ opportunity.expectedCloseDate }}</span>
           </div>
         </div>
@@ -96,7 +96,7 @@
 
   <!-- Opportunity Form Modal -->
   <ng-container *ngIf="showOpportunityForm">
-    <app-opportunity-form 
+    <app-opportunity-form
       [opportunity]="selectedOpportunity"
       [isSaving]="isSaving"
       (close)="closeOpportunityForm()"
@@ -104,10 +104,11 @@
     </app-opportunity-form>
   </ng-container>
 
-  <app-opportunity-details-modal 
+  <app-opportunity-details-modal
     *ngIf="showDetailsModal"
-    [show]="showDetailsModal" 
-    [opportunity]="selectedOpportunity" 
-    (closeEvent)="closeDetailsModal()">
-  </app-opportunity-details-modal> 
+    [show]="showDetailsModal"
+    [opportunity]="selectedOpportunity"
+    (closeEvent)="closeDetailsModal()"
+    (statusChanged)="handleOpportunityStatusChanged($event)">
+  </app-opportunity-details-modal>
 </div>

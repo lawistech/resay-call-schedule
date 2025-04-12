@@ -137,13 +137,19 @@
     <!-- Opportunities List -->
     <div *ngIf="!isLoading && filterOpportunities().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div *ngFor="let opportunity of filterOpportunities()"
-           (click)="viewOpportunity(opportunity.id)"
-           class="bg-white rounded-lg shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow">
+           class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
         <div class="flex justify-between items-start mb-2">
-          <h5 class="text-md font-semibold text-gray-900">{{ opportunity.title }}</h5>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" [ngClass]="getStatusColor(opportunity.status)">
-            {{ opportunity.status }}
-          </span>
+          <h5 class="text-md font-semibold text-gray-900 cursor-pointer" (click)="viewOpportunity(opportunity.id)">{{ opportunity.title }}</h5>
+          <div class="flex items-center space-x-2">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" [ngClass]="getStatusColor(opportunity.status)">
+              {{ opportunity.status }}
+            </span>
+            <button (click)="openStatusChangeModal(opportunity)" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+              <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <p *ngIf="opportunity.description" class="text-sm text-gray-600 mb-3 line-clamp-2">{{ opportunity.description }}</p>
@@ -261,6 +267,54 @@
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Status Change Modal -->
+  <div *ngIf="showStatusModal && selectedOpportunity" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+    <div class="relative mx-auto p-6 border w-full max-w-sm shadow-lg rounded-lg bg-white" (click)="$event.stopPropagation()">
+      <!-- Close Button -->
+      <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" (click)="closeStatusModal()">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="mb-4 border-b pb-3">
+        <h3 class="text-lg leading-6 font-semibold text-gray-900">Update Opportunity Status</h3>
+        <p class="text-sm text-gray-500 mt-1">{{ selectedOpportunity.title }}</p>
+      </div>
+
+      <!-- Status Options -->
+      <div class="space-y-3">
+        <button
+          *ngFor="let status of statusOptions"
+          (click)="updateOpportunityStatus(status)"
+          [disabled]="isUpdatingStatus || selectedOpportunity.status === status"
+          class="w-full flex items-center justify-between p-3 rounded-md border"
+          [ngClass]="{
+            'bg-gray-100 border-gray-300': selectedOpportunity.status !== status,
+            'bg-blue-50 border-blue-300': selectedOpportunity.status === status,
+            'opacity-50 cursor-not-allowed': isUpdatingStatus || selectedOpportunity.status === status,
+            'hover:bg-gray-50': selectedOpportunity.status !== status && !isUpdatingStatus
+          }">
+          <span class="font-medium">{{ status }}</span>
+          <span *ngIf="selectedOpportunity.status === status" class="text-blue-600">
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div *ngIf="isUpdatingStatus" class="mt-4 flex justify-center">
+        <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
     </div>
   </div>
 </div>

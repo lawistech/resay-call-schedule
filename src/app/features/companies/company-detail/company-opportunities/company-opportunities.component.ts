@@ -9,6 +9,7 @@ import { ProductCatalog } from '../../../ecommerce/models/product-catalog.model'
 import { ProductAttachmentService, ProductAttachment } from '../../../ecommerce/services/product-attachment.service';
 import { QuotationService } from '../../../quotations/services/quotation.service';
 import { Quotation } from '../../../../core/models/quotation.model';
+import { OpportunitiesService } from '../../../opportunities/opportunities.service';
 
 @Component({
   selector: 'app-company-opportunities',
@@ -41,13 +42,20 @@ export class CompanyOpportunitiesComponent implements OnInit {
   orderHistory: any[] = [];
   isLoadingOrders = false;
 
+  // For opportunity status change
+  showStatusModal = false;
+  selectedOpportunity: Opportunity | null = null;
+  isUpdatingStatus = false;
+  statusOptions: Array<'New' | 'In Progress' | 'Won' | 'Lost'> = ['New', 'In Progress', 'Won', 'Lost'];
+
   constructor(
     private companyService: CompanyService,
     private notificationService: NotificationService,
     private router: Router,
     private productCatalogService: ProductCatalogService,
     private productAttachmentService: ProductAttachmentService,
-    private quotationService: QuotationService
+    private quotationService: QuotationService,
+    private opportunitiesService: OpportunitiesService
   ) {}
 
   ngOnInit(): void {
@@ -177,6 +185,53 @@ export class CompanyOpportunitiesComponent implements OnInit {
 
   viewOpportunity(id: string): void {
     this.router.navigate(['/opportunities', id]);
+  }
+
+  openStatusChangeModal(opportunity: Opportunity): void {
+    this.selectedOpportunity = opportunity;
+    this.showStatusModal = true;
+  }
+
+  closeStatusModal(): void {
+    this.showStatusModal = false;
+    this.selectedOpportunity = null;
+  }
+
+  updateOpportunityStatus(status: 'New' | 'In Progress' | 'Won' | 'Lost'): void {
+    if (!this.selectedOpportunity || this.isUpdatingStatus) return;
+
+    this.isUpdatingStatus = true;
+    const updatedOpportunity = { ...this.selectedOpportunity, status };
+
+    // If status is Won and stage is not Closed-Won, update stage too
+    if (status === 'Won' && updatedOpportunity.stage !== 'Closed-Won') {
+      updatedOpportunity.stage = 'Closed-Won';
+      updatedOpportunity.probability = 100;
+    }
+
+    // If status is Lost, set probability to 0
+    if (status === 'Lost') {
+      updatedOpportunity.probability = 0;
+    }
+
+    this.opportunitiesService.updateOpportunity(this.selectedOpportunity.id, updatedOpportunity)
+      .subscribe({
+        next: (updated) => {
+          // Update the opportunity in the local array
+          const index = this.opportunities.findIndex(o => o.id === updated.id);
+          if (index !== -1) {
+            this.opportunities[index] = updated;
+          }
+          this.notificationService.success(`Opportunity status updated to ${status}`);
+          this.isUpdatingStatus = false;
+          this.closeStatusModal();
+        },
+        error: (error) => {
+          console.error('Error updating opportunity status:', error);
+          this.notificationService.error('Failed to update opportunity status');
+          this.isUpdatingStatus = false;
+        }
+      });
   }
 
   // Get product name from the products array

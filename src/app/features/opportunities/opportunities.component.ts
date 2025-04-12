@@ -146,4 +146,13 @@ export class OpportunitiesComponent implements OnInit {
     this.showDetailsModal = false;
     this.selectedOpportunity = null;
   }
+
+  handleOpportunityStatusChanged(updatedOpportunity: Opportunity): void {
+    // Update the opportunity in the local array
+    const index = this.opportunities.findIndex(o => o.id === updatedOpportunity.id);
+    if (index !== -1) {
+      this.opportunities[index] = updatedOpportunity;
+      this.filterOpportunities();
+    }
+  }
 }
