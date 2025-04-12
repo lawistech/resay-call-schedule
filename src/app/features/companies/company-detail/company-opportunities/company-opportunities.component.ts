@@ -207,36 +207,27 @@ export class CompanyOpportunitiesComponent implements OnInit {
   handleSuccessSubmit(event: {opportunity: Opportunity, notes: string}): void {
     if (!event.opportunity) return;
 
-    // First, get the full opportunity with products
-    this.opportunitiesService.getOpportunityById(event.opportunity.id).subscribe({
-      next: (fullOpportunity) => {
-        // Now create the order with the full opportunity data
-        this.orderService.createOrderFromOpportunity(fullOpportunity, event.notes)
-          .subscribe({
-            next: (createdOrder) => {
-              // Remove the opportunity from the list
-              const index = this.opportunities.findIndex(o => o.id === event.opportunity.id);
-              if (index !== -1) {
-                this.opportunities.splice(index, 1);
-              }
+    // Create the order directly with the opportunity data we have
+    this.orderService.createOrderFromOpportunity(event.opportunity, event.notes)
+      .subscribe({
+        next: (createdOrder) => {
+          // Remove the opportunity from the list
+          const index = this.opportunities.findIndex(o => o.id === event.opportunity.id);
+          if (index !== -1) {
+            this.opportunities.splice(index, 1);
+          }
 
-              this.notificationService.success('Order created successfully');
-              this.closeSuccessModal();
+          this.notificationService.success('Order created successfully');
+          this.closeSuccessModal();
 
-              // Refresh the order history
-              this.loadOrders();
-            },
-            error: (error) => {
-              console.error('Error creating order:', error);
-              this.notificationService.error('Failed to create order');
-            }
-          });
-      },
-      error: (error) => {
-        console.error('Error fetching opportunity details:', error);
-        this.notificationService.error('Failed to fetch opportunity details');
-      }
-    });
+          // Refresh the order history
+          this.loadOrders();
+        },
+        error: (error) => {
+          console.error('Error creating order:', error);
+          this.notificationService.error('Failed to create order');
+        }
+      });
   }
 
   formatCurrency(amount: number | undefined): string {

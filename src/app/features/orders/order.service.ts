@@ -86,11 +86,11 @@ export class OrderService {
 
   createOrderFromOpportunity(opportunity: Opportunity, successNotes?: string): Observable<Order> {
     const currentUser = this.authService.getCurrentUser();
-    
+
     if (!currentUser) {
       return throwError(() => new Error('User must be logged in to create orders'));
     }
-    
+
     // Create order from opportunity data
     const order: Partial<Order> = {
       opportunityId: opportunity.id,
@@ -103,13 +103,13 @@ export class OrderService {
       orderDate: new Date().toISOString(),
       lastContactDate: new Date().toISOString()
     };
-    
+
     const dbOrder = this.formatOrderForDatabase(order);
-    
+
     // Add created_by and timestamps
     dbOrder.created_by = currentUser.id;
     dbOrder.created_at = new Date().toISOString();
-    
+
     return from(this.supabaseService.supabaseClient
       .from('orders')
       .insert(dbOrder)
@@ -117,21 +117,42 @@ export class OrderService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
-        
+
         const createdOrder = this.formatOrderFromDatabase(response.data[0]);
-        
+
         // If opportunity has products, add them as order items
         if (opportunity.products && opportunity.products.length > 0) {
           this.addOrderItems(createdOrder.id, opportunity.products);
+        } else {
+          // If no products, create a default order item
+          const defaultItem = {
+            order_id: createdOrder.id,
+            product_id: null,
+            product_name: opportunity.title,
+            quantity: 1,
+            price: opportunity.amount || 0,
+            total: opportunity.amount || 0,
+            notes: 'Created from opportunity',
+            created_at: new Date().toISOString()
+          };
+
+          this.supabaseService.supabaseClient
+            .from('order_items')
+            .insert(defaultItem)
+            .then(response => {
+              if (response.error) {
+                console.error('Error adding default order item:', response.error);
+              }
+            });
         }
-        
+
         this.notificationService.success('Order created successfully');
         return createdOrder;
       }),
       catchError(error => {
         console.error('Error creating order:', error);
         this.notificationService.error(`Failed to create order: ${error.message}`);
-        
+
         // For development, return a mock order if the table doesn't exist yet
         const mockOrder: Order = {
           id: 'mock-' + Date.now(),
@@ -162,7 +183,7 @@ export class OrderService {
       notes: product.notes,
       created_at: new Date().toISOString()
     }));
-    
+
     this.supabaseService.supabaseClient
       .from('order_items')
       .insert(items)
@@ -191,7 +212,7 @@ export class OrderService {
       updatedAt: data.updated_at,
       lastContactDate: data.last_contact_date
     };
-    
+
     // Add items if included in the query
     if (includeItems && data.items) {
       order.items = data.items.map((item: any) => ({
@@ -207,13 +228,13 @@ export class OrderService {
         updatedAt: item.updated_at
       }));
     }
-    
+
     return order;
   }
 
   private formatOrderForDatabase(order: Partial<Order>): any {
     const result: any = {};
-    
+
     if (order.opportunityId) result.opportunity_id = order.opportunityId;
     if (order.companyId) result.company_id = order.companyId;
     if (order.contactId) result.contact_id = order.contactId;
@@ -222,25 +243,25 @@ export class OrderService {
     if (order.total !== undefined) result.total = order.total;
     if (order.notes) result.notes = order.notes;
     if (order.successNotes) result.success_notes = order.successNotes;
-    
+
     if (order.orderDate) {
-      result.order_date = order.orderDate instanceof Date 
-        ? order.orderDate.toISOString() 
+      result.order_date = order.orderDate instanceof Date
+        ? order.orderDate.toISOString()
         : order.orderDate;
     }
-    
+
     if (order.completionDate) {
-      result.completion_date = order.completionDate instanceof Date 
-        ? order.completionDate.toISOString() 
+      result.completion_date = order.completionDate instanceof Date
+        ? order.completionDate.toISOString()
         : order.completionDate;
     }
-    
+
     if (order.lastContactDate) {
-      result.last_contact_date = order.lastContactDate instanceof Date 
-        ? order.lastContactDate.toISOString() 
+      result.last_contact_date = order.lastContactDate instanceof Date
+        ? order.lastContactDate.toISOString()
         : order.lastContactDate;
     }
-    
+
     return result;
   }
 

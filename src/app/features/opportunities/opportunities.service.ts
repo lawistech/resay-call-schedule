@@ -46,8 +46,7 @@ export class OpportunitiesService {
       .from('opportunities')
       .select(`
         *,
-        company:companies(id, name),
-        products:opportunity_products(*)
+        company:companies(id, name)
       `)
       .eq('id', id)
       .single()
@@ -57,6 +56,7 @@ export class OpportunitiesService {
         return this.formatOpportunityFromDatabase(response.data);
       }),
       catchError(error => {
+        console.error('Error fetching opportunity:', error);
         this.notificationService.error(`Failed to fetch opportunity: ${error.message}`);
         return throwError(() => error);
       })
