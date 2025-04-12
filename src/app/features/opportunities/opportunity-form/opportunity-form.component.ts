@@ -2,12 +2,14 @@
 import { Component, EventEmitter, Input, OnInit, OnDestroy, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { Opportunity, OpportunityProduct } from '../../../core/models/company.model';
+import { Opportunity, OpportunityProduct, Company } from '../../../core/models/company.model';
 import { OpportunitiesService } from '../opportunities.service';
 import { ProductCatalog } from '../../../features/ecommerce/models/product-catalog.model';
 import { ProductCatalogService } from '../../../features/ecommerce/services/product-catalog.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
+import { CompanyService } from '../../companies/services/company.service';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-opportunity-form',
@@ -32,7 +34,16 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
   statuses = ['New', 'In Progress', 'Won', 'Lost'];
   companies: {id: string, name: string}[] = [];
   isLoadingCompanies = false;
-  
+
+  // Company search properties
+  companySearchTerm: string = '';
+  companySearchResults: Company[] = [];
+  showCompanySearchResults: boolean = false;
+  isSearchingCompany: boolean = false;
+  selectedCompany: Company | null = null;
+  companyForm: FormGroup;
+  showNewCompanyForm: boolean = false;
+
   // Product-related properties
   products: ProductCatalog[] = [];
   filteredProducts: ProductCatalog[] = [];
@@ -53,7 +64,8 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
     private opportunitiesService: OpportunitiesService,
     private productCatalogService: ProductCatalogService,
     private notificationService: NotificationService,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private companyService: CompanyService
   ) {
     this.opportunityForm = this.fb.group({
       title: ['', Validators.required],
@@ -67,12 +79,20 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
       notes: [''],
       products: this.fb.array([])
     });
+
+    // Initialize company form
+    this.companyForm = this.fb.group({
+      name: ['', Validators.required],
+      industry: [''],
+      website: [''],
+      address: [''],
+      notes: ['']
+    });
   }
 
   ngOnInit(): void {
-    this.loadCompanies();
     this.loadProducts();
-    
+
     // Prevent body scrolling when modal is open
     document.body.style.overflow = 'hidden';
 
@@ -90,6 +110,11 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
         notes: this.opportunity.notes
       });
 
+      // Load the company details to display in the search input
+      if (this.opportunity.companyId) {
+        this.loadSelectedCompany(this.opportunity.companyId);
+      }
+
       // Add existing products if any
       if (this.opportunity.products && this.opportunity.products.length > 0) {
         this.opportunity.products.forEach(product => {
@@ -101,6 +126,9 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
       this.opportunityForm.patchValue({
         companyId: this.preselectedCompanyId
       });
+
+      // Load the company details to display in the search input
+      this.loadSelectedCompany(this.preselectedCompanyId);
     }
 
     // Auto-adjust probability based on stage selection
@@ -132,16 +160,146 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
     return d.toISOString().split('T')[0];
   }
 
-  // Load companies for dropdown
-  loadCompanies(): void {
+  // Load selected company details
+  loadSelectedCompany(companyId: string): void {
     this.isLoadingCompanies = true;
-    this.opportunitiesService.getCompanies().subscribe({
-      next: (companies) => {
-        this.companies = companies;
+    this.companyService.getCompanyById(companyId).subscribe({
+      next: (company) => {
+        this.selectedCompany = company;
+        this.companySearchTerm = company.name;
         this.isLoadingCompanies = false;
       },
       error: (error) => {
-        console.error('Error loading companies:', error);
+        console.error('Error loading company:', error);
+        this.isLoadingCompanies = false;
+      }
+    });
+  }
+
+  // Search for companies
+  searchCompanies(searchTerm: string): void {
+    this.isSearchingCompany = true;
+
+    this.companyService.searchCompanies(searchTerm).subscribe({
+      next: (companies) => {
+        this.companySearchResults = companies;
+        this.showCompanySearchResults = companies.length > 0;
+        this.isSearchingCompany = false;
+
+        // If there's an exact match, select it automatically
+        const exactMatch = companies.find(c =>
+          c.name.toLowerCase() === searchTerm.toLowerCase());
+        if (exactMatch) {
+          this.selectCompany(exactMatch);
+        }
+      },
+      error: (error) => {
+        console.error('Error searching companies:', error);
+        this.isSearchingCompany = false;
+      }
+    });
+  }
+
+  // Handle company search input changes
+  onCompanySearchChange(value: string): void {
+    this.companySearchTerm = value;
+    this.selectedCompany = null; // Clear selected company when search term changes
+    this.opportunityForm.patchValue({ companyId: '' }); // Clear the company_id in the form
+
+    if (value && value.length > 1) {
+      this.searchCompanies(value);
+    } else {
+      this.companySearchResults = [];
+      this.showCompanySearchResults = false;
+    }
+  }
+
+  // Clear company search
+  clearCompanySearch(): void {
+    this.companySearchTerm = '';
+    this.selectedCompany = null;
+    this.companySearchResults = [];
+    this.showCompanySearchResults = false;
+    this.opportunityForm.patchValue({ companyId: '' });
+  }
+
+  // Select a company from search results
+  selectCompany(company: Company): void {
+    this.selectedCompany = company;
+
+    // Update the form with the selected company ID
+    this.opportunityForm.patchValue({
+      companyId: company.id
+    });
+
+    // Hide search results
+    this.showCompanySearchResults = false;
+
+    // Show notification
+    this.notificationService.info(`Selected company: ${company.name}`);
+  }
+
+  // Toggle new company form
+  toggleNewCompanyForm(): void {
+    this.showNewCompanyForm = !this.showNewCompanyForm;
+
+    if (this.showNewCompanyForm && this.companySearchTerm) {
+      // Pre-fill the company name field with the search term
+      this.companyForm.patchValue({
+        name: this.companySearchTerm
+      });
+    }
+  }
+
+  // Create a new company
+  createNewCompany(): void {
+    if (!this.companySearchTerm || this.companySearchTerm.trim().length < 2) {
+      this.notificationService.error('Please enter a valid company name');
+      return;
+    }
+
+    // Check if a company with this name already exists
+    this.companyService.checkDuplicateCompany(this.companySearchTerm).subscribe({
+      next: (companies) => {
+        if (companies.length > 0) {
+          // Company already exists, ask user to select it
+          this.notificationService.warning(`A company named "${companies[0].name}" already exists. Please select it from the list.`);
+          this.companySearchResults = companies;
+          this.showCompanySearchResults = true;
+        } else {
+          // Create new company
+          this.companyForm.patchValue({
+            name: this.companySearchTerm
+          });
+          this.toggleNewCompanyForm();
+        }
+      },
+      error: (error) => {
+        console.error('Error checking duplicate company:', error);
+        this.notificationService.error('Error checking for existing companies');
+      }
+    });
+  }
+
+  // Create company from form
+  createCompany(): void {
+    if (this.companyForm.invalid) {
+      return;
+    }
+
+    this.isLoadingCompanies = true;
+
+    this.companyService.createCompany(this.companyForm.value).subscribe({
+      next: (company) => {
+        this.selectedCompany = company;
+        this.companySearchTerm = company.name;
+        this.opportunityForm.patchValue({ companyId: company.id });
+        this.notificationService.success('Company created successfully');
+        this.showNewCompanyForm = false;
+        this.isLoadingCompanies = false;
+      },
+      error: (error) => {
+        this.notificationService.error('Failed to create company: ' + error.message);
         this.isLoadingCompanies = false;
       }
     });
@@ -175,22 +333,22 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
   // Search products based on query
   searchProducts(): void {
     if (!this.productSearchQuery.trim()) {
       this.filteredProducts = [...this.products];
       return;
     }
-    
+
     const query = this.productSearchQuery.toLowerCase().trim();
-    this.filteredProducts = this.products.filter(product => 
-      product.name.toLowerCase().includes(query) || 
+    this.filteredProducts = this.products.filter(product =>
+      product.name.toLowerCase().includes(query) ||
       (product.sku && product.sku.toLowerCase().includes(query)) ||
       product.description?.toLowerCase().includes(query)
     );
   }
-  
+
   // Toggle create product form
   toggleCreateProductForm(): void {
     this.showCreateProductForm = !this.showCreateProductForm;
@@ -201,14 +359,14 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
       this.newProductPrice = 0;
     }
   }
-  
+
   // Create a new product
   createProduct(): void {
     if (!this.newProductName.trim()) {
       this.notificationService.error('Product name is required');
       return;
     }
-    
+
     // Get the first supplier ID for simplicity
     // In a real application, you might want to let the user select a supplier
     this.isLoadingProducts = true;
@@ -222,15 +380,15 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
           this.isLoadingProducts = false;
           return;
         }
-        
+
         const supplierId = response.data && response.data.length > 0 ? response.data[0].id : null;
-        
+
         if (!supplierId) {
           this.notificationService.error('No supplier found. Please create a supplier first.');
           this.isLoadingProducts = false;
           return;
         }
-        
+
         const newProduct = {
           supplierId: supplierId,
           name: this.newProductName.trim(),
@@ -239,7 +397,7 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
           description: '',
           isActive: true
         };
-        
+
         this.productCatalogService.createProduct(newProduct).subscribe({
           next: (createdProduct) => {
             this.products.push(createdProduct);
