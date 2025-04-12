@@ -59,7 +59,7 @@ export interface Opportunity {
   expectedCloseDate: string | Date; // Can handle both string and Date
   amount?: number;
   companyId: string;
-  stage?: string;
+  stage?: 'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won';
   value: number;
   closeDate?: string | Date;
   notes?: string;

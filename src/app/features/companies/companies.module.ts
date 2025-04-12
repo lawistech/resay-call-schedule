@@ -13,6 +13,7 @@ import { CompanyService } from './services/company.service';
 import { CompanyPeopleComponent } from './company-detail/company-people/company-people.component';
 import { CompanyCommunicationComponent } from './company-detail/company-communication/company-communication.component';
 import { CompanyOpportunitiesComponent } from './company-detail/company-opportunities/company-opportunities.component';
+import { OpportunitySuccessModalComponent } from '../opportunities/opportunity-success-modal/opportunity-success-modal.component';
 
 const routes: Routes = [
   { path: '', component: CompaniesListComponent },
@@ -36,7 +37,8 @@ const routes: Routes = [
     ReactiveFormsModule,
     SharedModule,
     HttpClientModule,
-    RouterModule.forChild(routes)
+    RouterModule.forChild(routes),
+    OpportunitySuccessModalComponent
   ],
   providers: [
     CompanyService

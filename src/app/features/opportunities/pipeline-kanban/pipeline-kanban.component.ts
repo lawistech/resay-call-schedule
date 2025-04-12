@@ -17,7 +17,7 @@ import { Router } from '@angular/router';
   imports: [CommonModule, DragDropModule, DatePipe, FormsModule]
 })
 export class PipelineKanbanComponent implements OnInit {
-  stages = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
+  stages: Array<'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won'> = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
   opportunitiesByStage: { [key: string]: Opportunity[] } = {};
   isLoading = true;
   pipelineStats = {
@@ -88,8 +88,8 @@ export class PipelineKanbanComponent implements OnInit {
       );
 
       const opportunity = event.container.data[event.currentIndex];
-      const newStage = event.container.id;
-      const previousStage = event.previousContainer.id;
+      const newStage = event.container.id as 'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won';
+      const previousStage = event.previousContainer.id as 'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won';
       const previousIndex = event.previousIndex;
 
       // Update opportunity stage
@@ -122,7 +122,7 @@ export class PipelineKanbanComponent implements OnInit {
           this.notificationService.error('Failed to update opportunity stage');
 
           // Revert UI changes on error
-          opportunity.stage = previousStage;
+          opportunity.stage = previousStage as 'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won';
           transferArrayItem(
             event.container.data,
             event.previousContainer.data,

@@ -10,6 +10,9 @@ import { ProductAttachmentService, ProductAttachment } from '../../../ecommerce/
 import { QuotationService } from '../../../quotations/services/quotation.service';
 import { Quotation } from '../../../../core/models/quotation.model';
 import { OpportunitiesService } from '../../../opportunities/opportunities.service';
+import { OrderService } from '../../../orders/order.service';
+import { Order } from '../../../../core/models/order.model';
+import { OpportunitySuccessModalComponent } from '../../../opportunities/opportunity-success-modal/opportunity-success-modal.component';
 
 @Component({
   selector: 'app-company-opportunities',
@@ -39,11 +42,12 @@ export class CompanyOpportunitiesComponent implements OnInit {
   isLoadingQuotations = false;
 
   // Order history
-  orderHistory: any[] = [];
+  orderHistory: Order[] = [];
   isLoadingOrders = false;
 
   // For opportunity status change
   showStatusModal = false;
+  showSuccessModal = false;
   selectedOpportunity: Opportunity | null = null;
   isUpdatingStatus = false;
   statusOptions: Array<'New' | 'In Progress' | 'Won' | 'Lost'> = ['New', 'In Progress', 'Won', 'Lost'];
@@ -55,7 +59,8 @@ export class CompanyOpportunitiesComponent implements OnInit {
     private productCatalogService: ProductCatalogService,
     private productAttachmentService: ProductAttachmentService,
     private quotationService: QuotationService,
-    private opportunitiesService: OpportunitiesService
+    private opportunitiesService: OpportunitiesService,
+    private orderService: OrderService
   ) {}
 
   ngOnInit(): void {
@@ -134,10 +139,23 @@ export class CompanyOpportunitiesComponent implements OnInit {
 
   loadOrders(): void {
     this.isLoadingOrders = true;
-    // In a real implementation, this would fetch from a database
-    // For now, we'll set an empty array
-    this.orderHistory = [];
-    this.isLoadingOrders = false;
+    this.orderService.getOrdersByCompany(this.companyId).subscribe({
+      next: (orders) => {
+        this.orderHistory = orders;
+        this.isLoadingOrders = false;
+      },
+      error: (error) => {
+        console.error('Error loading orders:', error);
+        this.notificationService.error('Failed to load order history');
+        this.isLoadingOrders = false;
+      }
+    });
+  }
+
+  // Format date for display
+  formatDate(date: string | Date | undefined): string {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleString();
   }
 
   filterOpportunities(): Opportunity[] {
@@ -166,9 +184,49 @@ export class CompanyOpportunitiesComponent implements OnInit {
     }
   }
 
-  formatDate(date: string | Date | undefined): string {
+  // Format date for display with time
+  formatDateTime(date: string | Date | undefined): string {
     if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString();
+    return new Date(date).toLocaleString();
+  }
+
+  // Create an order from an opportunity
+  createOrderFromOpportunity(opportunity: Opportunity): void {
+    // Show success modal
+    this.selectedOpportunity = opportunity;
+    this.showSuccessModal = true;
+  }
+
+  // Close success modal
+  closeSuccessModal(): void {
+    this.showSuccessModal = false;
+    this.selectedOpportunity = null;
+  }
+
+  // Handle success submit from modal
+  handleSuccessSubmit(event: {opportunity: Opportunity, notes: string}): void {
+    if (!event.opportunity) return;
+
+    this.orderService.createOrderFromOpportunity(event.opportunity, event.notes)
+      .subscribe({
+        next: (createdOrder) => {
+          // Remove the opportunity from the list
+          const index = this.opportunities.findIndex(o => o.id === event.opportunity.id);
+          if (index !== -1) {
+            this.opportunities.splice(index, 1);
+          }
+
+          this.notificationService.success('Order created successfully');
+          this.closeSuccessModal();
+
+          // Refresh the order history
+          this.loadOrders();
+        },
+        error: (error) => {
+          console.error('Error creating order:', error);
+          this.notificationService.error('Failed to create order');
+        }
+      });
   }
 
   formatCurrency(amount: number | undefined): string {
@@ -224,6 +282,13 @@ export class CompanyOpportunitiesComponent implements OnInit {
           }
           this.notificationService.success(`Opportunity status updated to ${status}`);
           this.isUpdatingStatus = false;
+
+          // If status is Won, show success modal and create order
+          if (status === 'Won') {
+            // Show success modal or create order directly
+            this.createOrderFromOpportunity(updated);
+          }
+
           this.closeStatusModal();
         },
         error: (error) => {

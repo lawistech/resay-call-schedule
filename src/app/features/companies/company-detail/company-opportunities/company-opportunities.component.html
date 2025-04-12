@@ -202,27 +202,40 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Title</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Contact</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr *ngFor="let order of orderHistory" class="hover:bg-gray-50 cursor-pointer">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ order.id }}</div>
+              <div class="text-sm font-medium text-gray-900">{{ order.title }}</div>
+              <div *ngIf="order.successNotes" class="text-xs text-gray-500 mt-1 truncate max-w-xs" title="{{ order.successNotes }}">
+                {{ order.successNotes }}
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ formatDate(order.createdAt) }}</div>
+              <div class="text-sm text-gray-500">{{ formatDateTime(order.orderDate) }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm text-gray-900">{{ formatCurrency(order.total) }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    [ngClass]="{
+                      'bg-yellow-100 text-yellow-800': order.status === 'pending',
+                      'bg-blue-100 text-blue-800': order.status === 'processing',
+                      'bg-green-100 text-green-800': order.status === 'completed',
+                      'bg-red-100 text-red-800': order.status === 'cancelled'
+                    }">
                 {{ order.status }}
               </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-500">{{ formatDateTime(order.lastContactDate) }}</div>
             </td>
           </tr>
         </tbody>
@@ -318,3 +331,12 @@
     </div>
   </div>
 </div>
+
+<!-- Success Modal -->
+<app-opportunity-success-modal
+  *ngIf="showSuccessModal"
+  [show]="showSuccessModal"
+  [opportunity]="selectedOpportunity"
+  (closeEvent)="closeSuccessModal()"
+  (successEvent)="handleSuccessSubmit($event)">
+</app-opportunity-success-modal>

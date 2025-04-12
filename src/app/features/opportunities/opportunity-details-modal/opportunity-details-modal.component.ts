@@ -6,11 +6,13 @@ import { OpportunitiesService } from '../opportunities.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { OpportunityHistoryService } from '../opportunity-history.service';
 import { OpportunityHistory } from '../../../core/models/opportunity-history.model';
+import { OpportunitySuccessModalComponent } from '../opportunity-success-modal/opportunity-success-modal.component';
+import { OrderService } from '../../orders/order.service';
 
 @Component({
   selector: 'app-opportunity-details-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, OpportunitySuccessModalComponent],
   templateUrl: './opportunity-details-modal.component.html',
   styleUrls: ['./opportunity-details-modal.component.css']
 })
@@ -19,25 +21,30 @@ export class OpportunityDetailsModalComponent implements OnChanges {
   @Input() opportunity: Opportunity | null = null;
   @Output() closeEvent = new EventEmitter<boolean>();
   @Output() statusChanged = new EventEmitter<Opportunity>();
+  @Output() orderCreated = new EventEmitter<boolean>();
 
-  statuses = ['New', 'In Progress', 'Won', 'Lost'];
-  stages = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
+  statuses: Array<'New' | 'In Progress' | 'Won' | 'Lost'> = ['New', 'In Progress', 'Won', 'Lost'];
+  stages: Array<'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won'> = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
   isUpdating = false;
   showHistory = false;
   historyEntries: OpportunityHistory[] = [];
   isLoadingHistory = false;
 
+  // Success modal
+  showSuccessModal = false;
+
   constructor(
     private opportunitiesService: OpportunitiesService,
     private notificationService: NotificationService,
-    private opportunityHistoryService: OpportunityHistoryService
+    private opportunityHistoryService: OpportunityHistoryService,
+    private orderService: OrderService
   ) {}
 
   close() {
     this.closeEvent.emit(false);
   }
 
-  updateStatus(status: string) {
+  updateStatus(status: 'New' | 'In Progress' | 'Won' | 'Lost') {
     if (!this.opportunity || this.isUpdating) return;
 
     this.isUpdating = true;
@@ -47,6 +54,25 @@ export class OpportunityDetailsModalComponent implements OnChanges {
     if (status === 'Won' && updatedOpportunity.stage !== 'Closed-Won') {
       updatedOpportunity.stage = 'Closed-Won';
       updatedOpportunity.probability = 100;
+
+      // Show success modal for Won opportunities
+      this.opportunitiesService.updateOpportunity(this.opportunity.id, updatedOpportunity)
+        .subscribe({
+          next: (updated) => {
+            this.opportunity = updated;
+            this.notificationService.success(`Opportunity status updated to ${status}`);
+            this.statusChanged.emit(updated);
+            this.isUpdating = false;
+
+            // Show success modal
+            this.showSuccessModal = true;
+          },
+          error: (error) => {
+            this.notificationService.error('Failed to update opportunity status');
+            this.isUpdating = false;
+          }
+        });
+      return;
     }
 
     // If status is Lost, set probability to 0
@@ -69,7 +95,7 @@ export class OpportunityDetailsModalComponent implements OnChanges {
       });
   }
 
-  updateStage(stage: string) {
+  updateStage(stage: 'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won') {
     if (!this.opportunity || this.isUpdating) return;
 
     this.isUpdating = true;
@@ -89,6 +115,25 @@ export class OpportunityDetailsModalComponent implements OnChanges {
     // If stage is Closed-Won, auto-set status to Won
     if (stage === 'Closed-Won') {
       updatedOpportunity.status = 'Won';
+
+      // Update opportunity first
+      this.opportunitiesService.updateOpportunity(this.opportunity.id, updatedOpportunity)
+        .subscribe({
+          next: (updated) => {
+            this.opportunity = updated;
+            this.notificationService.success(`Opportunity stage updated to ${stage}`);
+            this.statusChanged.emit(updated);
+            this.isUpdating = false;
+
+            // Show success modal for Closed-Won stage
+            this.showSuccessModal = true;
+          },
+          error: (error) => {
+            this.notificationService.error('Failed to update opportunity stage');
+            this.isUpdating = false;
+          }
+        });
+      return;
     }
 
     this.opportunitiesService.updateOpportunity(this.opportunity.id, updatedOpportunity)
@@ -143,5 +188,31 @@ export class OpportunityDetailsModalComponent implements OnChanges {
   formatDate(date: string | Date | undefined): string {
     if (!date) return 'N/A';
     return new Date(date).toLocaleString();
+  }
+
+  // Success modal handlers
+  closeSuccessModal() {
+    this.showSuccessModal = false;
+  }
+
+  handleSuccessSubmit(event: {opportunity: Opportunity, notes: string}) {
+    if (!event.opportunity) return;
+
+    // Create order from opportunity
+    this.orderService.createOrderFromOpportunity(event.opportunity, event.notes)
+      .subscribe({
+        next: (order) => {
+          this.notificationService.success('Order created successfully');
+          this.closeSuccessModal();
+          // Emit event to notify parent that an order was created
+          this.orderCreated.emit(true);
+          this.close(); // Close the opportunity details modal
+        },
+        error: (error) => {
+          console.error('Error creating order:', error);
+          this.notificationService.error('Failed to create order');
+          this.isUpdating = false;
+        }
+      });
   }
 }

@@ -155,4 +155,16 @@ export class OpportunitiesComponent implements OnInit {
       this.filterOpportunities();
     }
   }
+
+  handleOrderCreated(created: boolean): void {
+    if (created && this.selectedOpportunity) {
+      // Remove the opportunity from the list since it's now an order
+      const index = this.opportunities.findIndex(o => o.id === this.selectedOpportunity?.id);
+      if (index !== -1) {
+        this.opportunities.splice(index, 1);
+        this.filterOpportunities();
+      }
+      this.selectedOpportunity = null;
+    }
+  }
 }

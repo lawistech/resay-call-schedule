@@ -109,6 +109,7 @@
     [show]="showDetailsModal"
     [opportunity]="selectedOpportunity"
     (closeEvent)="closeDetailsModal()"
-    (statusChanged)="handleOpportunityStatusChanged($event)">
+    (statusChanged)="handleOpportunityStatusChanged($event)"
+    (orderCreated)="handleOrderCreated($event)">
   </app-opportunity-details-modal>
 </div>

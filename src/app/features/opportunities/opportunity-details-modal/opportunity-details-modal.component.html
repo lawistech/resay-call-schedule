@@ -178,3 +178,11 @@
     </div>
   </div>
 </div>
+
+<!-- Success Modal -->
+<app-opportunity-success-modal
+  [show]="showSuccessModal"
+  [opportunity]="opportunity"
+  (closeEvent)="closeSuccessModal()"
+  (successEvent)="handleSuccessSubmit($event)">
+</app-opportunity-success-modal>
