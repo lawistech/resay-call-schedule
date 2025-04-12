@@ -46,7 +46,8 @@ export class OpportunitiesService {
       .from('opportunities')
       .select(`
         *,
-        company:companies(id, name)
+        company:companies(id, name),
+        products:opportunity_products(*)
       `)
       .eq('id', id)
       .single()
@@ -228,7 +229,7 @@ export class OpportunitiesService {
 
   // Helper functions to format data
   private formatOpportunityFromDatabase(data: any): Opportunity {
-    return {
+    const opportunity: Opportunity = {
       id: data.id,
       title: data.title,
       description: data.description,
@@ -244,6 +245,22 @@ export class OpportunitiesService {
       createdAt: data.created_at,
       updatedAt: data.updated_at
     };
+
+    // Add products if they exist
+    if (data.products && Array.isArray(data.products)) {
+      opportunity.products = data.products.map((product: any) => ({
+        id: product.id,
+        opportunityId: product.opportunity_id,
+        productId: product.product_id,
+        productName: product.product_name,
+        quantity: product.quantity,
+        price: product.price,
+        total: product.total,
+        notes: product.notes
+      }));
+    }
+
+    return opportunity;
   }
 
   private formatOpportunityForDatabase(opp: Partial<Opportunity>): any {

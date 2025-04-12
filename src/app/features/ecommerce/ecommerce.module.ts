@@ -9,15 +9,18 @@ import { HttpClientModule } from '@angular/common/http';
 import { SuppliersComponent } from './suppliers/suppliers.component';
 import { ProductCatalogComponent } from './product-catalog/product-catalog.component';
 import { TestProductImportComponent } from './product-catalog/test-product-import.component';
+import { OrdersComponent } from './orders/orders.component';
 import { SupplierService } from './services/supplier.service';
 import { ProductCatalogService } from './services/product-catalog.service';
 import { ProductAttachmentService } from './services/product-attachment.service';
+import { OrderService } from '../orders/order.service';
 
 const routes: Routes = [
   { path: '', redirectTo: 'product-catalog', pathMatch: 'full' },
   { path: 'suppliers', component: SuppliersComponent },
   { path: 'product-catalog', component: ProductCatalogComponent },
-  { path: 'test-import', component: TestProductImportComponent }
+  { path: 'test-import', component: TestProductImportComponent },
+  { path: 'orders', component: OrdersComponent }
 ];
 
 @NgModule({
@@ -29,12 +32,14 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     SuppliersComponent,
     ProductCatalogComponent,
-    TestProductImportComponent
+    TestProductImportComponent,
+    OrdersComponent
   ],
   providers: [
     SupplierService,
     ProductCatalogService,
-    ProductAttachmentService
+    ProductAttachmentService,
+    OrderService
   ]
 })
 export class EcommerceModule { }

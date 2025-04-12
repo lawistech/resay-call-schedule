@@ -377,6 +377,17 @@
             Suppliers
           </a>
 
+          <a routerLink="/ecommerce/orders"
+             [class.text-emerald-700]="isRouteActive('/ecommerce/orders')"
+             [class.font-medium]="isRouteActive('/ecommerce/orders')"
+             [class.bg-emerald-50]="isRouteActive('/ecommerce/orders')"
+             class="flex items-center py-2 px-3 text-sm text-stone-600 rounded-md hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            Orders
+          </a>
+
           <a routerLink="/ecommerce/test-import"
              [class.text-emerald-700]="isRouteActive('/ecommerce/test-import')"
              [class.font-medium]="isRouteActive('/ecommerce/test-import')"
