@@ -7,6 +7,7 @@ import { OpportunitiesService } from '../opportunities.service';
 import { ProductCatalog } from '../../../features/ecommerce/models/product-catalog.model';
 import { ProductCatalogService } from '../../../features/ecommerce/services/product-catalog.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { SupabaseService } from '../../../core/services/supabase.service';
 
 @Component({
   selector: 'app-opportunity-form',
@@ -31,21 +32,28 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
   statuses = ['New', 'In Progress', 'Won', 'Lost'];
   companies: {id: string, name: string}[] = [];
   isLoadingCompanies = false;
-
+  
   // Product-related properties
   products: ProductCatalog[] = [];
+  filteredProducts: ProductCatalog[] = [];
   isLoadingProducts = false;
   selectedProduct: ProductCatalog | null = null;
   productQuantity = 1;
   productPrice = 0;
   productNotes = '';
   showProductSelector = false;
+  productSearchQuery = '';
+  showCreateProductForm = false;
+  newProductName = '';
+  newProductSku = '';
+  newProductPrice = 0;
 
   constructor(
     private fb: FormBuilder,
     private opportunitiesService: OpportunitiesService,
     private productCatalogService: ProductCatalogService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private supabaseService: SupabaseService
   ) {
     this.opportunityForm = this.fb.group({
       title: ['', Validators.required],
@@ -64,7 +72,7 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadCompanies();
     this.loadProducts();
-
+    
     // Prevent body scrolling when modal is open
     document.body.style.overflow = 'hidden';
 
@@ -112,6 +120,40 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngOnDestroy(): void {
+    // Restore body scrolling when component is destroyed
+    document.body.style.overflow = '';
+  }
+
+  // Format date for input field
+  formatDateForInput(date: string | Date | undefined): string {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toISOString().split('T')[0];
+  }
+
+  // Load companies for dropdown
+  loadCompanies(): void {
+    this.isLoadingCompanies = true;
+    this.opportunitiesService.getCompanies().subscribe({
+      next: (companies) => {
+        this.companies = companies;
+        this.isLoadingCompanies = false;
+      },
+      error: (error) => {
+        console.error('Error loading companies:', error);
+        this.isLoadingCompanies = false;
+      }
+    });
+  }
+
+  // Cancel form submission
+  onCancel(): void {
+    // Restore body scrolling when modal is closed
+    document.body.style.overflow = '';
+    this.close.emit();
+  }
+
   // Get the products FormArray
   get productsArray(): FormArray {
     return this.opportunityForm.get('products') as FormArray;
@@ -123,6 +165,7 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
     this.productCatalogService.getProducts().subscribe({
       next: (products) => {
         this.products = products;
+        this.filteredProducts = [...products];
         this.isLoadingProducts = false;
       },
       error: (error) => {
@@ -131,6 +174,89 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
         this.isLoadingProducts = false;
       }
     });
+  }
+  
+  // Search products based on query
+  searchProducts(): void {
+    if (!this.productSearchQuery.trim()) {
+      this.filteredProducts = [...this.products];
+      return;
+    }
+    
+    const query = this.productSearchQuery.toLowerCase().trim();
+    this.filteredProducts = this.products.filter(product => 
+      product.name.toLowerCase().includes(query) || 
+      (product.sku && product.sku.toLowerCase().includes(query)) ||
+      product.description?.toLowerCase().includes(query)
+    );
+  }
+  
+  // Toggle create product form
+  toggleCreateProductForm(): void {
+    this.showCreateProductForm = !this.showCreateProductForm;
+    if (this.showCreateProductForm) {
+      // Pre-populate the new product name with the search query if it exists
+      this.newProductName = this.productSearchQuery;
+      this.newProductSku = '';
+      this.newProductPrice = 0;
+    }
+  }
+  
+  // Create a new product
+  createProduct(): void {
+    if (!this.newProductName.trim()) {
+      this.notificationService.error('Product name is required');
+      return;
+    }
+    
+    // Get the first supplier ID for simplicity
+    // In a real application, you might want to let the user select a supplier
+    this.isLoadingProducts = true;
+    this.supabaseService.supabaseClient
+      .from('suppliers')
+      .select('id')
+      .limit(1)
+      .then((response: any) => {
+        if (response.error) {
+          this.notificationService.error('Failed to get supplier');
+          this.isLoadingProducts = false;
+          return;
+        }
+        
+        const supplierId = response.data && response.data.length > 0 ? response.data[0].id : null;
+        
+        if (!supplierId) {
+          this.notificationService.error('No supplier found. Please create a supplier first.');
+          this.isLoadingProducts = false;
+          return;
+        }
+        
+        const newProduct = {
+          supplierId: supplierId,
+          name: this.newProductName.trim(),
+          sku: this.newProductSku.trim() || `SKU-${Date.now()}`,
+          price: this.newProductPrice,
+          description: '',
+          isActive: true
+        };
+        
+        this.productCatalogService.createProduct(newProduct).subscribe({
+          next: (createdProduct) => {
+            this.products.push(createdProduct);
+            this.filteredProducts = [...this.products];
+            this.notificationService.success('Product created successfully');
+            this.selectProduct(createdProduct);
+            this.showCreateProductForm = false;
+            this.productSearchQuery = '';
+            this.isLoadingProducts = false;
+          },
+          error: (error) => {
+            console.error('Error creating product:', error);
+            this.notificationService.error('Failed to create product');
+            this.isLoadingProducts = false;
+          }
+        });
+      });
   }
 
   // Add a product to the form
@@ -161,6 +287,9 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
     this.productQuantity = 1;
     this.productPrice = 0;
     this.productNotes = '';
+    this.productSearchQuery = '';
+    this.showCreateProductForm = false;
+    this.filteredProducts = [...this.products];
   }
 
   // Close product selector
@@ -205,20 +334,7 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
     this.opportunityForm.get('amount')?.setValue(total);
   }
 
-  loadCompanies(): void {
-    this.isLoadingCompanies = true;
-    this.opportunitiesService.getCompanies().subscribe({
-      next: (companies) => {
-        this.companies = companies;
-        this.isLoadingCompanies = false;
-      },
-      error: (error) => {
-        console.error('Error loading companies:', error);
-        this.isLoadingCompanies = false;
-      }
-    });
-  }
-
+  // Submit the form
   onSubmit(): void {
     if (this.opportunityForm.valid) {
       const formValue = this.opportunityForm.value;
@@ -266,29 +382,5 @@ export class OpportunityFormComponent implements OnInit, OnDestroy {
         this.markFormGroupTouched(control);
       }
     });
-  }
-
-  onCancel(): void {
-    // Restore body scrolling when modal is closed
-    document.body.style.overflow = '';
-    this.close.emit();
-  }
-
-  ngOnDestroy(): void {
-    // Restore body scrolling when component is destroyed
-    document.body.style.overflow = '';
-  }
-
-  // Helper function to format date for input field
-  private formatDateForInput(date: Date | string | undefined): string | null {
-    if (!date) return null;
-
-    const d = date instanceof Date ? date : new Date(date);
-
-    // Check if date is valid
-    if (isNaN(d.getTime())) return null;
-
-    // Format as YYYY-MM-DD for the input[type="date"]
-    return d.toISOString().split('T')[0];
   }
 }

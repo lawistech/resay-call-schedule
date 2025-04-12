@@ -152,6 +152,7 @@ input, select, textarea {
   border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 0.625rem 0.75rem; /* Increased padding for better touch targets */
 }
 
 input:focus, select:focus, textarea:focus {
