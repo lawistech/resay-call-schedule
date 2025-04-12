@@ -4,11 +4,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CompanyService } from '../services/company.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Company } from '../../../core/models/company.model';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-company-detail',
   templateUrl: './company-detail.component.html',
-  styleUrls: ['./company-detail.component.scss']
+  styleUrls: ['./company-detail.component.scss'],
+  providers: [DatePipe]
 })
 export class CompanyDetailComponent implements OnInit {
   company: Company | null = null;
@@ -20,7 +22,8 @@ export class CompanyDetailComponent implements OnInit {
     private companyService: CompanyService,
     private route: ActivatedRoute,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
@@ -99,6 +102,23 @@ export class CompanyDetailComponent implements OnInit {
           this.notificationService.error('Failed to delete company');
         }
       });
+    }
+  }
+
+  // Format date from ISO string to a readable format
+  formatDate(dateString: string | null | undefined): string {
+    if (!dateString) return 'N/A';
+
+    try {
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) return 'N/A';
+
+      // Format: Apr 12, 2025 10:00 AM
+      return this.datePipe.transform(date, 'MMM d, y h:mm a') || 'N/A';
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'N/A';
     }
   }
 }

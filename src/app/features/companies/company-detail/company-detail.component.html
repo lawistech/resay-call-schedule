@@ -82,7 +82,7 @@
           </div>
           <div class="bg-gray-50 p-3 rounded-lg text-center">
             <p class="text-xs text-gray-500 mb-1">Last Contact</p>
-            <p class="text-lg font-semibold">{{ company.metrics?.lastContactDate || 'N/A' }}</p>
+            <p class="text-lg font-semibold">{{ formatDate(company.metrics?.lastContactDate) }}</p>
           </div>
         </div>
       </div>
