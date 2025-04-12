@@ -1,5 +1,5 @@
 // src/app/features/opportunities/opportunity-form/opportunity-form.component.ts
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, OnDestroy, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Opportunity, OpportunityProduct } from '../../../core/models/company.model';
@@ -19,7 +19,7 @@ import { NotificationService } from '../../../core/services/notification.service
   templateUrl: './opportunity-form.component.html',
   styleUrls: ['./opportunity-form.component.css']
 })
-export class OpportunityFormComponent implements OnInit {
+export class OpportunityFormComponent implements OnInit, OnDestroy {
   @Input() opportunity: Opportunity | null = null;
   @Input() isSaving: boolean = false;
   @Input() preselectedCompanyId: string | null = null;
@@ -64,6 +64,9 @@ export class OpportunityFormComponent implements OnInit {
   ngOnInit(): void {
     this.loadCompanies();
     this.loadProducts();
+
+    // Prevent body scrolling when modal is open
+    document.body.style.overflow = 'hidden';
 
     if (this.opportunity) {
       // For edit mode, populate the form with opportunity data
@@ -163,6 +166,7 @@ export class OpportunityFormComponent implements OnInit {
   // Close product selector
   closeProductSelector(): void {
     this.showProductSelector = false;
+    // Don't restore body scrolling here as the main modal is still open
   }
 
   // Select a product
@@ -243,6 +247,8 @@ export class OpportunityFormComponent implements OnInit {
         opportunityData.id = this.opportunity.id;
       }
 
+      // Restore body scrolling before emitting the event
+      document.body.style.overflow = '';
       this.formSubmitted.emit(opportunityData);
     } else {
       // Mark all form controls as touched to show validation errors
@@ -263,7 +269,14 @@ export class OpportunityFormComponent implements OnInit {
   }
 
   onCancel(): void {
+    // Restore body scrolling when modal is closed
+    document.body.style.overflow = '';
     this.close.emit();
+  }
+
+  ngOnDestroy(): void {
+    // Restore body scrolling when component is destroyed
+    document.body.style.overflow = '';
   }
 
   // Helper function to format date for input field
