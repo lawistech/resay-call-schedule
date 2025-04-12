@@ -30,6 +30,10 @@ export class OpportunityDetailsModalComponent implements OnChanges {
   historyEntries: OpportunityHistory[] = [];
   isLoadingHistory = false;
 
+  // Dropdown toggles
+  showStatusDropdown = false;
+  showStageDropdown = false;
+
   // Success modal
   showSuccessModal = false;
 
@@ -44,8 +48,27 @@ export class OpportunityDetailsModalComponent implements OnChanges {
     this.closeEvent.emit(false);
   }
 
+  toggleStatusDropdown() {
+    this.showStatusDropdown = !this.showStatusDropdown;
+    // Close the other dropdown if it's open
+    if (this.showStatusDropdown) {
+      this.showStageDropdown = false;
+    }
+  }
+
+  toggleStageDropdown() {
+    this.showStageDropdown = !this.showStageDropdown;
+    // Close the other dropdown if it's open
+    if (this.showStageDropdown) {
+      this.showStatusDropdown = false;
+    }
+  }
+
   updateStatus(status: 'New' | 'In Progress' | 'Won' | 'Lost') {
     if (!this.opportunity || this.isUpdating) return;
+
+    // Close the dropdown
+    this.showStatusDropdown = false;
 
     this.isUpdating = true;
     const updatedOpportunity = { ...this.opportunity, status };
@@ -97,6 +120,9 @@ export class OpportunityDetailsModalComponent implements OnChanges {
 
   updateStage(stage: 'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won') {
     if (!this.opportunity || this.isUpdating) return;
+
+    // Close the dropdown
+    this.showStageDropdown = false;
 
     this.isUpdating = true;
     const updatedOpportunity = { ...this.opportunity, stage };

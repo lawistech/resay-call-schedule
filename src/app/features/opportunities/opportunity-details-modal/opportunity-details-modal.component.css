@@ -1,1 +1,31 @@
-/* Add your CSS styles here */
+/* Dropdown styles */
+.dropdown-menu {
+  display: block;
+  z-index: 50;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-toggle:hover {
+  cursor: pointer;
+}
+
+/* Status colors */
+.status-new {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.status-in-progress {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.status-won {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-lost {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
