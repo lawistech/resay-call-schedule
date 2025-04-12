@@ -41,6 +41,56 @@ export class CompanyService {
     );
   }
 
+  // Search for companies by name, website, or industry
+  searchCompanies(searchTerm: string): Observable<Company[]> {
+    if (!searchTerm || searchTerm.trim().length < 2) {
+      return of([]);
+    }
+
+    const term = searchTerm.toLowerCase().trim();
+
+    return from(this.supabaseService.supabaseClient
+      .from('companies')
+      .select('*')
+      .or(`name.ilike.%${term}%,website.ilike.%${term}%,industry.ilike.%${term}%`)
+      .order('name', { ascending: true })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      }),
+      catchError(error => {
+        console.error('Error searching companies:', error);
+        return of([]);
+      })
+    );
+  }
+
+  // Check for duplicate company by name
+  checkDuplicateCompany(name: string): Observable<Company[]> {
+    if (!name || name.trim().length < 2) {
+      return of([]);
+    }
+
+    const term = name.toLowerCase().trim();
+
+    return from(this.supabaseService.supabaseClient
+      .from('companies')
+      .select('*')
+      .ilike('name', term)
+      .order('name', { ascending: true })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data;
+      }),
+      catchError(error => {
+        console.error('Error checking duplicate company:', error);
+        return of([]);
+      })
+    );
+  }
+
   // Get companies with scheduled activities (calls or contacts with scheduled status)
   getCompaniesWithScheduledCalls(): Observable<{companies: Company[], scheduledActivitiesMap: {[companyId: string]: number}}> {
     // First get all companies

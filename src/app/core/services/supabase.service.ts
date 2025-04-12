@@ -30,6 +30,51 @@ export class SupabaseService {
       .order('created_at', { ascending: false });
   }
 
+  async searchContacts(searchTerm: string) {
+    // Search by name, email, or phone
+    const term = searchTerm.toLowerCase().trim();
+
+    return this.supabaseClient
+      .from('contacts')
+      .select(`
+        *,
+        company:companies(*)
+      `)
+      .or(`first_name.ilike.%${term}%,last_name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`)
+      .order('created_at', { ascending: false });
+  }
+
+  async checkDuplicateContact(phone: string, email: string) {
+    // If both phone and email are empty, return empty result
+    if (!phone && !email) {
+      return { data: [], error: null };
+    }
+
+    let query = this.supabaseClient
+      .from('contacts')
+      .select(`
+        *,
+        company:companies(*)
+      `);
+
+    // Build the query based on available data
+    const conditions = [];
+
+    if (phone) {
+      conditions.push(`phone.eq.${phone}`);
+    }
+
+    if (email) {
+      conditions.push(`email.eq.${email}`);
+    }
+
+    if (conditions.length > 0) {
+      query = query.or(conditions.join(','));
+    }
+
+    return query;
+  }
+
   async getContactById(id: string) {
     return this.supabaseClient
       .from('contacts')
@@ -104,7 +149,7 @@ export class SupabaseService {
   async getCallsByDate(date: string) {
     const startOfDay = `${date}T00:00:00`;
     const endOfDay = `${date}T23:59:59`;
-    
+
     return this.supabaseClient
       .from('calls')
       .select(`
@@ -116,7 +161,7 @@ export class SupabaseService {
       .order('scheduled_at', { ascending: true });
   }
 
-  
+
 
   async deleteCall(id: string) {
     return this.supabaseClient
@@ -136,7 +181,7 @@ export class SupabaseService {
       .like('schedule', `${date}%`) // Look for schedules starting with today's date
       .order('schedule', { ascending: true });
   }
-  
+
   async getScheduleForDateRange(startDate: string, endDate: string) {
     // Get calls in date range
     const callsPromise = this.supabaseClient
@@ -149,8 +194,8 @@ export class SupabaseService {
       .gte('scheduled_at', `${startDate}T00:00:00`)
       .lte('scheduled_at', `${endDate}T23:59:59`)
       .order('scheduled_at', { ascending: true });
-      
-    // Get contacts scheduled in date range  
+
+    // Get contacts scheduled in date range
     const contactsPromise = this.supabaseClient
       .from('contacts')
       .select(`
@@ -160,10 +205,10 @@ export class SupabaseService {
       .gte('schedule', `${startDate}`)
       .lte('schedule', `${endDate}T23:59:59`)
       .order('schedule', { ascending: true });
-      
+
     // Execute both queries concurrently
     const [callsResponse, contactsResponse] = await Promise.all([callsPromise, contactsPromise]);
-    
+
     return {
       calls: callsResponse.data || [],
       contacts: contactsResponse.data || [],
@@ -179,27 +224,27 @@ export class SupabaseService {
         .from('calls')
         .select('id, scheduled_at')
         .eq('status', 'scheduled');
-      
+
       if (error) throw error;
-      
+
       // For each call, check if it's overdue
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Beginning of today
-      
+
       const updates = data.map(async (call) => {
         const scheduledDate = new Date(call.scheduled_at);
         const isOverdue = scheduledDate < today;
-        
+
         // Update the is_overdue field
         return this.supabaseClient
           .from('calls')
           .update({ is_overdue: isOverdue })
           .eq('id', call.id);
       });
-      
+
       // Execute all updates
       await Promise.all(updates);
-      
+
     } catch (error) {
       console.error('Failed to update overdue status:', error);
       throw error;
@@ -211,7 +256,7 @@ export class SupabaseService {
 
   async getOverdueCalls() {
     const now = new Date().toISOString();
-    
+
     return this.supabaseClient
       .from('calls')
       .select(`
@@ -231,7 +276,7 @@ export class SupabaseService {
   async getCalls() {
     // Get current user
     const { data: { user } } = await this.supabaseClient.auth.getUser();
-    
+
     return this.supabaseClient
       .from('calls')
       .select(`
@@ -249,7 +294,7 @@ export class SupabaseService {
   async getUpcomingCalls() {
     const now = new Date().toISOString();
     const { data: { user } } = await this.supabaseClient.auth.getUser();
-    
+
     return this.supabaseClient
       .from('calls')
       .select(`
@@ -266,28 +311,28 @@ export class SupabaseService {
   async createCall(callData: Partial<Call>) {
     // Get current user
     const { data: { user } } = await this.supabaseClient.auth.getUser();
-    
+
     if (!user) {
       throw new Error('User not authenticated');
     }
-    
+
     // Format the timestamp properly with timezone
     const formattedData = {
       ...callData,
       scheduled_at: callData.scheduled_at ? new Date(callData.scheduled_at).toISOString() : null,
-      follow_up_date: callData.follow_up_date && callData.follow_up_date !== '' ? 
+      follow_up_date: callData.follow_up_date && callData.follow_up_date !== '' ?
         new Date(callData.follow_up_date).toISOString() : null
     };
-    
+
     // Always set the user_id to the current user
     const callWithUserId = {
       ...formattedData,
       user_id: user.id,
       status: 'scheduled' // Default status for new calls
     };
-    
+
     console.log('Sending to Supabase:', callWithUserId);
-    
+
     try {
       const { data, error } = await this.supabaseClient
         .from('calls')
@@ -296,7 +341,7 @@ export class SupabaseService {
           *,
           contact:contacts(*)
         `);
-        
+
       if (error) throw error;
       return { data, error: null };
     } catch (error) {

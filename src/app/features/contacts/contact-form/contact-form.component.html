@@ -17,22 +17,45 @@
             <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
               {{ isEditing ? 'Edit Contact' : 'Add New Contact' }}
             </h3>
-            
+
             <!-- Contact Form -->
             <div class="mt-4">
               <form [formGroup]="contactForm" (ngSubmit)="saveContact()">
                 <div class="space-y-4">
                   <!-- Basic Info -->
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                    <div class="relative">
                       <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>
                       <input type="text" id="first_name" formControlName="first_name"
                              class="form-input mt-1 w-full px-3 py-2 bg-stone-100 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
                       <div *ngIf="contactForm.get('first_name')?.touched && contactForm.get('first_name')?.invalid" class="text-red-500 text-sm mt-1">
                         First name is required
                       </div>
+
+                      <!-- Search Results Dropdown -->
+                      <div *ngIf="showSearchResults && searchResults.length > 0"
+                           class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md overflow-auto max-h-60 border border-gray-300">
+                        <div class="p-2 text-sm text-gray-500 border-b">Existing contacts found:</div>
+                        <ul>
+                          <li *ngFor="let contact of searchResults"
+                              (click)="selectContact(contact)"
+                              class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm">
+                            <div class="font-medium">{{ contact.first_name }} {{ contact.last_name }}</div>
+                            <div *ngIf="contact.email" class="text-xs text-gray-500">{{ contact.email }}</div>
+                            <div *ngIf="contact.phone" class="text-xs text-gray-500">{{ contact.phone }}</div>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <!-- Loading Indicator -->
+                      <div *ngIf="isSearching" class="absolute right-3 top-9">
+                        <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
                     </div>
-                    
+
                     <div>
                       <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
                       <input type="text" id="last_name" formControlName="last_name"
@@ -42,7 +65,7 @@
                       </div>
                     </div>
                   </div>
-                  
+
                   <!-- Contact Info -->
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -53,14 +76,14 @@
                         Please enter a valid email
                       </div>
                     </div>
-                    
+
                     <div>
                       <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
                       <input type="tel" id="phone" formControlName="phone"
                              class="form-input mt-1 w-full px-3 py-2 bg-stone-100 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
                     </div>
                   </div>
-                  
+
 
                   <!-- Company Info -->
                   <div>
@@ -70,14 +93,14 @@
                         {{ showNewCompanyForm ? 'Select Existing Company' : 'Add New Company' }}
                       </button>
                     </div>
-                    
+
                     <div *ngIf="!showNewCompanyForm">
                       <select id="company_id" formControlName="company_id" class="form-input mt-1 w-full px-3 py-2 bg-stone-100 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
                         <option value="">-- Select Company --</option>
                         <option *ngFor="let company of companies" [value]="company.id">{{ company.name }}</option>
                       </select>
                     </div>
-                    
+
                     <!-- New Company Form -->
                     <div *ngIf="showNewCompanyForm" class="mt-2 p-3 border border-gray-200 rounded-md bg-gray-50">
                       <h4 class="text-sm font-medium text-gray-700 mb-2">New Company</h4>
@@ -88,19 +111,19 @@
                             <input type="text" id="company_name" formControlName="name"
                                    class="form-input mt-1 text-sm py-1 w-full px-3 bg-stone-100 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
                           </div>
-                          
+
                           <div>
                             <label for="website" class="block text-xs font-medium text-gray-700">Website</label>
                             <input type="url" id="website" formControlName="website"
                                    class="form-input mt-1 text-sm py-1 w-full px-3 bg-stone-100 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
                           </div>
-                          
+
                           <div>
                             <label for="industry" class="block text-xs font-medium text-gray-700">Industry</label>
                             <input type="text" id="industry" formControlName="industry"
                                    class="form-input mt-1 text-sm py-1 w-full px-3 bg-stone-100 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
                           </div>
-                          
+
                           <div class="flex justify-end pt-2">
                             <button type="button" (click)="toggleNewCompanyForm()" class="btn text-xs mr-2 px-3 py-1 border border-gray-300 rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500">
                               Cancel
@@ -120,11 +143,11 @@
                     </div>
                   </div>
 
-                  
+
                   <!-- Lead Source Dropdown -->
                   <div>
                     <label for="lead_source" class="block text-sm font-medium text-gray-700">Leads</label>
-                    <select id="lead_source" formControlName="lead_source" 
+                    <select id="lead_source" formControlName="lead_source"
                             class="form-input mt-1 w-full px-3 py-2 bg-stone-100 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent">
                       <option value="">-- Select Lead Source --</option>
                       <option value="resay">Resay</option>
@@ -132,8 +155,8 @@
                       <option value="androidepos">Android EPOS</option>
                     </select>
                   </div>
-                  
-                  
+
+
                   <!-- Notes -->
                   <div>
                     <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
@@ -146,10 +169,10 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Modal Actions -->
       <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-        <button (click)="saveContact()" type="button" 
+        <button (click)="saveContact()" type="button"
                 [disabled]="contactForm.invalid || isLoading"
                 class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-stone-800 text-base font-medium text-white hover:bg-stone-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 sm:ml-3 sm:w-auto sm:text-sm">
           <span *ngIf="isLoading" class="mr-2">
@@ -167,3 +190,14 @@
     </div>
   </div>
 </div>
+
+<!-- Duplicate Contact Warning Dialog -->
+<app-confirmation-dialog
+  [isOpen]="showDuplicateWarning"
+  title="Duplicate Contact Found"
+  [message]="duplicateWarningMessage"
+  confirmButtonText="Save Anyway"
+  cancelButtonText="Cancel"
+  confirmButtonClass="bg-yellow-600 hover:bg-yellow-700"
+  (confirmed)="confirmDuplicate($event)">
+</app-confirmation-dialog>

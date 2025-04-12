@@ -6,13 +6,15 @@ import { RouterModule } from '@angular/router';
 import { CallModalComponent } from './call-modal/call-modal.component';
 import { PostCallModalComponent } from './post-call-modal/post-call-modal.component';
 import { RescheduleModal } from './reschedule/reschedule-modal.component';
+import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
 
 @NgModule({
   declarations: [
     // Other shared components
     CallModalComponent,
     PostCallModalComponent,
-    RescheduleModal
+    RescheduleModal,
+    ConfirmationDialogComponent
   ],
   imports: [
     CommonModule,
@@ -27,7 +29,8 @@ import { RescheduleModal } from './reschedule/reschedule-modal.component';
     RouterModule,
     CallModalComponent,
     PostCallModalComponent,
-    RescheduleModal
+    RescheduleModal,
+    ConfirmationDialogComponent
   ]
 })
 export class SharedModule { }
