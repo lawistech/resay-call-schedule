@@ -18,9 +18,10 @@ import { OpportunitiesService } from '../opportunities.service';
 export class OpportunityFormComponent implements OnInit {
   @Input() opportunity: Opportunity | null = null;
   @Input() isSaving: boolean = false;
+  @Input() preselectedCompanyId: string | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() formSubmitted = new EventEmitter<Partial<Opportunity>>();
-  
+
   opportunityForm: FormGroup;
   stages = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
   statuses = ['New', 'In Progress', 'Won', 'Lost'];
@@ -46,7 +47,7 @@ export class OpportunityFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCompanies();
-    
+
     if (this.opportunity) {
       // For edit mode, populate the form with opportunity data
       this.opportunityForm.patchValue({
@@ -60,8 +61,13 @@ export class OpportunityFormComponent implements OnInit {
         companyId: this.opportunity.companyId,
         notes: this.opportunity.notes
       });
+    } else if (this.preselectedCompanyId) {
+      // If we have a preselected company ID (from query params), set it
+      this.opportunityForm.patchValue({
+        companyId: this.preselectedCompanyId
+      });
     }
-    
+
     // Auto-adjust probability based on stage selection
     this.opportunityForm.get('stage')?.valueChanges.subscribe(stage => {
       if (!this.opportunityForm.get('probability')?.dirty) {
@@ -96,7 +102,7 @@ export class OpportunityFormComponent implements OnInit {
   onSubmit(): void {
     if (this.opportunityForm.valid) {
       const formValue = this.opportunityForm.value;
-      
+
       // Create the opportunity data object
       const opportunityData: Partial<Opportunity> = {
         title: formValue.title,
@@ -131,12 +137,12 @@ export class OpportunityFormComponent implements OnInit {
   // Helper function to format date for input field
   private formatDateForInput(date: Date | string | undefined): string | null {
     if (!date) return null;
-    
+
     const d = date instanceof Date ? date : new Date(date);
-    
+
     // Check if date is valid
     if (isNaN(d.getTime())) return null;
-    
+
     // Format as YYYY-MM-DD for the input[type="date"]
     return d.toISOString().split('T')[0];
   }

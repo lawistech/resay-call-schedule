@@ -9,6 +9,7 @@ import { TeamTasksComponent } from './features/tasks/team-tasks/team-tasks.compo
 import { LeadsComponent } from './features/leads/leads.component';
 import { OpportunitiesComponent } from './features/opportunities/opportunities.component';
 import { PipelineKanbanComponent } from './features/opportunities/pipeline-kanban/pipeline-kanban.component';
+import { OpportunityFormPageComponent } from './features/opportunities/opportunity-form-page/opportunity-form-page.component';
 
 export const routes: Routes = [
   {
@@ -101,9 +102,24 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'opportunities/new',
+    component: OpportunityFormPageComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'opportunities/:id/edit',
+    component: OpportunityFormPageComponent,
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'pipeline',
     component: PipelineKanbanComponent,
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'quotations',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./features/quotations/quotations.module').then(m => m.QuotationsModule)
   },
 
   {
