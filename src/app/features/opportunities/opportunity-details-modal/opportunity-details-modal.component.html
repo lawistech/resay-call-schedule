@@ -22,7 +22,7 @@
       <div class="grid grid-cols-2 gap-x-6 gap-y-3">
         <div>
           <span class="font-semibold text-gray-700 block">Amount:</span>
-          <p class="text-gray-600">£{{ opportunity?.amount }}</p>
+          <p class="text-gray-600">£{{ opportunity?.amount || 0 }}</p>
         </div>
         <div>
           <span class="font-semibold text-gray-700 block">Status:</span>
@@ -36,13 +36,13 @@
                   }">
               {{ opportunity?.status }}
             </span>
-            <div class="relative inline-block text-left">
-              <button type="button" class="text-gray-500 hover:text-gray-700" id="status-menu-button" aria-expanded="true" aria-haspopup="true">
+            <div class="relative inline-block text-left dropdown">
+              <button type="button" class="text-gray-500 hover:text-gray-700 dropdown-toggle" id="status-menu-button">
                 <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              <div class="origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10" role="menu" aria-orientation="vertical" aria-labelledby="status-menu-button" tabindex="-1">
+              <div class="dropdown-menu origin-top-right absolute right-0 mt-2 w-32 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10" role="menu">
                 <div class="py-1" role="none">
                   <button *ngFor="let status of statuses"
                           (click)="updateStatus(status)"
@@ -172,6 +172,11 @@
 
     <!-- Modal Footer -->
     <div class="mt-6 pt-4 border-t text-right space-x-2">
+      <button *ngIf="opportunity?.status !== 'Won'"
+              class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 mr-2"
+              (click)="updateStatus('Won')">
+        Confirm & Create Order
+      </button>
       <button class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400" (click)="close()">
         Close
       </button>

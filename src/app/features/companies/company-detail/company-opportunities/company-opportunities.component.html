@@ -172,6 +172,13 @@
             <p class="text-sm font-medium">{{ opportunity.stage || 'N/A' }}</p>
           </div>
         </div>
+
+        <div class="flex justify-end mt-2" *ngIf="opportunity.status !== 'Won' && opportunity.status !== 'Lost'">
+          <button (click)="createOrderFromOpportunity(opportunity)"
+                  class="px-3 py-1 bg-green-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400">
+            Confirm & Create Order
+          </button>
+        </div>
       </div>
     </div>
   </div>

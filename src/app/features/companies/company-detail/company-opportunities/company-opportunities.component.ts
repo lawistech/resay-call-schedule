@@ -211,13 +211,28 @@ export class CompanyOpportunitiesComponent implements OnInit {
     this.orderService.createOrderFromOpportunity(event.opportunity, event.notes)
       .subscribe({
         next: (createdOrder) => {
-          // Remove the opportunity from the list
-          const index = this.opportunities.findIndex(o => o.id === event.opportunity.id);
-          if (index !== -1) {
-            this.opportunities.splice(index, 1);
-          }
+          // Delete the opportunity after creating the order
+          this.opportunitiesService.deleteOpportunity(event.opportunity.id)
+            .subscribe({
+              next: () => {
+                // Remove the opportunity from the list
+                const index = this.opportunities.findIndex(o => o.id === event.opportunity.id);
+                if (index !== -1) {
+                  this.opportunities.splice(index, 1);
+                }
+                this.notificationService.success('Order created successfully and opportunity moved to order history');
+              },
+              error: (error) => {
+                console.error('Error deleting opportunity:', error);
+                this.notificationService.error('Order created but failed to remove opportunity');
+                // Still remove from local array
+                const index = this.opportunities.findIndex(o => o.id === event.opportunity.id);
+                if (index !== -1) {
+                  this.opportunities.splice(index, 1);
+                }
+              }
+            });
 
-          this.notificationService.success('Order created successfully');
           this.closeSuccessModal();
 
           // Refresh the order history
@@ -288,14 +303,15 @@ export class CompanyOpportunitiesComponent implements OnInit {
           if (status === 'Won') {
             // Show success modal or create order directly
             this.createOrderFromOpportunity(updated);
+          } else {
+            this.closeStatusModal();
           }
-
-          this.closeStatusModal();
         },
         error: (error) => {
           console.error('Error updating opportunity status:', error);
           this.notificationService.error('Failed to update opportunity status');
           this.isUpdatingStatus = false;
+          this.closeStatusModal();
         }
       });
   }
