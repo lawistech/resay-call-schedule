@@ -6,6 +6,7 @@ import { Company } from '../../../core/models/company.model';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { CompanyService } from '../../companies/services/company.service';
 
 @Component({
   selector: 'app-contact-form',
@@ -24,10 +25,17 @@ export class ContactFormComponent implements OnInit {
   showNewCompanyForm = false;
   companyForm!: FormGroup;
 
-  // Search functionality
+  // Contact search functionality
   searchResults: Contact[] = [];
   isSearching = false;
   showSearchResults = false;
+
+  // Company search functionality
+  companySearchResults: Company[] = [];
+  isSearchingCompany = false;
+  showCompanySearchResults = false;
+  companySearchTerm = '';
+  selectedCompany: Company | null = null;
 
   // Duplicate confirmation
   showDuplicateWarning = false;
@@ -37,7 +45,8 @@ export class ContactFormComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private supabaseService: SupabaseService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit(): void {
@@ -64,6 +73,8 @@ export class ContactFormComponent implements OnInit {
           }
         });
     }
+
+    // We're handling company search directly in the onCompanySearchChange method
 
     // Also listen for changes to the phone and email fields to check for duplicates
     const phoneControl = this.contactForm.get('phone');
@@ -117,6 +128,15 @@ export class ContactFormComponent implements OnInit {
         notes: this.contact.notes || '',
         lead_source: this.contact.lead_source || ''
       });
+
+      // If the contact has a company, set the selectedCompany
+      if (this.contact && this.contact.company_id) {
+        const companyId = this.contact.company_id; // Store in a variable to avoid null check issues
+        const company = this.companies.find(c => c.id === companyId);
+        if (company) {
+          this.selectedCompany = company;
+        }
+      }
     }
   }
 
@@ -256,6 +276,99 @@ export class ContactFormComponent implements OnInit {
 
     // Show notification
     this.notificationService.info(`Selected existing contact: ${contact.first_name} ${contact.last_name}`);
+  }
+
+  // Handle company search input changes
+  onCompanySearchChange(value: string): void {
+    this.companySearchTerm = value;
+    this.selectedCompany = null; // Clear selected company when search term changes
+    this.contactForm.patchValue({ company_id: '' }); // Clear the company_id in the form
+
+    if (value && value.length > 1) {
+      this.searchCompanies(value);
+    } else {
+      this.companySearchResults = [];
+      this.showCompanySearchResults = false;
+    }
+  }
+
+  // Clear company search
+  clearCompanySearch(): void {
+    this.companySearchTerm = '';
+    this.selectedCompany = null;
+    this.companySearchResults = [];
+    this.showCompanySearchResults = false;
+    this.contactForm.patchValue({ company_id: '' });
+  }
+
+  // Search for companies
+  searchCompanies(searchTerm: string): void {
+    this.isSearchingCompany = true;
+
+    this.companyService.searchCompanies(searchTerm).subscribe({
+      next: (companies) => {
+        this.companySearchResults = companies;
+        this.showCompanySearchResults = companies.length > 0;
+        this.isSearchingCompany = false;
+
+        // If there's an exact match, select it automatically
+        const exactMatch = companies.find(c =>
+          c.name.toLowerCase() === searchTerm.toLowerCase());
+        if (exactMatch) {
+          this.selectCompany(exactMatch);
+        }
+      },
+      error: (error) => {
+        console.error('Error searching companies:', error);
+        this.isSearchingCompany = false;
+      }
+    });
+  }
+
+  // Select a company from search results
+  selectCompany(company: Company): void {
+    this.selectedCompany = company;
+
+    // Update the form with the selected company ID
+    this.contactForm.patchValue({
+      company_id: company.id
+    });
+
+    // Hide search results
+    this.showCompanySearchResults = false;
+
+    // Show notification
+    this.notificationService.info(`Selected company: ${company.name}`);
+  }
+
+  // Create a new company from the search term
+  createNewCompany(): void {
+    if (!this.companySearchTerm || this.companySearchTerm.trim().length < 2) {
+      this.notificationService.error('Please enter a valid company name');
+      return;
+    }
+
+    // Check if a company with this name already exists
+    this.companyService.checkDuplicateCompany(this.companySearchTerm).subscribe({
+      next: (companies) => {
+        if (companies.length > 0) {
+          // Company already exists, ask user to select it
+          this.notificationService.warning(`A company named "${companies[0].name}" already exists. Please select it from the list.`);
+          this.companySearchResults = companies;
+          this.showCompanySearchResults = true;
+        } else {
+          // Create new company
+          this.companyForm.patchValue({
+            name: this.companySearchTerm
+          });
+          this.toggleNewCompanyForm();
+        }
+      },
+      error: (error) => {
+        console.error('Error checking duplicate company:', error);
+        this.notificationService.error('Error checking for existing companies');
+      }
+    });
   }
 
   // Handle duplicate confirmation
