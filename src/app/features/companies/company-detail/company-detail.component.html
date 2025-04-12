@@ -41,27 +41,27 @@
       <div class="flex flex-col md:flex-row md:items-center">
         <!-- Company Logo/Icon -->
         <div class="flex-shrink-0 w-16 h-16 bg-stone-800 rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4 md:mb-0 md:mr-6">
-          {{ company?.name?.charAt(0) || 'C' }}
+          {{ company.name.charAt(0) || 'C' }}
         </div>
 
         <!-- Company Info -->
         <div class="flex-1">
-          <h2 class="text-2xl font-bold text-gray-900">{{ company?.name || 'Company' }}</h2>
-          <p *ngIf="company?.industry" class="text-gray-600 mt-1">{{ company?.industry }}</p>
+          <h2 class="text-2xl font-bold text-gray-900">{{ company.name || 'Company' }}</h2>
+          <p *ngIf="company?.industry" class="text-gray-600 mt-1">{{ company.industry }}</p>
 
           <div class="flex flex-wrap mt-2 gap-4">
             <div *ngIf="company?.website" class="flex items-center text-sm">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
               </svg>
-              <a href="{{ company?.website }}" target="_blank" class="text-blue-600 hover:underline">{{ company?.website }}</a>
+              <a href="{{ company.website }}" target="_blank" class="text-blue-600 hover:underline">{{ company.website }}</a>
             </div>
             <div *ngIf="company?.address" class="flex items-center text-sm">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span class="text-gray-600">{{ company?.address }}</span>
+              <span class="text-gray-600">{{ company.address }}</span>
             </div>
           </div>
         </div>
@@ -70,19 +70,19 @@
         <div class="grid grid-cols-2 gap-4 mt-4 md:mt-0 md:ml-6">
           <div class="bg-gray-50 p-3 rounded-lg text-center">
             <p class="text-xs text-gray-500 mb-1">Total Orders Value</p>
-            <p class="text-lg font-semibold">${{ company?.metrics?.totalOrderValue || 0 }}</p>
+            <p class="text-lg font-semibold">${{ company.metrics?.totalOrderValue || 0 }}</p>
           </div>
           <div class="bg-gray-50 p-3 rounded-lg text-center">
             <p class="text-xs text-gray-500 mb-1">Active Quotations</p>
-            <p class="text-lg font-semibold">{{ company?.metrics?.activeQuotations || 0 }}</p>
+            <p class="text-lg font-semibold">{{ company.metrics?.activeQuotations || 0 }}</p>
           </div>
           <div class="bg-gray-50 p-3 rounded-lg text-center">
             <p class="text-xs text-gray-500 mb-1">Contacts</p>
-            <p class="text-lg font-semibold">{{ company?.metrics?.contactCount || 0 }}</p>
+            <p class="text-lg font-semibold">{{ company.metrics?.contactCount || 0 }}</p>
           </div>
           <div class="bg-gray-50 p-3 rounded-lg text-center">
             <p class="text-xs text-gray-500 mb-1">Last Contact</p>
-            <p class="text-lg font-semibold">{{ company?.metrics?.lastContactDate || 'N/A' }}</p>
+            <p class="text-lg font-semibold">{{ company.metrics?.lastContactDate || 'N/A' }}</p>
           </div>
         </div>
       </div>
@@ -156,7 +156,7 @@
             <div *ngIf="company?.notes" class="mb-6">
               <h4 class="text-sm font-medium text-gray-700 mb-2">Notes</h4>
               <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-gray-700 whitespace-pre-line">{{ company?.notes }}</p>
+                <p class="text-gray-700 whitespace-pre-line">{{ company.notes }}</p>
               </div>
             </div>
 
@@ -166,18 +166,18 @@
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <p class="text-xs text-gray-500">Industry</p>
-                    <p class="text-gray-700">{{ company?.industry || 'N/A' }}</p>
+                    <p class="text-gray-700">{{ company.industry || 'N/A' }}</p>
                   </div>
                   <div>
                     <p class="text-xs text-gray-500">Website</p>
                     <p class="text-gray-700">
-                      <a *ngIf="company?.website" href="{{ company?.website }}" target="_blank" class="text-blue-600 hover:underline">{{ company?.website }}</a>
+                      <a *ngIf="company?.website" href="{{ company.website }}" target="_blank" class="text-blue-600 hover:underline">{{ company.website }}</a>
                       <span *ngIf="!company?.website">N/A</span>
                     </p>
                   </div>
                   <div class="col-span-2">
                     <p class="text-xs text-gray-500">Address</p>
-                    <p class="text-gray-700">{{ company?.address || 'N/A' }}</p>
+                    <p class="text-gray-700">{{ company.address || 'N/A' }}</p>
                   </div>
                 </div>
               </div>
