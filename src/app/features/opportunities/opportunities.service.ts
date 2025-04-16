@@ -26,7 +26,7 @@ export class OpportunitiesService {
         *,
         company:companies(id, name)
       `)
-      .neq('status', 'Won') // Exclude opportunities with 'Won' status
+      // Removed filter that was excluding 'Won' status
       .order('created_at', { ascending: false })
     ).pipe(
       map(response => {

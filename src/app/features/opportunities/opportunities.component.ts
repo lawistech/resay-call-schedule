@@ -22,7 +22,8 @@ import { OpportunityDetailsModalComponent } from './opportunity-details-modal/op
 export class OpportunitiesComponent implements OnInit {
   opportunities: Opportunity[] = [];
   filteredOpportunities: Opportunity[] = [];
-  statusFilter: string = '';
+  statusFilter: string = ''; // Keep for backward compatibility
+  activeStatuses: Set<string> = new Set(['New', 'In Progress']); // Default to New and In Progress
   searchTerm: string = '';
   showOpportunityForm: boolean = false;
   selectedOpportunity: Opportunity | null = null;
@@ -38,11 +39,18 @@ export class OpportunitiesComponent implements OnInit {
     this.loadOpportunities();
   }
 
+  // After loading opportunities, apply the default filter
+  private applyDefaultFilter(): void {
+    // Filter opportunities to show only New and In Progress by default
+    this.filterOpportunities();
+  }
+
   loadOpportunities(): void {
     this.opportunitiesService.getOpportunities().subscribe({
       next: (opportunities) => {
         this.opportunities = opportunities;
-        this.filteredOpportunities = [...opportunities];
+        // Apply the filter instead of just copying all opportunities
+        this.applyDefaultFilter();
       },
       error: (error) => {
         console.error('Error fetching opportunities:', error);
@@ -78,8 +86,9 @@ export class OpportunitiesComponent implements OnInit {
       );
     }
 
-    if (this.statusFilter) {
-      filtered = filtered.filter(opportunity => opportunity.status === this.statusFilter);
+    // If we have active statuses, filter by them
+    if (this.activeStatuses.size > 0) {
+      filtered = filtered.filter(opportunity => this.activeStatuses.has(opportunity.status));
     }
 
     this.filteredOpportunities = filtered;
@@ -166,5 +175,26 @@ export class OpportunitiesComponent implements OnInit {
       }
       this.selectedOpportunity = null;
     }
+  }
+
+  // Toggle a status in the filter
+  toggleStatusFilter(status: 'New' | 'In Progress' | 'Won' | 'Lost'): void {
+    if (this.activeStatuses.has(status)) {
+      this.activeStatuses.delete(status);
+    } else {
+      this.activeStatuses.add(status);
+    }
+    this.filterOpportunities();
+  }
+
+  // Check if a status is active
+  isStatusActive(status: string): boolean {
+    return this.activeStatuses.has(status);
+  }
+
+  // Set all statuses
+  showAllStatuses(): void {
+    this.activeStatuses = new Set(['New', 'In Progress', 'Won', 'Lost']);
+    this.filterOpportunities();
   }
 }

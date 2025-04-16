@@ -19,19 +19,49 @@
         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
       </svg>
     </div>
-    <div class="flex items-center">
-      <label for="statusFilter" class="mr-2 text-sm font-medium text-gray-700">Status:</label>
-      <select
-        id="statusFilter"
-        class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        [(ngModel)]="statusFilter"
-        (change)="filterOpportunities()">
-        <option value="">All</option>
-        <option value="New">New</option>
-        <option value="In Progress">In Progress</option>
-        <option value="Won">Won</option>
-        <option value="Lost">Lost</option>
-      </select>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="text-sm font-medium text-gray-700 mr-1">Status:</span>
+      <button
+        (click)="toggleStatusFilter('New')"
+        [ngClass]="{
+          'bg-blue-100 text-blue-800 border-blue-300': isStatusActive('New'),
+          'bg-gray-100 text-gray-800 border-gray-300': !isStatusActive('New')
+        }"
+        class="px-3 py-1 text-xs font-medium rounded-full border hover:bg-opacity-80 transition-colors">
+        New
+      </button>
+      <button
+        (click)="toggleStatusFilter('In Progress')"
+        [ngClass]="{
+          'bg-yellow-100 text-yellow-800 border-yellow-300': isStatusActive('In Progress'),
+          'bg-gray-100 text-gray-800 border-gray-300': !isStatusActive('In Progress')
+        }"
+        class="px-3 py-1 text-xs font-medium rounded-full border hover:bg-opacity-80 transition-colors">
+        In Progress
+      </button>
+      <button
+        (click)="toggleStatusFilter('Won')"
+        [ngClass]="{
+          'bg-green-100 text-green-800 border-green-300': isStatusActive('Won'),
+          'bg-gray-100 text-gray-800 border-gray-300': !isStatusActive('Won')
+        }"
+        class="px-3 py-1 text-xs font-medium rounded-full border hover:bg-opacity-80 transition-colors">
+        Won
+      </button>
+      <button
+        (click)="toggleStatusFilter('Lost')"
+        [ngClass]="{
+          'bg-red-100 text-red-800 border-red-300': isStatusActive('Lost'),
+          'bg-gray-100 text-gray-800 border-gray-300': !isStatusActive('Lost')
+        }"
+        class="px-3 py-1 text-xs font-medium rounded-full border hover:bg-opacity-80 transition-colors">
+        Lost
+      </button>
+      <button
+        (click)="showAllStatuses()"
+        class="px-3 py-1 text-xs font-medium rounded-full border bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200 transition-colors ml-1">
+        All
+      </button>
     </div>
   </div>
 
