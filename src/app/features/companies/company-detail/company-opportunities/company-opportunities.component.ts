@@ -332,6 +332,22 @@ export class CompanyOpportunitiesComponent implements OnInit {
     return mockProducts[productId] || 'Unknown Product';
   }
 
+  // Selected order for details view
+  selectedOrderForDetails: Order | null = null;
+  showOrderDetailsModal = false;
+
+  // View order details
+  viewOrderDetails(order: Order): void {
+    this.selectedOrderForDetails = order;
+    this.showOrderDetailsModal = true;
+  }
+
+  // Close order details modal
+  closeOrderDetailsModal(): void {
+    this.showOrderDetailsModal = false;
+    this.selectedOrderForDetails = null;
+  }
+
   createQuotation(): void {
     // Navigate to quotation form with company pre-selected
     this.router.navigate(['/quotations/new'], {
