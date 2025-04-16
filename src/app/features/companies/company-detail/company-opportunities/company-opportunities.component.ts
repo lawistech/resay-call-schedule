@@ -26,7 +26,8 @@ export class CompanyOpportunitiesComponent implements OnInit {
   isLoading = true;
 
   // For filtering
-  filterStatus: 'all' | 'New' | 'In Progress' | 'Won' | 'Lost' = 'all';
+  filterStatus: 'all' | 'New' | 'In Progress' | 'Won' | 'Lost' = 'all'; // Keep for backward compatibility
+  activeStatuses: Set<string> = new Set(['New', 'In Progress']); // Default to New and In Progress
 
   // Product interests
   productInterests: ProductInterest[] = [];
@@ -69,6 +70,9 @@ export class CompanyOpportunitiesComponent implements OnInit {
     this.loadProducts();
     this.loadQuotations();
     this.loadOrders();
+
+    // Set default filter to show only New and In Progress opportunities
+    this.activeStatuses = new Set(['New', 'In Progress']);
   }
 
   loadOpportunities(): void {
@@ -159,14 +163,36 @@ export class CompanyOpportunitiesComponent implements OnInit {
   }
 
   filterOpportunities(): Opportunity[] {
-    if (this.filterStatus === 'all') {
+    // If using the old filterStatus property with 'all', return all opportunities
+    if (this.filterStatus === 'all' && this.activeStatuses.size === 0) {
       return this.opportunities;
     }
+
+    // If we have active statuses, filter by them
+    if (this.activeStatuses.size > 0) {
+      return this.opportunities.filter(opp => this.activeStatuses.has(opp.status));
+    }
+
+    // Fallback to the old filtering method
     return this.opportunities.filter(opp => opp.status === this.filterStatus);
   }
 
   setFilter(status: 'all' | 'New' | 'In Progress' | 'Won' | 'Lost'): void {
     this.filterStatus = status;
+
+    // Update activeStatuses based on the selected filter
+    if (status === 'all') {
+      // Show all statuses
+      this.activeStatuses = new Set(['New', 'In Progress', 'Won', 'Lost']);
+    } else {
+      // Show only the selected status
+      this.activeStatuses = new Set([status]);
+    }
+  }
+
+  // Check if a status is active
+  isStatusActive(status: string): boolean {
+    return this.activeStatuses.has(status);
   }
 
   getStatusColor(status: string): string {

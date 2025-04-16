@@ -85,28 +85,28 @@
           <button
             (click)="setFilter('New')"
             class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
-            [ngClass]="filterStatus === 'New' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            [ngClass]="isStatusActive('New') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           >
             New
           </button>
           <button
             (click)="setFilter('In Progress')"
             class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
-            [ngClass]="filterStatus === 'In Progress' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            [ngClass]="isStatusActive('In Progress') ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           >
             In Progress
           </button>
           <button
             (click)="setFilter('Won')"
             class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
-            [ngClass]="filterStatus === 'Won' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            [ngClass]="isStatusActive('Won') ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           >
             Won
           </button>
           <button
             (click)="setFilter('Lost')"
             class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
-            [ngClass]="filterStatus === 'Lost' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+            [ngClass]="isStatusActive('Lost') ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           >
             Lost
           </button>
