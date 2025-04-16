@@ -1,0 +1,115 @@
+<!-- src/app/features/quotations/quotation-details-modal/quotation-details-modal.component.html -->
+<div *ngIf="show" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+    <!-- Modal panel -->
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+      <!-- Modal header -->
+      <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <div class="flex justify-between items-start">
+              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                {{ quotation?.title }}
+              </h3>
+              <span [class]="getStatusClass(quotation?.status || '')" class="px-2.5 py-1 text-xs font-medium rounded-full">
+                {{ quotation?.status }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal body -->
+      <div class="bg-gray-50 px-4 py-5 sm:p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Left column -->
+          <div>
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Quotation Details</h4>
+            <div class="bg-white p-4 rounded-lg shadow-sm">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <p class="text-xs text-gray-500">Company</p>
+                  <p class="text-gray-700">{{ quotation?.company?.name || 'N/A' }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500">Amount</p>
+                  <p class="text-gray-700">{{ formatCurrency(quotation?.total) }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500">Created</p>
+                  <p class="text-gray-700">{{ formatDate(quotation?.createdAt) }}</p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500">Valid Until</p>
+                  <p class="text-gray-700">{{ quotation?.validUntil ? formatDate(quotation?.validUntil) : 'N/A' }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Update -->
+            <div class="mt-4">
+              <h4 class="text-sm font-medium text-gray-700 mb-2">Status</h4>
+              <div class="relative">
+                <button
+                  (click)="toggleStatusDropdown($event)"
+                  type="button"
+                  class="inline-flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <span>{{ quotation?.status }}</span>
+                  <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+
+                <div
+                  *ngIf="showStatusDropdown"
+                  class="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                >
+                  <div class="py-1">
+                    <a
+                      *ngFor="let status of statuses"
+                      (click)="updateStatus(status, $event)"
+                      [class.bg-gray-100]="quotation?.status === status"
+                      class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                    >
+                      {{ status }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right column -->
+          <div>
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Notes</h4>
+            <div class="bg-white p-4 rounded-lg shadow-sm h-full">
+              <p class="text-gray-700 whitespace-pre-line">{{ quotation?.notes || 'No notes available.' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal footer -->
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button
+          (click)="editQuotation()"
+          type="button"
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+        >
+          Edit Quotation
+        </button>
+        <button
+          (click)="close()"
+          type="button"
+          class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

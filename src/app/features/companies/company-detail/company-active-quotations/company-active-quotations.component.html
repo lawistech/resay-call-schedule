@@ -2,9 +2,55 @@
 <div class="mb-6">
   <div class="flex justify-between items-center mb-4">
     <h3 class="text-lg font-semibold text-gray-900">Active Quotations</h3>
-    <button (click)="createQuotation()" class="btn-primary text-sm">
+    <button (click)="createQuotation()" class="btn-primary text-sm flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
       Create Quotation
     </button>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="mb-4">
+    <div class="border-b border-gray-200">
+      <nav class="flex -mb-px">
+        <button
+          (click)="setFilter('all')"
+          class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+          [ngClass]="activeStatuses.size === 5 ? 'border-stone-800 text-stone-800' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          All
+        </button>
+        <button
+          (click)="setFilter('draft')"
+          class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+          [ngClass]="isStatusActive('draft') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          Draft
+        </button>
+        <button
+          (click)="setFilter('sent')"
+          class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+          [ngClass]="isStatusActive('sent') ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          Sent
+        </button>
+        <button
+          (click)="setFilter('accepted')"
+          class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+          [ngClass]="isStatusActive('accepted') ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          Accepted
+        </button>
+        <button
+          (click)="setFilter('rejected')"
+          class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+          [ngClass]="isStatusActive('rejected') ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          Rejected
+        </button>
+      </nav>
+    </div>
   </div>
 
   <!-- Loading State -->
@@ -16,48 +62,97 @@
   </div>
 
   <!-- No Quotations -->
-  <div *ngIf="!isLoading && activeQuotations.length === 0" class="bg-gray-50 rounded-lg p-6 text-center">
+  <div *ngIf="!isLoading && filteredQuotations.length === 0" class="bg-gray-50 rounded-lg p-6 text-center">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
-    <h3 class="text-base font-medium text-gray-900 mb-1">No active quotations</h3>
-    <p class="text-sm text-gray-500 mb-3">Create a quotation to track potential sales</p>
+    <h3 class="text-base font-medium text-gray-900 mb-1">No quotations found</h3>
+    <p class="text-sm text-gray-500 mb-3">Try adjusting your filters or create a new quotation</p>
+    <button (click)="createQuotation()" class="btn-primary text-sm">
+      Create Quotation
+    </button>
   </div>
 
   <!-- Quotations List -->
-  <div *ngIf="!isLoading && activeQuotations.length > 0" class="bg-white rounded-lg shadow-sm overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quotation #</th>
-          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        <tr *ngFor="let quotation of activeQuotations" class="hover:bg-gray-50 cursor-pointer" (click)="viewQuotation(quotation.id)">
-          <td class="px-4 py-3 whitespace-nowrap">
-            <div class="text-sm font-medium text-gray-900">{{ quotation.id }}</div>
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap">
-            <div class="text-sm text-gray-500">{{ formatDate(quotation.createdAt) }}</div>
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap">
-            <div class="text-sm text-gray-900">{{ formatCurrency(quotation.total) }}</div>
-          </td>
-          <td class="px-4 py-3 whitespace-nowrap">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                  [ngClass]="{
-                    'bg-blue-100 text-blue-800': quotation.status === 'draft',
-                    'bg-yellow-100 text-yellow-800': quotation.status === 'sent',
-                    'bg-green-100 text-green-800': quotation.status === 'accepted'
-                  }">
-              {{ quotation.status }}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div *ngIf="!isLoading && filteredQuotations.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div *ngFor="let quotation of filteredQuotations"
+         class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
+      <div class="flex justify-between items-start mb-2">
+        <h5 class="text-md font-semibold text-gray-900 cursor-pointer" (click)="viewQuotation(quotation.id)">{{ quotation.title }}</h5>
+        <div class="flex items-center space-x-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" [ngClass]="getStatusColor(quotation.status)">
+            {{ quotation.status }}
+          </span>
+          <button (click)="openStatusChangeModal(quotation, $event)" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <div>
+          <p class="text-xs text-gray-500">Amount</p>
+          <p class="text-sm font-medium">{{ formatCurrency(quotation.total) }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500">Created</p>
+          <p class="text-sm font-medium">{{ formatDate(quotation.createdAt) }}</p>
+        </div>
+        <div *ngIf="quotation.validUntil">
+          <p class="text-xs text-gray-500">Valid Until</p>
+          <p class="text-sm font-medium">{{ formatDate(quotation.validUntil) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Change Modal -->
+<div *ngIf="showStatusModal && selectedQuotation" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+  <div class="relative mx-auto p-6 border w-full max-w-sm shadow-lg rounded-lg bg-white" (click)="$event.stopPropagation()">
+    <!-- Close Button -->
+    <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" (click)="closeStatusModal()">
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+
+    <!-- Modal Header -->
+    <div class="mb-4 border-b pb-3">
+      <h3 class="text-lg leading-6 font-semibold text-gray-900">Update Quotation Status</h3>
+      <p class="text-sm text-gray-500 mt-1">{{ selectedQuotation.title }}</p>
+    </div>
+
+    <!-- Status Options -->
+    <div class="space-y-3">
+      <button
+        *ngFor="let status of statusOptions"
+        (click)="updateQuotationStatus(status)"
+        [disabled]="isUpdatingStatus || selectedQuotation.status === status"
+        class="w-full flex items-center justify-between p-3 rounded-md border"
+        [ngClass]="{
+          'bg-gray-100 border-gray-300': selectedQuotation.status !== status,
+          'bg-blue-50 border-blue-300': selectedQuotation.status === status,
+          'opacity-50 cursor-not-allowed': isUpdatingStatus || selectedQuotation.status === status,
+          'hover:bg-gray-50': selectedQuotation.status !== status && !isUpdatingStatus
+        }">
+        <span class="font-medium">{{ status }}</span>
+        <span *ngIf="selectedQuotation.status === status" class="text-blue-600">
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+        </span>
+      </button>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div *ngIf="isUpdatingStatus" class="mt-4 flex justify-center">
+      <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </div>
   </div>
 </div>

@@ -13,6 +13,10 @@ export interface Quotation {
   createdAt?: string;
   updatedAt?: string;
   items?: QuotationItem[];
+  company?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface QuotationItem {

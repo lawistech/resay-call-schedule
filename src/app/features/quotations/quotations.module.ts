@@ -8,9 +8,11 @@ import { CompanyService } from '../companies/services/company.service';
 
 // Import the standalone components
 import { QuotationFormComponent } from './quotation-form/quotation-form.component';
+import { QuotationsListComponent } from './quotations-list/quotations-list.component';
+import { QuotationDetailsModalComponent } from './quotation-details-modal/quotation-details-modal.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'new', pathMatch: 'full' },
+  { path: '', component: QuotationsListComponent },
   { path: 'new', component: QuotationFormComponent },
   { path: ':id', component: QuotationFormComponent },
   { path: ':id/edit', component: QuotationFormComponent }

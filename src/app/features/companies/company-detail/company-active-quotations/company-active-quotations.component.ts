@@ -15,8 +15,16 @@ import { catchError, of } from 'rxjs';
 export class CompanyActiveQuotationsComponent implements OnInit {
   @Input() companyId: string = '';
 
-  activeQuotations: Quotation[] = [];
+  quotations: Quotation[] = [];
+  filteredQuotations: Quotation[] = [];
   isLoading = true;
+
+  // Filtering
+  activeStatuses: Set<string> = new Set(['draft', 'sent', 'accepted']);
+  showStatusModal = false;
+  selectedQuotation: Quotation | null = null;
+  isUpdatingStatus = false;
+  statusOptions: Array<'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'> = ['draft', 'sent', 'accepted', 'rejected', 'expired'];
 
   constructor(
     private quotationService: QuotationService,
@@ -49,7 +57,8 @@ export class CompanyActiveQuotationsComponent implements OnInit {
       )
       .subscribe({
       next: (quotations) => {
-        this.activeQuotations = quotations.filter(q => q.status !== 'rejected' && q.status !== 'expired');
+        this.quotations = quotations;
+        this.applyFilters();
         this.isLoading = false;
       },
       error: (error) => {
@@ -60,6 +69,40 @@ export class CompanyActiveQuotationsComponent implements OnInit {
     });
   }
 
+  applyFilters(): void {
+    // If we have active statuses, filter by them
+    if (this.activeStatuses.size > 0) {
+      this.filteredQuotations = this.quotations.filter(q => this.activeStatuses.has(q.status));
+    } else {
+      // If no statuses are selected, show all quotations
+      this.filteredQuotations = [...this.quotations];
+    }
+  }
+
+  setFilter(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'all'): void {
+    if (status === 'all') {
+      // Show all statuses
+      this.activeStatuses = new Set(['draft', 'sent', 'accepted', 'rejected', 'expired']);
+    } else if (this.isStatusActive(status)) {
+      // If status is already active, remove it
+      this.activeStatuses.delete(status);
+      // If no statuses are left, add all back
+      if (this.activeStatuses.size === 0) {
+        this.activeStatuses = new Set(['draft', 'sent', 'accepted', 'rejected', 'expired']);
+      }
+    } else {
+      // Add the status to active statuses
+      this.activeStatuses.add(status);
+    }
+
+    this.applyFilters();
+  }
+
+  // Check if a status is active
+  isStatusActive(status: string): boolean {
+    return this.activeStatuses.has(status);
+  }
+
   formatDate(date?: string): string {
     if (!date) return 'N/A';
     return new Date(date).toLocaleDateString();
@@ -67,7 +110,24 @@ export class CompanyActiveQuotationsComponent implements OnInit {
 
   formatCurrency(amount?: number): string {
     if (amount === undefined) return '$0.00';
-    return `$${amount.toFixed(2)}`;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  }
+
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'draft':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'sent':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'accepted':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'rejected':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'expired':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   }
 
   createQuotation(): void {
@@ -79,5 +139,44 @@ export class CompanyActiveQuotationsComponent implements OnInit {
 
   viewQuotation(quotationId: string): void {
     this.router.navigate(['/quotations', quotationId]);
+  }
+
+  openStatusChangeModal(quotation: Quotation, event: Event): void {
+    event.stopPropagation();
+    this.selectedQuotation = quotation;
+    this.showStatusModal = true;
+  }
+
+  closeStatusModal(): void {
+    this.showStatusModal = false;
+    this.selectedQuotation = null;
+  }
+
+  updateQuotationStatus(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'): void {
+    if (!this.selectedQuotation || this.isUpdatingStatus) return;
+
+    this.isUpdatingStatus = true;
+    const updatedQuotation = { ...this.selectedQuotation, status };
+
+    this.quotationService.updateQuotation(this.selectedQuotation.id, updatedQuotation)
+      .subscribe({
+        next: (updated) => {
+          // Update the quotation in the local array
+          const index = this.quotations.findIndex(q => q.id === updated.id);
+          if (index !== -1) {
+            this.quotations[index] = updated;
+            this.applyFilters();
+          }
+          this.notificationService.success(`Quotation status updated to ${status}`);
+          this.isUpdatingStatus = false;
+          this.closeStatusModal();
+        },
+        error: (error) => {
+          console.error('Error updating quotation status:', error);
+          this.notificationService.error('Failed to update quotation status');
+          this.isUpdatingStatus = false;
+          this.closeStatusModal();
+        }
+      });
   }
 }
