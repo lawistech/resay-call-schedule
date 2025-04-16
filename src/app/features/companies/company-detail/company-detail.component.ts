@@ -27,13 +27,15 @@ export class CompanyDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('CompanyDetailComponent initialized');
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.companyId = id;
-        console.log('Company ID set:', this.companyId);
+        console.log('Company ID set in CompanyDetailComponent:', this.companyId);
         this.loadCompany(id);
       } else {
+        console.error('No company ID found in route params');
         this.router.navigate(['/companies']);
       }
     });

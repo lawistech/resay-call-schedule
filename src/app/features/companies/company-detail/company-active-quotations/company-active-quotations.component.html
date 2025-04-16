@@ -1,0 +1,63 @@
+<!-- src/app/features/companies/company-detail/company-active-quotations/company-active-quotations.component.html -->
+<div class="mb-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold text-gray-900">Active Quotations</h3>
+    <button (click)="createQuotation()" class="btn-primary text-sm">
+      Create Quotation
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="bg-gray-50 rounded-lg p-8 flex justify-center">
+    <svg class="animate-spin h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  </div>
+
+  <!-- No Quotations -->
+  <div *ngIf="!isLoading && activeQuotations.length === 0" class="bg-gray-50 rounded-lg p-6 text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+    <h3 class="text-base font-medium text-gray-900 mb-1">No active quotations</h3>
+    <p class="text-sm text-gray-500 mb-3">Create a quotation to track potential sales</p>
+  </div>
+
+  <!-- Quotations List -->
+  <div *ngIf="!isLoading && activeQuotations.length > 0" class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quotation #</th>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+          <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr *ngFor="let quotation of activeQuotations" class="hover:bg-gray-50 cursor-pointer" (click)="viewQuotation(quotation.id)">
+          <td class="px-4 py-3 whitespace-nowrap">
+            <div class="text-sm font-medium text-gray-900">{{ quotation.id }}</div>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <div class="text-sm text-gray-500">{{ formatDate(quotation.createdAt) }}</div>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <div class="text-sm text-gray-900">{{ formatCurrency(quotation.total) }}</div>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                  [ngClass]="{
+                    'bg-blue-100 text-blue-800': quotation.status === 'draft',
+                    'bg-yellow-100 text-yellow-800': quotation.status === 'sent',
+                    'bg-green-100 text-green-800': quotation.status === 'accepted'
+                  }">
+              {{ quotation.status }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

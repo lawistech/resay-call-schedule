@@ -13,7 +13,9 @@ import { CompanyService } from './services/company.service';
 import { CompanyPeopleComponent } from './company-detail/company-people/company-people.component';
 import { CompanyCommunicationComponent } from './company-detail/company-communication/company-communication.component';
 import { CompanyOpportunitiesComponent } from './company-detail/company-opportunities/company-opportunities.component';
+import { CompanyActiveQuotationsComponent } from './company-detail/company-active-quotations/company-active-quotations.component';
 import { OpportunitySuccessModalComponent } from '../opportunities/opportunity-success-modal/opportunity-success-modal.component';
+import { QuotationService } from '../quotations/services/quotation.service';
 
 const routes: Routes = [
   { path: '', component: CompaniesListComponent },
@@ -29,7 +31,8 @@ const routes: Routes = [
     CompanyFormComponent,
     CompanyPeopleComponent,
     CompanyCommunicationComponent,
-    CompanyOpportunitiesComponent
+    CompanyOpportunitiesComponent,
+    CompanyActiveQuotationsComponent
   ],
   imports: [
     CommonModule,
@@ -41,7 +44,8 @@ const routes: Routes = [
     OpportunitySuccessModalComponent
   ],
   providers: [
-    CompanyService
+    CompanyService,
+    QuotationService
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

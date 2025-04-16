@@ -40,6 +40,7 @@ export class QuotationService {
   }
 
   getQuotationsByCompany(companyId: string): Observable<Quotation[]> {
+    console.log('QuotationService: Fetching quotations for company:', companyId);
     return from(this.supabaseService.supabaseClient
       .from('quotations')
       .select(`
@@ -51,11 +52,15 @@ export class QuotationService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
+        console.log('QuotationService: Received response for company quotations:', response.data);
 
         // Format the data to match our Quotation model
-        return response.data.map(q => this.formatQuotationFromDatabase(q));
+        const formattedQuotations = response.data.map(q => this.formatQuotationFromDatabase(q));
+        console.log('QuotationService: Formatted quotations:', formattedQuotations);
+        return formattedQuotations;
       }),
       catchError(error => {
+        console.error('QuotationService: Error fetching company quotations:', error);
         this.notificationService.error(`Failed to fetch company quotations: ${error.message}`);
         return throwError(() => error);
       })
@@ -97,15 +102,19 @@ export class QuotationService {
     }
 
     // Convert camelCase to snake_case for database
-    const dbQuotation = {
+    const dbQuotation: any = {
       company_id: quotation.companyId,
-      contact_id: quotation.contactId,
+      contact_id: quotation.contactId || null,
       title: quotation.title,
       status: quotation.status || 'draft',
       total: quotation.total || 0,
-      valid_until: quotation.validUntil,
-      notes: quotation.notes
+      notes: quotation.notes || null
     };
+
+    // Only add valid_until if it's a non-empty string
+    if (quotation.validUntil && quotation.validUntil.trim() !== '') {
+      dbQuotation.valid_until = quotation.validUntil;
+    }
 
     return from(this.supabaseService.supabaseClient
       .from('quotations')
@@ -134,15 +143,19 @@ export class QuotationService {
     }
 
     // Convert camelCase to snake_case for database
-    const dbQuotation = {
+    const dbQuotation: any = {
       company_id: quotation.companyId,
-      contact_id: quotation.contactId,
+      contact_id: quotation.contactId || null,
       title: quotation.title,
       status: quotation.status,
       total: quotation.total,
-      valid_until: quotation.validUntil,
-      notes: quotation.notes
+      notes: quotation.notes || null
     };
+
+    // Only add valid_until if it's a non-empty string
+    if (quotation.validUntil && quotation.validUntil.trim() !== '') {
+      dbQuotation.valid_until = quotation.validUntil;
+    }
 
     return from(this.supabaseService.supabaseClient
       .from('quotations')
