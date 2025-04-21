@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { formatDistance } from 'date-fns';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { CompanyRefreshService } from '../../../features/companies/services/company-refresh.service';
 import { Call } from '../../../core/models/call.model';
 import { Router } from '@angular/router';
 
@@ -16,7 +17,7 @@ export class CallListComponent implements OnInit {
   calls: Call[] = [];
   filteredCalls: Call[] = [];
   isLoading = true;
-  
+
   // Filters
   searchTerm = '';
   selectedStatus = '';
@@ -25,7 +26,7 @@ export class CallListComponent implements OnInit {
     start: '',
     end: ''
   };
-  
+
   // Call modal state
   showCallModal = false;
   selectedCall: Call | null = null;
@@ -34,7 +35,8 @@ export class CallListComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private companyRefreshService: CompanyRefreshService
   ) {}
 
   ngOnInit(): void {
@@ -44,16 +46,16 @@ export class CallListComponent implements OnInit {
   async loadCalls(): Promise<void> {
     try {
       this.isLoading = true;
-      
+
       const { data, error } = await this.supabaseService.getCalls();
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.calls = data || [];
       this.applyFilters();
-      
+
     } catch (error: any) {
       this.notificationService.error('Failed to load calls: ' + error.message);
     } finally {
@@ -64,20 +66,20 @@ export class CallListComponent implements OnInit {
   applyFilters(): void {
     this.filteredCalls = this.calls.filter(call => {
       // Search term filter
-      const searchMatch = this.searchTerm === '' || 
-        (call.contact && 
+      const searchMatch = this.searchTerm === '' ||
+        (call.contact &&
           (`${call.contact.first_name} ${call.contact.last_name}`.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
            (call.contact.email && call.contact.email.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
            (call.contact.phone && call.contact.phone.includes(this.searchTerm)))) ||
         call.reason.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         (call.notes && call.notes.toLowerCase().includes(this.searchTerm.toLowerCase()));
-      
+
       // Status filter
       const statusMatch = this.selectedStatus === '' || call.status === this.selectedStatus;
-      
+
       // Method filter
       const methodMatch = this.selectedMethod === '' || call.method === this.selectedMethod;
-      
+
       // Date range filter
       let dateMatch = true;
       if (this.dateRange.start) {
@@ -90,7 +92,7 @@ export class CallListComponent implements OnInit {
         const callDate = new Date(call.scheduled_at);
         dateMatch = dateMatch && callDate <= endDate;
       }
-      
+
       return searchMatch && statusMatch && methodMatch && dateMatch;
     });
   }
@@ -122,8 +124,15 @@ export class CallListComponent implements OnInit {
     this.isEditingCall = false;
   }
 
-  handleCallSaved(): void {
+  handleCallSaved(call?: Call): void {
     this.loadCalls();
+
+    // If we have a call and it's scheduled, notify the company refresh service
+    if (call && call.status === 'scheduled' && call.contact && call.contact.company_id) {
+      console.log('Call list notifying company refresh service for company ID:', call.contact.company_id);
+      this.companyRefreshService.notifyCallScheduled(call.contact.company_id);
+    }
+
     this.closeCallModal();
   }
 
@@ -133,11 +142,11 @@ export class CallListComponent implements OnInit {
         status,
         completed_at: status === 'completed' ? new Date().toISOString() : undefined
       });
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.notificationService.success(`Call marked as ${status}`);
       this.loadCalls();
     } catch (error: any) {
@@ -149,14 +158,14 @@ export class CallListComponent implements OnInit {
     if (!confirm('Are you sure you want to delete this call?')) {
       return;
     }
-    
+
     try {
       const { error } = await this.supabaseService.deleteCall(callId);
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.notificationService.success('Call deleted successfully');
       this.loadCalls();
     } catch (error: any) {
@@ -173,7 +182,7 @@ export class CallListComponent implements OnInit {
   closePostCallModal(): void {
     this.showRescheduleCallModal = false;
     this.selectedCall = null;
-  }  
+  }
 
   async handleCallCompleted(data: {callId: string, notes: string}): Promise<void> {
     try {
@@ -182,11 +191,11 @@ export class CallListComponent implements OnInit {
         completed_at: new Date().toISOString(),
         notes: data.notes
       });
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.notificationService.success('Call marked as completed');
     } catch (error: any) {
       this.notificationService.error('Failed to update call: ' + error.message);
@@ -201,11 +210,11 @@ export class CallListComponent implements OnInit {
         scheduled_at: data.scheduledAt,
         notes: data.notes
       });
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.notificationService.success('Call rescheduled successfully');
     } catch (error: any) {
       this.notificationService.error('Failed to reschedule call: ' + error.message);

@@ -454,4 +454,23 @@ export class ScheduleComponent implements OnInit {
       }
     }, 100);
   }
+
+  /**
+   * Marks a call as complete directly from the schedule view
+   * @param call The call to mark as complete
+   * @param event Optional mouse event to prevent propagation
+   */
+  completeCall(call: Call, event?: MouseEvent): void {
+    // If we have an event, prevent default behavior
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    // Update the call status directly without opening the modal
+    this.handleCallCompleted({
+      callId: call.id,
+      notes: call.notes || ''
+    });
+  }
 }

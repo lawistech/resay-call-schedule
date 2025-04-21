@@ -6,6 +6,7 @@ import { Contact } from '../../../core/models/contact.model';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ReminderService } from '../../../core/services/reminder.service';
+import { CompanyRefreshService } from '../../../features/companies/services/company-refresh.service';
 import { formatInTimeZone } from 'date-fns-tz';
 
 @Component({
@@ -39,7 +40,8 @@ export class CallFormComponent implements OnInit {
     private formBuilder: FormBuilder,
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
-    private reminderService: ReminderService
+    private reminderService: ReminderService,
+    private companyRefreshService: CompanyRefreshService
   ) {}
 
   ngOnInit(): void {
@@ -50,11 +52,11 @@ export class CallFormComponent implements OnInit {
   async loadContacts(): Promise<void> {
     try {
       const { data, error } = await this.supabaseService.getContacts();
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.contacts = data || [];
     } catch (error: any) {
       this.notificationService.error('Failed to load contacts: ' + error.message);
@@ -65,7 +67,7 @@ export class CallFormComponent implements OnInit {
   formatDateForInput(date: Date): string {
     // Get the current timezone from the reminder service
     const timezone = this.reminderService.getTimezone();
-    
+
     // Format the date in the specified timezone
     return formatInTimeZone(date, timezone, "yyyy-MM-dd'T'HH:mm");
   }
@@ -73,10 +75,10 @@ export class CallFormComponent implements OnInit {
   // Convert a local datetime input value to UTC for storage
   convertToUTC(localDateTimeString: string): string {
     if (!localDateTimeString) return '';
-    
+
     // Parse the local datetime string to a Date object
     const date = new Date(localDateTimeString);
-    
+
     // Convert to UTC ISO string
     return date.toISOString();
   }
@@ -97,15 +99,15 @@ export class CallFormComponent implements OnInit {
 
     if (this.call) {
       // Format dates for datetime-local inputs using the timezone
-      const scheduledAt = this.call.scheduled_at 
+      const scheduledAt = this.call.scheduled_at
         ? this.formatDateForInput(new Date(this.call.scheduled_at))
         : '';
-      
-      const completedAt = this.call.completed_at 
+
+      const completedAt = this.call.completed_at
         ? this.formatDateForInput(new Date(this.call.completed_at))
         : '';
-      
-      const followUpDate = this.call.follow_up_date 
+
+      const followUpDate = this.call.follow_up_date
         ? this.formatDateForInput(new Date(this.call.follow_up_date))
         : '';
 
@@ -146,27 +148,27 @@ export class CallFormComponent implements OnInit {
     if (this.callForm.invalid) {
       return;
     }
-  
+
     this.isLoading = true;
-    
+
     try {
       const formValues = { ...this.callForm.value };
-      
+
       // Convert date inputs from local timezone to UTC for storage
       if (formValues.scheduled_at) {
         formValues.scheduled_at = this.convertToUTC(formValues.scheduled_at);
       }
-      
+
       if (formValues.completed_at) {
         formValues.completed_at = this.convertToUTC(formValues.completed_at);
       }
-      
+
       if (formValues.follow_up_date) {
         formValues.follow_up_date = this.convertToUTC(formValues.follow_up_date);
       }
-      
+
       let result;
-      
+
       if (this.call) {
         // Update existing call
         result = await this.supabaseService.updateCall(this.call.id, formValues);
@@ -174,27 +176,47 @@ export class CallFormComponent implements OnInit {
         // Create new call
         result = await this.supabaseService.createCall(formValues);
       }
-  
+
       if (result.error) {
         throw result.error;
       }
-  
+
       this.notificationService.success(
         this.call ? 'Call updated successfully' : 'Call created successfully'
       );
-      
+
       // Check if data exists and has at least one element before accessing it
+      let savedCall: Call;
+
       if (result.data && Array.isArray(result.data) && result.data.length > 0) {
-        this.saved.emit(result.data[0]);
+        savedCall = result.data[0];
+        this.saved.emit(savedCall);
       } else {
         // If no data returned, emit the original call or create a basic response
-        this.saved.emit(this.call || { 
-          id: 'temp-id', 
+        savedCall = this.call || {
+          id: 'temp-id',
           contact_id: formValues.contact_id,
           status: formValues.status,
           reason: formValues.reason,
           scheduled_at: formValues.scheduled_at
-        } as Call);
+        } as Call;
+        this.saved.emit(savedCall);
+      }
+
+      // Notify the company refresh service if this is a scheduled call
+      if (savedCall.status === 'scheduled') {
+        // Find the contact to get the company_id
+        const contact = this.contacts.find(c => c.id === savedCall.contact_id);
+
+        if (contact && contact.company_id) {
+          console.log('Call form notifying company refresh service for company ID:', contact.company_id);
+          // Make sure to notify the company refresh service
+          setTimeout(() => {
+            this.companyRefreshService.notifyCallScheduled(contact.company_id!);
+          }, 0);
+        } else {
+          console.error('Cannot notify company refresh service: contact or company_id is missing', contact);
+        }
       }
 
       this.close();
