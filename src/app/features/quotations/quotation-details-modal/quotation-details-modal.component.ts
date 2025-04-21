@@ -20,7 +20,7 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
   @Output() closeEvent = new EventEmitter<boolean>();
   @Output() statusChanged = new EventEmitter<Quotation>();
 
-  statuses: Array<'New' | 'In Progress' | 'Won' | 'Lost'> = ['New', 'In Progress', 'Won', 'Lost'];
+  statuses: Array<'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'> = ['draft', 'sent', 'accepted', 'rejected', 'expired'];
   isUpdating = false;
 
   // Dropdown toggles
@@ -62,7 +62,7 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
     this.showStatusDropdown = !this.showStatusDropdown;
   }
 
-  updateStatus(status: 'New' | 'In Progress' | 'Won' | 'Lost', event: Event) {
+  updateStatus(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired', event: Event) {
     event.stopPropagation();
     this.showStatusDropdown = false;
 
@@ -111,14 +111,16 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'New':
+      case 'draft':
         return 'bg-blue-100 text-blue-800';
-      case 'In Progress':
+      case 'sent':
         return 'bg-yellow-100 text-yellow-800';
-      case 'Won':
+      case 'accepted':
         return 'bg-green-100 text-green-800';
-      case 'Lost':
+      case 'rejected':
         return 'bg-red-100 text-red-800';
+      case 'expired':
+        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }

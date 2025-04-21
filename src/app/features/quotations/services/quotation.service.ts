@@ -101,12 +101,15 @@ export class QuotationService {
       return throwError(() => new Error('User must be logged in to create quotations'));
     }
 
+    // Use the status directly since we're now using the same values as the database
+    let dbStatus = quotation.status || 'draft'; // Default to draft
+
     // Convert camelCase to snake_case for database
     const dbQuotation: any = {
       company_id: quotation.companyId,
       contact_id: quotation.contactId || null,
       title: quotation.title,
-      status: quotation.status || 'New',
+      status: dbStatus,
       total: quotation.total || 0,
       notes: quotation.notes || null
     };
@@ -147,12 +150,15 @@ export class QuotationService {
       return throwError(() => new Error('User must be logged in to update quotations'));
     }
 
+    // Use the status directly since we're now using the same values as the database
+    let dbStatus = quotation.status || 'draft'; // Default to draft
+
     // Convert camelCase to snake_case for database
     const dbQuotation: any = {
       company_id: quotation.companyId,
       contact_id: quotation.contactId || null,
       title: quotation.title,
-      status: quotation.status,
+      status: dbStatus,
       total: quotation.total,
       notes: quotation.notes || null
     };
@@ -189,18 +195,34 @@ export class QuotationService {
 
   // Helper functions to format data
   private formatQuotationFromDatabase(data: any, includeItems: boolean = false): Quotation {
+    // Use the status directly from the database
+    let status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' = data.status || 'draft';
+
+    // Ensure status is one of our valid statuses
+    if (!['draft', 'sent', 'accepted', 'rejected', 'expired'].includes(status)) {
+      status = 'draft'; // Default to draft if unknown status
+    }
+
     const quotation: Quotation = {
       id: data.id,
       companyId: data.company_id,
       contactId: data.contact_id,
       title: data.title,
-      status: data.status,
+      status: status,
       total: data.total,
       validUntil: data.valid_until,
       notes: data.notes,
       createdAt: data.created_at,
       updatedAt: data.updated_at
     };
+
+    // Add company if it exists
+    if (data.company) {
+      quotation.company = {
+        id: data.company.id,
+        name: data.company.name
+      };
+    }
 
     // Add these fields if they exist in the database response
     if (data.description) quotation.description = data.description;

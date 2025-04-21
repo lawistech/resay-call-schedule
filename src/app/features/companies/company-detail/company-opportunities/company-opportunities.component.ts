@@ -13,6 +13,7 @@ import { OpportunitiesService } from '../../../opportunities/opportunities.servi
 import { OrderService } from '../../../orders/order.service';
 import { Order } from '../../../../core/models/order.model';
 import { OpportunitySuccessModalComponent } from '../../../opportunities/opportunity-success-modal/opportunity-success-modal.component';
+import { QuotationDetailsModalComponent } from '../../../quotations/quotation-details-modal/quotation-details-modal.component';
 
 @Component({
   selector: 'app-company-opportunities',
@@ -130,7 +131,7 @@ export class CompanyOpportunitiesComponent implements OnInit {
     this.isLoadingQuotations = true;
     this.quotationService.getQuotationsByCompany(this.companyId).subscribe({
       next: (quotations) => {
-        this.activeQuotations = quotations.filter(q => q.status !== 'Lost');
+        this.activeQuotations = quotations.filter(q => q.status !== 'rejected' && q.status !== 'expired');
         this.isLoadingQuotations = false;
       },
       error: (error) => {
@@ -362,6 +363,10 @@ export class CompanyOpportunitiesComponent implements OnInit {
   selectedOrderForDetails: Order | null = null;
   showOrderDetailsModal = false;
 
+  // Selected quotation for details view
+  selectedQuotation: Quotation | null = null;
+  showQuotationDetailsModal = false;
+
   // View order details
   viewOrderDetails(order: Order): void {
     this.selectedOrderForDetails = order;
@@ -382,7 +387,31 @@ export class CompanyOpportunitiesComponent implements OnInit {
   }
 
   viewQuotation(id: string): void {
-    // Navigate to quotation details
-    this.router.navigate(['/quotations', id]);
+    // Get the full quotation details and show in modal
+    this.quotationService.getQuotationById(id).subscribe({
+      next: (quotation) => {
+        this.selectedQuotation = quotation;
+        this.showQuotationDetailsModal = true;
+      },
+      error: (error) => {
+        console.error('Error loading quotation details:', error);
+        this.notificationService.error('Failed to load quotation details');
+        // Fallback to navigation if we can't load the details
+        this.router.navigate(['/quotations', id]);
+      }
+    });
+  }
+
+  closeQuotationDetailsModal(): void {
+    this.showQuotationDetailsModal = false;
+    this.selectedQuotation = null;
+  }
+
+  handleQuotationStatusChange(updatedQuotation: Quotation): void {
+    // Update the quotation in the local array
+    const index = this.activeQuotations.findIndex(q => q.id === updatedQuotation.id);
+    if (index !== -1) {
+      this.activeQuotations[index] = updatedQuotation;
+    }
   }
 }

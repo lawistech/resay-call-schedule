@@ -6,6 +6,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { Quotation } from '../../../../core/models/quotation.model';
 import { MockQuotationService } from './mock-quotation.service';
 import { catchError, of } from 'rxjs';
+import { QuotationDetailsModalComponent } from '../../../quotations/quotation-details-modal/quotation-details-modal.component';
 
 @Component({
   selector: 'app-company-active-quotations',
@@ -20,11 +21,14 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   isLoading = true;
 
   // Filtering
-  activeStatuses: Set<string> = new Set(['New', 'In Progress']);
+  activeStatuses: Set<string> = new Set(['draft', 'sent']);
   showStatusModal = false;
   selectedQuotation: Quotation | null = null;
   isUpdatingStatus = false;
-  statusOptions: Array<'New' | 'In Progress' | 'Won' | 'Lost'> = ['New', 'In Progress', 'Won', 'Lost'];
+  statusOptions: Array<'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'> = ['draft', 'sent', 'accepted', 'rejected', 'expired'];
+
+  // Details modal
+  showDetailsModal = false;
 
   constructor(
     private quotationService: QuotationService,
@@ -42,8 +46,8 @@ export class CompanyActiveQuotationsComponent implements OnInit {
       this.isLoading = false;
     }
 
-    // Set default filter to show only New and In Progress quotations
-    this.activeStatuses = new Set(['New', 'In Progress']);
+    // Set default filter to show only draft and sent quotations
+    this.activeStatuses = new Set(['draft', 'sent']);
   }
 
   loadQuotations(): void {
@@ -82,16 +86,16 @@ export class CompanyActiveQuotationsComponent implements OnInit {
     }
   }
 
-  setFilter(status: 'New' | 'In Progress' | 'Won' | 'Lost' | 'all'): void {
+  setFilter(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'all'): void {
     if (status === 'all') {
       // Show all statuses
-      this.activeStatuses = new Set(['New', 'In Progress', 'Won', 'Lost']);
+      this.activeStatuses = new Set(['draft', 'sent', 'accepted', 'rejected', 'expired']);
     } else if (this.isStatusActive(status)) {
       // If status is already active, remove it
       this.activeStatuses.delete(status);
       // If no statuses are left, add all back
       if (this.activeStatuses.size === 0) {
-        this.activeStatuses = new Set(['New', 'In Progress', 'Won', 'Lost']);
+        this.activeStatuses = new Set(['draft', 'sent', 'accepted', 'rejected', 'expired']);
       }
     } else {
       // Add the status to active statuses
@@ -123,14 +127,16 @@ export class CompanyActiveQuotationsComponent implements OnInit {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'New':
+      case 'draft':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'In Progress':
+      case 'sent':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'Won':
+      case 'accepted':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'Lost':
+      case 'rejected':
         return 'bg-red-100 text-red-800 border-red-200';
+      case 'expired':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -144,7 +150,33 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   }
 
   viewQuotation(quotationId: string): void {
-    this.router.navigate(['/quotations', quotationId]);
+    // Get the full quotation details
+    this.quotationService.getQuotationById(quotationId).subscribe({
+      next: (quotation) => {
+        this.selectedQuotation = quotation;
+        this.showDetailsModal = true;
+      },
+      error: (error) => {
+        console.error('Error loading quotation details:', error);
+        this.notificationService.error('Failed to load quotation details');
+        // Fallback to navigation if we can't load the details
+        this.router.navigate(['/quotations', quotationId]);
+      }
+    });
+  }
+
+  closeDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedQuotation = null;
+  }
+
+  handleStatusChange(updatedQuotation: Quotation): void {
+    // Update the quotation in the local array
+    const index = this.quotations.findIndex(q => q.id === updatedQuotation.id);
+    if (index !== -1) {
+      this.quotations[index] = updatedQuotation;
+      this.applyFilters();
+    }
   }
 
   openStatusChangeModal(quotation: Quotation, event: Event): void {
@@ -158,7 +190,7 @@ export class CompanyActiveQuotationsComponent implements OnInit {
     this.selectedQuotation = null;
   }
 
-  updateQuotationStatus(status: 'New' | 'In Progress' | 'Won' | 'Lost'): void {
+  updateQuotationStatus(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'): void {
     if (!this.selectedQuotation || this.isUpdatingStatus) return;
 
     this.isUpdatingStatus = true;

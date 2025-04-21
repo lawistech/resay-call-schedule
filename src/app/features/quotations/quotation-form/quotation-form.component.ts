@@ -64,7 +64,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
   newProductPrice = 0;
 
   // Form data
-  statuses = ['New', 'In Progress', 'Won', 'Lost'];
+  statuses = ['draft', 'sent', 'accepted', 'rejected', 'expired'];
   stages = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
   companies: {id: string, name: string}[] = [];
   contacts: {id: string, first_name: string, last_name: string}[] = [];
@@ -87,7 +87,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       description: [''],
       companyId: ['', Validators.required],
       contactId: [''],
-      status: ['New', Validators.required],
+      status: ['draft', Validators.required],
       stage: ['Prospecting', Validators.required],
       probability: [0, [Validators.min(0), Validators.max(100)]],
       expectedCloseDate: [null, Validators.required],
@@ -524,7 +524,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
 
     // If the stage is Closed-Won, auto-set status to Won
     if (formValues.stage === 'Closed-Won') {
-      formData.status = 'Won';
+      formData.status = 'accepted';
     }
 
     // Only add optional fields if they have values

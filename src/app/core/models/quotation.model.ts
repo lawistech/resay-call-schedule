@@ -7,7 +7,7 @@ export interface Quotation {
   contactId?: string;
   title: string;
   description?: string;
-  status: 'New' | 'In Progress' | 'Won' | 'Lost';
+  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
   stage?: 'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won';
   probability?: number;
   total: number;

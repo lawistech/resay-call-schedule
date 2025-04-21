@@ -19,7 +19,7 @@ export class MockQuotationService {
         id: '1',
         companyId: companyId,
         title: 'Software License Quotation',
-        status: 'New',
+        status: 'draft',
         total: 1250.00,
         createdAt: new Date().toISOString()
       },
@@ -27,7 +27,7 @@ export class MockQuotationService {
         id: '2',
         companyId: companyId,
         title: 'Hardware Upgrade Quotation',
-        status: 'In Progress',
+        status: 'sent',
         total: 3750.50,
         createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days ago
       },
@@ -35,7 +35,7 @@ export class MockQuotationService {
         id: '3',
         companyId: companyId,
         title: 'Consulting Services Quotation',
-        status: 'Won',
+        status: 'accepted',
         total: 5000.00,
         createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() // 14 days ago
       }

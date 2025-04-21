@@ -457,3 +457,12 @@
     </div>
   </div>
 </div>
+
+<!-- Quotation Details Modal -->
+<app-quotation-details-modal
+  *ngIf="showQuotationDetailsModal"
+  [show]="showQuotationDetailsModal"
+  [quotation]="selectedQuotation"
+  (closeEvent)="closeQuotationDetailsModal()"
+  (statusChanged)="handleQuotationStatusChange($event)">
+</app-quotation-details-modal>
