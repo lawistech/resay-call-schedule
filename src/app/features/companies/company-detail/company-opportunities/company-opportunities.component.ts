@@ -380,4 +380,9 @@ export class CompanyOpportunitiesComponent implements OnInit {
       queryParams: { company_id: this.companyId }
     });
   }
+
+  viewQuotation(id: string): void {
+    // Navigate to quotation details
+    this.router.navigate(['/quotations', id]);
+  }
 }

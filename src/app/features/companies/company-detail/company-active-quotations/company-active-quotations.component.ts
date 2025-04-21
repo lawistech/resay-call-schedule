@@ -20,7 +20,7 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   isLoading = true;
 
   // Filtering
-  activeStatuses: Set<string> = new Set(['New', 'In Progress', 'Won']);
+  activeStatuses: Set<string> = new Set(['New', 'In Progress']);
   showStatusModal = false;
   selectedQuotation: Quotation | null = null;
   isUpdatingStatus = false;
@@ -41,6 +41,9 @@ export class CompanyActiveQuotationsComponent implements OnInit {
       console.error('No companyId provided to CompanyActiveQuotationsComponent');
       this.isLoading = false;
     }
+
+    // Set default filter to show only New and In Progress quotations
+    this.activeStatuses = new Set(['New', 'In Progress']);
   }
 
   loadQuotations(): void {
@@ -106,6 +109,11 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   formatDate(date?: string): string {
     if (!date) return 'N/A';
     return new Date(date).toLocaleDateString();
+  }
+
+  formatDateTime(date?: string | Date): string {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleString();
   }
 
   formatCurrency(amount?: number): string {

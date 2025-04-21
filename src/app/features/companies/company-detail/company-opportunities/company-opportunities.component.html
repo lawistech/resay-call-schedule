@@ -6,7 +6,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
-      Add Quotation
+      Create Quotation
     </button>
   </div>
 
@@ -39,27 +39,34 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quotation #</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quotation Title</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Contact</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let quotation of activeQuotations" class="hover:bg-gray-50 cursor-pointer">
+          <tr *ngFor="let quotation of activeQuotations" class="hover:bg-gray-50 cursor-pointer" (click)="viewQuotation(quotation.id)">
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ quotation.id }}</div>
+              <div class="text-sm font-medium text-gray-900">{{ quotation.title }}</div>
+              <div *ngIf="quotation.description" class="text-xs text-gray-500 mt-1 truncate max-w-xs" title="{{ quotation.description }}">
+                {{ quotation.description }}
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ formatDate(quotation.createdAt) }}</div>
+              <div class="text-sm text-gray-500">{{ formatDateTime(quotation.createdAt) }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm text-gray-900">{{ formatCurrency(quotation.total) }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="getStatusColor(quotation.status)">
                 {{ quotation.status }}
               </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-500">{{ quotation.updatedAt ? formatDateTime(quotation.updatedAt) : 'N/A' }}</div>
             </td>
           </tr>
         </tbody>
