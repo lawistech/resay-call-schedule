@@ -106,10 +106,15 @@ export class QuotationService {
       company_id: quotation.companyId,
       contact_id: quotation.contactId || null,
       title: quotation.title,
-      status: quotation.status || 'draft',
+      status: quotation.status || 'New',
       total: quotation.total || 0,
       notes: quotation.notes || null
     };
+
+    // Add the new fields
+    if (quotation.description !== undefined) dbQuotation.description = quotation.description;
+    if (quotation.stage !== undefined) dbQuotation.stage = quotation.stage;
+    if (quotation.probability !== undefined) dbQuotation.probability = quotation.probability;
 
     // Only add valid_until if it's a non-empty string
     if (quotation.validUntil && quotation.validUntil.trim() !== '') {
@@ -152,6 +157,11 @@ export class QuotationService {
       notes: quotation.notes || null
     };
 
+    // Add the new fields
+    if (quotation.description !== undefined) dbQuotation.description = quotation.description;
+    if (quotation.stage !== undefined) dbQuotation.stage = quotation.stage;
+    if (quotation.probability !== undefined) dbQuotation.probability = quotation.probability;
+
     // Only add valid_until if it's a non-empty string
     if (quotation.validUntil && quotation.validUntil.trim() !== '') {
       dbQuotation.valid_until = quotation.validUntil;
@@ -191,6 +201,11 @@ export class QuotationService {
       createdAt: data.created_at,
       updatedAt: data.updated_at
     };
+
+    // Add these fields if they exist in the database response
+    if (data.description) quotation.description = data.description;
+    if (data.stage) quotation.stage = data.stage;
+    if (data.probability) quotation.probability = data.probability;
 
     // Add items if included in the response
     if (includeItems && data.items) {

@@ -20,11 +20,11 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   isLoading = true;
 
   // Filtering
-  activeStatuses: Set<string> = new Set(['draft', 'sent', 'accepted']);
+  activeStatuses: Set<string> = new Set(['New', 'In Progress', 'Won']);
   showStatusModal = false;
   selectedQuotation: Quotation | null = null;
   isUpdatingStatus = false;
-  statusOptions: Array<'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'> = ['draft', 'sent', 'accepted', 'rejected', 'expired'];
+  statusOptions: Array<'New' | 'In Progress' | 'Won' | 'Lost'> = ['New', 'In Progress', 'Won', 'Lost'];
 
   constructor(
     private quotationService: QuotationService,
@@ -79,16 +79,16 @@ export class CompanyActiveQuotationsComponent implements OnInit {
     }
   }
 
-  setFilter(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'all'): void {
+  setFilter(status: 'New' | 'In Progress' | 'Won' | 'Lost' | 'all'): void {
     if (status === 'all') {
       // Show all statuses
-      this.activeStatuses = new Set(['draft', 'sent', 'accepted', 'rejected', 'expired']);
+      this.activeStatuses = new Set(['New', 'In Progress', 'Won', 'Lost']);
     } else if (this.isStatusActive(status)) {
       // If status is already active, remove it
       this.activeStatuses.delete(status);
       // If no statuses are left, add all back
       if (this.activeStatuses.size === 0) {
-        this.activeStatuses = new Set(['draft', 'sent', 'accepted', 'rejected', 'expired']);
+        this.activeStatuses = new Set(['New', 'In Progress', 'Won', 'Lost']);
       }
     } else {
       // Add the status to active statuses
@@ -115,16 +115,14 @@ export class CompanyActiveQuotationsComponent implements OnInit {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'draft':
+      case 'New':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'sent':
+      case 'In Progress':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'accepted':
+      case 'Won':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'rejected':
+      case 'Lost':
         return 'bg-red-100 text-red-800 border-red-200';
-      case 'expired':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -152,7 +150,7 @@ export class CompanyActiveQuotationsComponent implements OnInit {
     this.selectedQuotation = null;
   }
 
-  updateQuotationStatus(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'): void {
+  updateQuotationStatus(status: 'New' | 'In Progress' | 'Won' | 'Lost'): void {
     if (!this.selectedQuotation || this.isUpdatingStatus) return;
 
     this.isUpdatingStatus = true;

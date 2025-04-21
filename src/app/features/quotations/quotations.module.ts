@@ -10,12 +10,13 @@ import { CompanyService } from '../companies/services/company.service';
 import { QuotationFormComponent } from './quotation-form/quotation-form.component';
 import { QuotationsListComponent } from './quotations-list/quotations-list.component';
 import { QuotationDetailsModalComponent } from './quotation-details-modal/quotation-details-modal.component';
+import { QuotationFormPageComponent } from './quotation-form-page/quotation-form-page.component';
 
 const routes: Routes = [
   { path: '', component: QuotationsListComponent },
-  { path: 'new', component: QuotationFormComponent },
-  { path: ':id', component: QuotationFormComponent },
-  { path: ':id/edit', component: QuotationFormComponent }
+  { path: 'new', component: QuotationFormPageComponent },
+  { path: ':id', component: QuotationsListComponent },
+  { path: ':id/edit', component: QuotationFormPageComponent }
 ];
 
 @NgModule({

@@ -1,0 +1,45 @@
+/* Quotation Form Styles */
+.form-container {
+  background-color: white;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-radius: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.paper-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 40px 40px 0;
+  border-color: transparent #f3f4f6 transparent transparent;
+  z-index: 10;
+}
+
+.paper-section {
+  position: relative;
+  background-color: white;
+  border-radius: 0.375rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.probability-bar {
+  transition: width 0.3s ease;
+}
+
+.modal-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

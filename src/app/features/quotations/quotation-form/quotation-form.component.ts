@@ -1,147 +1,71 @@
 // src/app/features/quotations/quotation-form/quotation-form.component.ts
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, OnDestroy, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuotationService } from '../services/quotation.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { Quotation } from '../../../core/models/quotation.model';
+import { Quotation, QuotationItem } from '../../../core/models/quotation.model';
 import { CompanyService } from '../../companies/services/company.service';
 import { Observable, Subscription, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { ProductCatalogService } from '../../ecommerce/services/product-catalog.service';
+import { ProductCatalog } from '../../ecommerce/models/product-catalog.model';
+import { SupabaseService } from '../../../core/services/supabase.service';
 
 @Component({
   selector: 'app-quotation-form',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    FormsModule
   ],
-  template: `
-    <div class="container mx-auto px-4 py-6">
-      <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center">
-          <button (click)="goBack()" class="mr-4 text-gray-600 hover:text-gray-900">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <h1 class="text-2xl font-bold text-gray-800">{{ isEditMode ? 'Edit Quotation' : 'Create Quotation' }}</h1>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <!-- Loading State -->
-        <div *ngIf="isLoading" class="flex justify-center items-center py-12">
-          <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
-
-        <!-- Quotation Form -->
-        <form *ngIf="!isLoading" [formGroup]="quotationForm" (ngSubmit)="onSubmit()" class="space-y-6">
-          <!-- Title -->
-          <div>
-            <label for="title" class="block text-sm font-medium text-gray-700">Quotation Title</label>
-            <input type="text" id="title" formControlName="title"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            <p *ngIf="quotationForm.get('title')?.invalid && quotationForm.get('title')?.touched"
-              class="mt-1 text-sm text-red-600">Title is required</p>
-          </div>
-
-          <!-- Company -->
-          <div>
-            <label for="companyId" class="block text-sm font-medium text-gray-700">Company</label>
-            <select id="companyId" formControlName="companyId"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              [attr.disabled]="companyId ? true : null">
-              <option value="" disabled>Select a company</option>
-              <option *ngFor="let company of companies" [value]="company.id">{{ company.name }}</option>
-            </select>
-            <p *ngIf="quotationForm.get('companyId')?.invalid && quotationForm.get('companyId')?.touched"
-              class="mt-1 text-sm text-red-600">Company is required</p>
-          </div>
-
-          <!-- Contact -->
-          <div>
-            <label for="contactId" class="block text-sm font-medium text-gray-700">Contact (Optional)</label>
-            <select id="contactId" formControlName="contactId"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <option value="">None</option>
-              <option *ngFor="let contact of contacts" [value]="contact.id">{{ contact.first_name }} {{ contact.last_name }}</option>
-            </select>
-          </div>
-
-          <!-- Status -->
-          <div>
-            <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-            <select id="status" formControlName="status"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <option value="draft">Draft</option>
-              <option value="sent">Sent</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-              <option value="expired">Expired</option>
-            </select>
-          </div>
-
-          <!-- Valid Until -->
-          <div>
-            <label for="validUntil" class="block text-sm font-medium text-gray-700">Valid Until (Optional)</label>
-            <input type="date" id="validUntil" formControlName="validUntil"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          </div>
-
-          <!-- Total Amount -->
-          <div>
-            <label for="total" class="block text-sm font-medium text-gray-700">Total Amount</label>
-            <div class="mt-1 relative rounded-md shadow-sm">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span class="text-gray-500 sm:text-sm">$</span>
-              </div>
-              <input type="number" id="total" formControlName="total" min="0" step="0.01"
-                class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-          </div>
-
-          <!-- Notes -->
-          <div>
-            <label for="notes" class="block text-sm font-medium text-gray-700">Notes (Optional)</label>
-            <textarea id="notes" formControlName="notes" rows="4"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
-          </div>
-
-          <!-- Form Actions -->
-          <div class="flex justify-end space-x-3">
-            <button type="button" (click)="goBack()" class="btn-secondary">
-              Cancel
-            </button>
-            <button type="submit" [disabled]="quotationForm.invalid || isSubmitting" class="btn-primary">
-              <span *ngIf="isSubmitting" class="inline-block mr-2">
-                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </span>
-              {{ isEditMode ? 'Update' : 'Create' }} Quotation
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  `,
-  styles: []
+  templateUrl: './quotation-form.component.html',
+  styleUrls: ['./quotation-form.component.css']
 })
 export class QuotationFormComponent implements OnInit, OnDestroy {
+  @Input() quotation: Quotation | null = null;
+  @Input() isSaving: boolean = false;
+  @Input() preselectedCompanyId: string | null = null;
+  @Output() close = new EventEmitter<void>();
+  @Output() formSubmitted = new EventEmitter<Partial<Quotation>>();
+
   quotationForm!: FormGroup;
+  companyForm!: FormGroup;
   isLoading = false;
   isSubmitting = false;
   quotationId: string | null = null;
   isEditMode = false;
   companyId: string | null = null;
 
-  // Data for dropdowns
+  // Company search properties
+  companySearchTerm: string = '';
+  companySearchResults: any[] = [];
+  showCompanySearchResults: boolean = false;
+  isSearchingCompany: boolean = false;
+  selectedCompany: any | null = null;
+  showNewCompanyForm: boolean = false;
+  isCreatingCompany: boolean = false;
+
+  // Product selection
+  showProductSelector = false;
+  products: ProductCatalog[] = [];
+  filteredProducts: ProductCatalog[] = [];
+  selectedProduct: ProductCatalog | null = null;
+  selectedProductQuantity = 1;
+  selectedProductPrice = 0;
+  selectedProductNotes = '';
+  productSearchQuery = '';
+  isLoadingProducts = false;
+  showCreateProductForm = false;
+  newProductName = '';
+  newProductSku = '';
+  newProductPrice = 0;
+
+  // Form data
+  statuses = ['New', 'In Progress', 'Won', 'Lost'];
+  stages = ['Prospecting', 'Discovery', 'Proposal', 'Negotiation', 'Closed-Won'];
   companies: {id: string, name: string}[] = [];
   contacts: {id: string, first_name: string, last_name: string}[] = [];
 
@@ -154,43 +78,76 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
     private companyService: CompanyService,
     private route: ActivatedRoute,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private productCatalogService: ProductCatalogService,
+    private supabaseService: SupabaseService
   ) {
     this.quotationForm = this.fb.group({
       title: ['', Validators.required],
+      description: [''],
       companyId: ['', Validators.required],
       contactId: [''],
-      status: ['draft', Validators.required],
-      validUntil: [''],
-      total: [0, [Validators.required, Validators.min(0)]],
-      notes: ['']
+      status: ['New', Validators.required],
+      stage: ['Prospecting', Validators.required],
+      probability: [0, [Validators.min(0), Validators.max(100)]],
+      expectedCloseDate: [null, Validators.required],
+      amount: [0, [Validators.required, Validators.min(0)]],
+      notes: [''],
+      products: this.fb.array([])
     });
+
+    this.companyForm = this.fb.group({
+      name: ['', Validators.required],
+      website: [''],
+      industry: ['']
+    });
+  }
+
+  // Getter for products FormArray
+  get productsArray(): FormArray {
+    return this.quotationForm.get('products') as FormArray;
   }
 
   ngOnInit(): void {
     // Load companies for dropdown
     this.loadCompanies();
-    // Check if we're in edit mode
-    this.route.paramMap.subscribe(params => {
-      this.quotationId = params.get('id');
-      this.isEditMode = !!this.quotationId;
 
-      if (this.isEditMode && this.quotationId) {
-        this.loadQuotation(this.quotationId);
-      }
-    });
+    // Load products for product selector
+    this.loadProducts();
 
-    // Check for company_id in query params (for creating from company page)
-    this.route.queryParamMap.subscribe(params => {
-      const companyId = params.get('company_id');
-      if (companyId) {
-        this.companyId = companyId;
-        this.quotationForm.patchValue({ companyId });
+    // If we have a preselected company ID, use it
+    if (this.preselectedCompanyId) {
+      this.companyId = this.preselectedCompanyId;
+      this.quotationForm.patchValue({ companyId: this.preselectedCompanyId });
+      this.loadContacts(this.preselectedCompanyId);
+    }
 
-        // Load contacts for this company
-        this.loadContacts(companyId);
-      }
-    });
+    // If we have an existing quotation, populate the form
+    if (this.quotation) {
+      this.patchFormWithQuotation(this.quotation);
+    } else {
+      // Check if we're in edit mode from route params
+      this.route.paramMap.subscribe(params => {
+        this.quotationId = params.get('id');
+        this.isEditMode = !!this.quotationId;
+
+        if (this.isEditMode && this.quotationId) {
+          this.loadQuotation(this.quotationId);
+        }
+      });
+
+      // Check for company_id in query params (for creating from company page)
+      this.route.queryParamMap.subscribe(params => {
+        const companyId = params.get('company_id');
+        if (companyId) {
+          this.companyId = companyId;
+          this.quotationForm.patchValue({ companyId });
+
+          // Load contacts for this company
+          this.loadContacts(companyId);
+        }
+      });
+    }
   }
 
   loadQuotation(id: string): void {
@@ -208,6 +165,271 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadProducts(): void {
+    this.isLoadingProducts = true;
+    const subscription = this.productCatalogService.getProducts()
+      .pipe(
+        catchError(error => {
+          console.error('Error loading products:', error);
+          this.notificationService.error('Failed to load products');
+          return of([]);
+        })
+      )
+      .subscribe(products => {
+        this.products = products;
+        this.filteredProducts = [...products];
+        this.isLoadingProducts = false;
+      });
+
+    this.subscriptions.push(subscription);
+  }
+
+  // Product selector methods
+  openProductSelector(): void {
+    this.showProductSelector = true;
+    this.selectedProduct = null;
+    this.selectedProductQuantity = 1;
+    this.selectedProductPrice = 0;
+    this.selectedProductNotes = '';
+    this.productSearchQuery = '';
+    this.filterProducts();
+  }
+
+  closeProductSelector(): void {
+    this.showProductSelector = false;
+  }
+
+  filterProducts(): void {
+    if (!this.productSearchQuery.trim()) {
+      this.filteredProducts = [...this.products];
+      return;
+    }
+
+    const query = this.productSearchQuery.toLowerCase().trim();
+    this.filteredProducts = this.products.filter(product =>
+      product.name.toLowerCase().includes(query) ||
+      (product.sku && product.sku.toLowerCase().includes(query)) ||
+      (product.description && product.description.toLowerCase().includes(query))
+    );
+  }
+
+  selectProduct(product: ProductCatalog): void {
+    this.selectedProduct = product;
+    this.selectedProductPrice = product.price;
+    this.selectedProductQuantity = 1;
+    this.selectedProductNotes = '';
+  }
+
+  // Toggle create product form
+  toggleCreateProductForm(): void {
+    this.showCreateProductForm = !this.showCreateProductForm;
+    if (this.showCreateProductForm) {
+      // Pre-populate the new product name with the search query if it exists
+      this.newProductName = this.productSearchQuery;
+      this.newProductSku = '';
+      this.newProductPrice = 0;
+    }
+  }
+
+  // Create a new product
+  createProduct(): void {
+    if (!this.newProductName.trim()) {
+      this.notificationService.error('Product name is required');
+      return;
+    }
+
+    this.isLoadingProducts = true;
+
+    // Get the current user's ID for the supplier ID
+    this.supabaseService.supabaseClient.auth.getUser().then(({ data }) => {
+      const supplierId = data.user?.id || 'default';
+
+      const newProduct = {
+        supplierId: supplierId,
+        name: this.newProductName.trim(),
+        sku: this.newProductSku.trim() || `SKU-${Date.now()}`,
+        price: this.newProductPrice,
+        description: '',
+        isActive: true
+      };
+
+      this.productCatalogService.createProduct(newProduct).subscribe({
+        next: (createdProduct) => {
+          this.products.push(createdProduct);
+          this.filteredProducts = [...this.products];
+          this.notificationService.success('Product created successfully');
+          this.selectProduct(createdProduct);
+          this.showCreateProductForm = false;
+          this.productSearchQuery = '';
+          this.isLoadingProducts = false;
+        },
+        error: (error) => {
+          console.error('Error creating product:', error);
+          this.notificationService.error('Failed to create product');
+          this.isLoadingProducts = false;
+        }
+      });
+    });
+  }
+
+  // Add product to form
+
+  addSelectedProduct(): void {
+    if (!this.selectedProduct) return;
+
+    const total = this.selectedProductQuantity * this.selectedProductPrice;
+
+    const quotationItem: QuotationItem = {
+      id: '', // Will be assigned by the database
+      quotationId: this.quotationId || '',
+      productId: this.selectedProduct.id,
+      quantity: this.selectedProductQuantity,
+      price: this.selectedProductPrice,
+      total: total,
+      notes: this.selectedProductNotes,
+      product: this.selectedProduct
+    };
+
+    this.addProductToForm(quotationItem);
+    this.closeProductSelector();
+  }
+
+  // Add a product to the form
+  addProductToForm(product: QuotationItem): void {
+    const productForm = this.fb.group({
+      productId: [product.productId, Validators.required],
+      productName: [product.product?.name || ''],
+      quantity: [product.quantity, [Validators.required, Validators.min(1)]],
+      price: [product.price, [Validators.required, Validators.min(0)]],
+      total: [product.total],
+      notes: [product.notes || '']
+    });
+
+    this.productsArray.push(productForm);
+    this.updateTotalAmount();
+  }
+
+  // Remove a product from the form
+  removeProduct(index: number): void {
+    this.productsArray.removeAt(index);
+    this.updateTotalAmount();
+  }
+
+  // Update the total amount based on products
+  updateTotalAmount(): void {
+    const total = this.productsArray.controls.reduce((sum, control) => {
+      return sum + (control.get('total')?.value || 0);
+    }, 0);
+
+    this.quotationForm.patchValue({ amount: total });
+  }
+
+  // Search for companies
+  searchCompanies(searchTerm: string): void {
+    this.isSearchingCompany = true;
+
+    this.companyService.searchCompanies(searchTerm).subscribe({
+      next: (companies) => {
+        this.companySearchResults = companies;
+        this.showCompanySearchResults = companies.length > 0;
+        this.isSearchingCompany = false;
+
+        // If there's an exact match, select it automatically
+        const exactMatch = companies.find(c =>
+          c.name.toLowerCase() === searchTerm.toLowerCase());
+        if (exactMatch) {
+          this.selectCompany(exactMatch);
+        }
+      },
+      error: (error) => {
+        console.error('Error searching companies:', error);
+        this.isSearchingCompany = false;
+      }
+    });
+  }
+
+  // Handle company search input changes
+  onCompanySearchChange(value: string): void {
+    this.companySearchTerm = value;
+    this.selectedCompany = null; // Clear selected company when search term changes
+    this.quotationForm.patchValue({ companyId: '' }); // Clear the company_id in the form
+
+    if (value && value.length > 1) {
+      this.searchCompanies(value);
+    } else {
+      this.companySearchResults = [];
+      this.showCompanySearchResults = false;
+    }
+  }
+
+  // Clear company search
+  clearCompanySearch(): void {
+    this.companySearchTerm = '';
+    this.selectedCompany = null;
+    this.companySearchResults = [];
+    this.showCompanySearchResults = false;
+    this.quotationForm.patchValue({ companyId: '' });
+  }
+
+  // Select a company from search results
+  selectCompany(company: any): void {
+    this.selectedCompany = company;
+
+    // Update the form with the selected company ID
+    this.quotationForm.patchValue({
+      companyId: company.id
+    });
+
+    // Load contacts for this company
+    this.loadContacts(company.id);
+
+    // Hide search results
+    this.showCompanySearchResults = false;
+
+    // Show notification
+    this.notificationService.info(`Selected company: ${company.name}`);
+  }
+
+  // Toggle new company form
+  toggleNewCompanyForm(): void {
+    this.showNewCompanyForm = !this.showNewCompanyForm;
+
+    if (this.showNewCompanyForm && this.companySearchTerm) {
+      // Pre-fill the company name field with the search term
+      this.companyForm.patchValue({
+        name: this.companySearchTerm
+      });
+    } else if (!this.showNewCompanyForm) {
+      this.companyForm.reset();
+    }
+  }
+
+  // Create a new company
+  createCompany(): void {
+    if (this.companyForm.invalid) {
+      return;
+    }
+
+    this.isCreatingCompany = true;
+    const companyData = this.companyForm.value;
+
+    this.companyService.createCompany(companyData).subscribe({
+      next: (company) => {
+        this.companies.push(company);
+        this.selectCompany(company);
+        this.notificationService.success('Company created successfully');
+        this.isCreatingCompany = false;
+        this.toggleNewCompanyForm();
+      },
+      error: (error) => {
+        console.error('Error creating company:', error);
+        this.notificationService.error('Failed to create company');
+        this.isCreatingCompany = false;
+      }
+    });
+  }
+
+  // Load companies for dropdown (still needed for backward compatibility)
   loadCompanies(): void {
     const subscription = this.companyService.getCompanies()
       .pipe(
@@ -241,15 +463,36 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
   }
 
   patchFormWithQuotation(quotation: Quotation): void {
+    // Clear existing products
+    while (this.productsArray.length) {
+      this.productsArray.removeAt(0);
+    }
+
+    // Set basic form values
     this.quotationForm.patchValue({
       title: quotation.title,
+      description: quotation.description || '',
       companyId: quotation.companyId,
       contactId: quotation.contactId,
       status: quotation.status,
-      validUntil: quotation.validUntil ? new Date(quotation.validUntil).toISOString().split('T')[0] : '',
-      total: quotation.total,
-      notes: quotation.notes
+      stage: quotation.stage || 'Prospecting',
+      probability: quotation.probability || 0,
+      expectedCloseDate: quotation.validUntil ? new Date(quotation.validUntil).toISOString().split('T')[0] : '',
+      amount: quotation.total,
+      notes: quotation.notes || ''
     });
+
+    // Load contacts for this company
+    if (quotation.companyId) {
+      this.loadContacts(quotation.companyId);
+    }
+
+    // Add products if available
+    if (quotation.items && quotation.items.length > 0) {
+      quotation.items.forEach(item => {
+        this.addProductToForm(item);
+      });
+    }
   }
 
   onSubmit(): void {
@@ -262,7 +505,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.isSubmitting = true;
+    this.isSaving = true;
 
     // Get form values and prepare data for submission
     const formValues = this.quotationForm.value;
@@ -270,37 +513,65 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
     // Create a clean data object for submission
     const formData: Partial<Quotation> = {
       title: formValues.title,
+      description: formValues.description,
       companyId: formValues.companyId,
-      status: formValues.status || 'draft',
-      total: parseFloat(formValues.total) || 0
+      status: formValues.status || 'New',
+      stage: formValues.stage,
+      probability: formValues.probability,
+      total: formValues.amount || 0,
+      notes: formValues.notes
     };
+
+    // If the stage is Closed-Won, auto-set status to Won
+    if (formValues.stage === 'Closed-Won') {
+      formData.status = 'Won';
+    }
 
     // Only add optional fields if they have values
     if (formValues.contactId) {
       formData.contactId = formValues.contactId;
     }
 
-    if (formValues.notes) {
-      formData.notes = formValues.notes;
-    }
-
     // Handle the date field properly
-    if (formValues.validUntil) {
+    if (formValues.expectedCloseDate) {
       // Convert to ISO string for database
-      formData.validUntil = new Date(formValues.validUntil).toISOString();
+      formData.validUntil = new Date(formValues.expectedCloseDate).toISOString();
     }
 
+    // Add products
+    if (this.productsArray.length > 0) {
+      formData.items = this.productsArray.controls.map(control => {
+        const productValue = control.value;
+        return {
+          id: '',
+          quotationId: this.quotationId || '',
+          productId: productValue.productId,
+          quantity: productValue.quantity,
+          price: productValue.price,
+          total: productValue.total,
+          notes: productValue.notes
+        };
+      });
+    }
+
+    // If we're using the component with @Input/@Output
+    if (this.formSubmitted.observed) {
+      this.formSubmitted.emit(formData);
+      return;
+    }
+
+    // Otherwise, handle the form submission directly
     if (this.isEditMode && this.quotationId) {
       // Update existing quotation
       this.quotationService.updateQuotation(this.quotationId, formData).subscribe({
         next: () => {
           this.notificationService.success('Quotation updated successfully');
           this.router.navigate(['/quotations', this.quotationId]);
-          this.isSubmitting = false;
+          this.isSaving = false;
         },
         error: (error) => {
           this.notificationService.error('Failed to update quotation');
-          this.isSubmitting = false;
+          this.isSaving = false;
         }
       });
     } else {
@@ -309,14 +580,25 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
         next: (quotation) => {
           this.notificationService.success('Quotation created successfully');
           this.router.navigate(['/quotations', quotation.id]);
-          this.isSubmitting = false;
+          this.isSaving = false;
         },
         error: (error) => {
           this.notificationService.error('Failed to create quotation');
-          this.isSubmitting = false;
+          this.isSaving = false;
         }
       });
     }
+  }
+
+  onCancel(): void {
+    // If we're using the component with @Input/@Output
+    if (this.close.observed) {
+      this.close.emit();
+      return;
+    }
+
+    // Otherwise, handle navigation directly
+    this.goBack();
   }
 
   goBack(): void {

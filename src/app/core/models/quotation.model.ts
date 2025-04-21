@@ -6,7 +6,10 @@ export interface Quotation {
   companyId: string;
   contactId?: string;
   title: string;
-  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+  description?: string;
+  status: 'New' | 'In Progress' | 'Won' | 'Lost';
+  stage?: 'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won';
+  probability?: number;
   total: number;
   validUntil?: string;
   notes?: string;

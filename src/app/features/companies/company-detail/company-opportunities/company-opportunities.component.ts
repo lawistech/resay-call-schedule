@@ -130,7 +130,7 @@ export class CompanyOpportunitiesComponent implements OnInit {
     this.isLoadingQuotations = true;
     this.quotationService.getQuotationsByCompany(this.companyId).subscribe({
       next: (quotations) => {
-        this.activeQuotations = quotations.filter(q => q.status !== 'rejected' && q.status !== 'expired');
+        this.activeQuotations = quotations.filter(q => q.status !== 'Lost');
         this.isLoadingQuotations = false;
       },
       error: (error) => {
