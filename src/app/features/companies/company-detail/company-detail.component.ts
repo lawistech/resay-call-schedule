@@ -1,10 +1,12 @@
 // src/app/features/companies/company-detail/company-detail.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompanyService } from '../services/company.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Company } from '../../../core/models/company.model';
 import { DatePipe } from '@angular/common';
+import { CompanyRefreshService } from '../services/company-refresh.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-company-detail',
@@ -12,18 +14,22 @@ import { DatePipe } from '@angular/common';
   styleUrls: ['./company-detail.component.scss'],
   providers: [DatePipe]
 })
-export class CompanyDetailComponent implements OnInit {
+export class CompanyDetailComponent implements OnInit, OnDestroy {
   company: Company | null = null;
   isLoading = true;
   activeTab: 'overview' | 'people' | 'communication' | 'opportunities' = 'overview';
   companyId: string = '';
+
+  // Subscription to handle component cleanup
+  private refreshSubscription: Subscription | null = null;
 
   constructor(
     private companyService: CompanyService,
     private route: ActivatedRoute,
     private router: Router,
     private notificationService: NotificationService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private companyRefreshService: CompanyRefreshService
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +53,21 @@ export class CompanyDetailComponent implements OnInit {
         this.setActiveTab(tab as any);
       }
     });
+
+    // Subscribe to call scheduling events
+    this.refreshSubscription = this.companyRefreshService.callScheduled$.subscribe(companyId => {
+      if (companyId === this.companyId) {
+        console.log('Refreshing company metrics after call scheduled');
+        this.refreshCompanyMetrics();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription when component is destroyed
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
   }
 
   loadCompany(id: string): void {
@@ -56,22 +77,28 @@ export class CompanyDetailComponent implements OnInit {
         this.company = company;
 
         // Load company metrics
-        this.companyService.calculateCompanyMetrics(id).subscribe({
-          next: (metrics) => {
-            if (this.company) {
-              this.company.metrics = metrics;
-            }
-            this.isLoading = false;
-          },
-          error: () => {
-            this.isLoading = false;
-          }
-        });
+        this.refreshCompanyMetrics();
       },
       error: (error) => {
         this.notificationService.error('Failed to load company details');
         this.isLoading = false;
         this.router.navigate(['/companies']);
+      }
+    });
+  }
+
+  refreshCompanyMetrics(): void {
+    if (!this.companyId || !this.company) return;
+
+    this.companyService.calculateCompanyMetrics(this.companyId).subscribe({
+      next: (metrics) => {
+        if (this.company) {
+          this.company.metrics = metrics;
+        }
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
       }
     });
   }

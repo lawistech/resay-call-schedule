@@ -39,7 +39,7 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    SharedModule,
+    SharedModule, // This includes CallModalComponent
     HttpClientModule,
     RouterModule.forChild(routes),
     OpportunitySuccessModalComponent,

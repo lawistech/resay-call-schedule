@@ -6,6 +6,7 @@ import { Contact } from '../../../../core/models/contact.model';
 import { Router } from '@angular/router';
 import { Call } from '../../../../core/models/call.model';
 import { SupabaseService } from '../../../../core/services/supabase.service';
+import { CompanyRefreshService } from '../../services/company-refresh.service';
 
 @Component({
   selector: 'app-company-people',
@@ -31,7 +32,8 @@ export class CompanyPeopleComponent implements OnInit {
     private companyService: CompanyService,
     private notificationService: NotificationService,
     private router: Router,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private companyRefreshService: CompanyRefreshService
   ) {}
 
   ngOnInit(): void {
@@ -124,13 +126,19 @@ export class CompanyPeopleComponent implements OnInit {
 
   // Call scheduling methods
   scheduleCall(contact: Contact, event?: MouseEvent): void {
+    console.log('Schedule call clicked for contact:', contact);
+
+    // Make sure to stop event propagation
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
 
+    // Set the selected contact and show the modal
     this.selectedContact = contact;
     this.showCallModal = true;
+
+    console.log('Call modal should be visible now. showCallModal:', this.showCallModal);
   }
 
   closeCallModal(): void {
@@ -140,6 +148,22 @@ export class CompanyPeopleComponent implements OnInit {
 
   handleCallSaved(call: Call): void {
     this.loadScheduledCalls();
+
+    // Refresh company metrics to update scheduled calls count
+    if (this.companyId) {
+      this.companyService.calculateCompanyMetrics(this.companyId).subscribe({
+        next: (metrics) => {
+          console.log('Updated company metrics after scheduling call:', metrics);
+
+          // Notify other components that a call has been scheduled
+          this.companyRefreshService.notifyCallScheduled(this.companyId);
+        },
+        error: (error) => {
+          console.error('Error updating company metrics:', error);
+        }
+      });
+    }
+
     this.notificationService.success('Call scheduled successfully');
   }
 

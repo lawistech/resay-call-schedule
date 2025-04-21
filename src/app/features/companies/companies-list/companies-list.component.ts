@@ -1,16 +1,18 @@
 // src/app/features/companies/companies-list/companies-list.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CompanyService } from '../services/company.service';
 import { Company } from '../../../core/models/company.model';
 import { NotificationService } from '../../../core/services/notification.service';
+import { CompanyRefreshService } from '../services/company-refresh.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-companies-list',
   templateUrl: './companies-list.component.html',
   styleUrls: ['./companies-list.component.scss']
 })
-export class CompaniesListComponent implements OnInit {
+export class CompaniesListComponent implements OnInit, OnDestroy {
   companies: Company[] = [];
   filteredCompanies: Company[] = [];
   isLoading = true;
@@ -24,47 +26,31 @@ export class CompaniesListComponent implements OnInit {
   scheduledActivitiesMap: {[companyId: string]: number} = {};
   activeQuotationsMap: {[companyId: string]: number} = {};
 
+  // Subscription to handle component cleanup
+  private refreshSubscription: Subscription | null = null;
+
   constructor(
     private companyService: CompanyService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private companyRefreshService: CompanyRefreshService
   ) {}
 
   ngOnInit(): void {
     this.loadCompanies();
 
-    // For testing purposes, add a button to add a test scheduled activity
-    setTimeout(() => {
-      console.log('Adding test button for scheduled activities');
-      const container = document.querySelector('.container');
-      if (container) {
-        const testButton = document.createElement('button');
-        testButton.textContent = 'Add Test Scheduled Activity';
-        testButton.className = 'btn-primary mt-4';
-        testButton.addEventListener('click', () => this.addTestScheduledActivity());
-        container.prepend(testButton);
-      }
-    }, 1000);
+    // Subscribe to call scheduling events
+    this.refreshSubscription = this.companyRefreshService.callScheduled$.subscribe(companyId => {
+      console.log('Company list received notification of scheduled call for company:', companyId);
+      this.loadCompanies();
+    });
   }
 
-  // Test function to add a scheduled activity
-  addTestScheduledActivity(): void {
-    if (this.companies.length === 0) {
-      this.notificationService.error('No companies available');
-      return;
+  ngOnDestroy(): void {
+    // Clean up subscription when component is destroyed
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
     }
-
-    // Get the first company
-    const company = this.companies[0];
-    console.log(`Adding test scheduled activity for company: ${company.name} (${company.id})`);
-
-    // Update the scheduledActivitiesMap
-    this.scheduledActivitiesMap[company.id] = (this.scheduledActivitiesMap[company.id] || 0) + 1;
-    console.log('Updated scheduledActivitiesMap:', this.scheduledActivitiesMap);
-
-    // Force a refresh of the component
-    this.filteredCompanies = [...this.companies];
-    this.notificationService.success(`Added test scheduled activity for ${company.name}`);
   }
 
   loadCompanies(): void {

@@ -62,11 +62,11 @@
                     </svg>
                     Call
                   </a>
-                  <button (click)="scheduleCall(contact, $event)" class="text-amber-600 hover:text-amber-800 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <button (click)="scheduleCall(contact, $event)" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded flex items-center text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Schedule
+                    Schedule Call
                   </button>
                 </div>
                 <!-- Scheduled call indicator -->
@@ -109,11 +109,11 @@
                     </svg>
                     Call
                   </a>
-                  <button (click)="scheduleCall(contact, $event)" class="text-amber-600 hover:text-amber-800 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <button (click)="scheduleCall(contact, $event)" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded flex items-center text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Schedule
+                    Schedule Call
                   </button>
                 </div>
                 <!-- Scheduled call indicator -->
@@ -175,7 +175,7 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <div class="flex justify-end space-x-2">
-                <button (click)="scheduleCall(contact, $event)" class="text-amber-600 hover:text-amber-800 flex items-center">
+                <button (click)="scheduleCall(contact, $event)" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -205,3 +205,8 @@
   (closed)="closeCallModal()"
   (saved)="handleCallSaved($event)">
 </app-call-modal>
+
+<!-- Debug info -->
+<div *ngIf="showCallModal" style="display: none;">
+  Modal should be open. Contact: {{ selectedContact?.first_name }} {{ selectedContact?.last_name }}
+</div>

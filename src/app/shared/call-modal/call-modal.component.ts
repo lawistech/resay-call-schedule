@@ -1,6 +1,6 @@
 // src/app/shared/call-modal/call-modal.component.ts
 
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnChanges, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Contact } from '../../core/models/contact.model';
 import { Call } from '../../core/models/call.model';
@@ -37,11 +37,23 @@ export class CallModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('CallModalComponent initialized, isOpen:', this.isOpen);
+    console.log('Contact:', this.contact);
+
     // Set minDate to current date/time for the datetime-local input
     const now = new Date();
     this.minDate = now.toISOString().slice(0, 16);
-    
+
     this.initForm();
+  }
+
+  ngOnChanges(): void {
+    console.log('CallModalComponent changes detected, isOpen:', this.isOpen);
+    console.log('Contact:', this.contact);
+
+    if (this.isOpen && this.contact) {
+      this.initForm();
+    }
   }
 
   initForm(): void {
@@ -58,11 +70,11 @@ export class CallModalComponent implements OnInit {
 
     if (this.isEditing && this.call) {
       // Format dates for the form
-      const scheduledAt = this.call.scheduled_at 
+      const scheduledAt = this.call.scheduled_at
         ? new Date(this.call.scheduled_at).toISOString().slice(0, 16)
         : '';
-      
-      const followUpDate = this.call.follow_up_date 
+
+      const followUpDate = this.call.follow_up_date
         ? new Date(this.call.follow_up_date).toISOString().slice(0, 16)
         : '';
 
@@ -89,26 +101,26 @@ export class CallModalComponent implements OnInit {
     }
 
     this.isLoading = true;
-    
+
     try {
       const formValues = { ...this.callForm.value };
-      
+
       // Always set the status to scheduled for new calls
       if (!this.isEditing) {
         formValues.status = 'scheduled';
       }
-      
+
       // Set contact_id if we have a contact
       if (this.contact && !formValues.contact_id) {
         formValues.contact_id = this.contact.id;
       }
-      
+
       // Check if this is the first call for the contact
       const isFirstCall = await this.checkIsFirstCall(formValues.contact_id);
       formValues.is_first_call = isFirstCall;
-      
+
       let result;
-      
+
       if (this.isEditing && this.call) {
         // Update existing call
         result = await this.supabaseService.updateCall(this.call.id, formValues);
@@ -124,7 +136,7 @@ export class CallModalComponent implements OnInit {
       this.notificationService.success(
         this.isEditing ? 'Call updated successfully' : 'Call scheduled successfully'
       );
-      
+
       // Check if data exists and has at least one element before accessing it
       if (result.data && Array.isArray(result.data) && result.data.length > 0) {
         this.saved.emit(result.data[0]);
@@ -152,18 +164,18 @@ export class CallModalComponent implements OnInit {
     try {
       // Only check if this is a new call (not editing)
       if (this.isEditing) return false;
-      
+
       const { data, error } = await this.supabaseService.supabaseClient
         .from('calls')
         .select('id')
         .eq('contact_id', contactId)
         .limit(1);
-        
+
       if (error) {
         console.error('Error checking first call status:', error);
         return false;
       }
-      
+
       // If no calls found, it's the first call
       return !data || data.length === 0;
     } catch (error) {
@@ -175,7 +187,7 @@ export class CallModalComponent implements OnInit {
   setImportance(value: number): void {
     this.callForm.patchValue({ importance: value });
   }
-  
+
   getImportanceLabel(value: number | undefined): string {
     switch(value) {
       case 1: return 'Very Low';
