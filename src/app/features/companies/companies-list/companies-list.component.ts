@@ -20,8 +20,9 @@ export class CompaniesListComponent implements OnInit {
   // View mode toggle
   viewMode: 'grid' | 'table' = 'grid';
 
-  // Scheduled activities tracking
+  // Scheduled activities and active quotations tracking
   scheduledActivitiesMap: {[companyId: string]: number} = {};
+  activeQuotationsMap: {[companyId: string]: number} = {};
 
   constructor(
     private companyService: CompanyService,
@@ -72,8 +73,10 @@ export class CompaniesListComponent implements OnInit {
       next: (data) => {
         this.companies = data.companies;
         this.scheduledActivitiesMap = data.scheduledActivitiesMap;
+        this.activeQuotationsMap = data.activeQuotationsMap;
         this.filteredCompanies = [...this.companies];
         console.log('Companies loaded with scheduled activities:', this.scheduledActivitiesMap);
+        console.log('Companies loaded with active quotations:', this.activeQuotationsMap);
 
         // Log which companies have scheduled activities
         this.companies.forEach(company => {
@@ -122,7 +125,7 @@ export class CompaniesListComponent implements OnInit {
         next: () => {
           this.loadCompanies();
         },
-        error: (error) => {
+        error: () => {
           this.notificationService.error('Failed to delete company');
         }
       });
@@ -147,15 +150,49 @@ export class CompaniesListComponent implements OnInit {
 
   // Check if a company has scheduled activities
   hasScheduledActivities(companyId: string): boolean {
-    const hasActivities = !!this.scheduledActivitiesMap[companyId];
-    console.log(`Checking if company ${companyId} has activities: ${hasActivities}`);
-    return hasActivities;
+    return !!this.scheduledActivitiesMap[companyId];
   }
 
   // Get the number of scheduled activities for a company
   getScheduledActivitiesCount(companyId: string): number {
-    const count = this.scheduledActivitiesMap[companyId] || 0;
-    console.log(`Getting activity count for company ${companyId}: ${count}`);
-    return count;
+    return this.scheduledActivitiesMap[companyId] || 0;
+  }
+
+  // Check if a company has active quotations
+  hasActiveQuotations(companyId: string): boolean {
+    return !!this.activeQuotationsMap[companyId];
+  }
+
+  // Get the number of active quotations for a company
+  getActiveQuotationsCount(companyId: string): number {
+    return this.activeQuotationsMap[companyId] || 0;
+  }
+
+  // Get the CSS class for the company card based on its status
+  getCompanyCardClass(company: Company): string {
+    let classes = 'bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer ';
+
+    if (this.hasActiveQuotations(company.id)) {
+      classes += 'border-l-4 border-blue-500 shadow-lg bg-blue-50 ';
+    } else if (this.hasScheduledActivities(company.id)) {
+      classes += 'border-l-4 border-amber-500 shadow-md ';
+    } else {
+      classes += 'shadow-md ';
+    }
+
+    return classes;
+  }
+
+  // Get the CSS class for the company row in table view
+  getCompanyRowClass(company: Company): string {
+    let classes = 'hover:bg-gray-50 cursor-pointer ';
+
+    if (this.hasActiveQuotations(company.id)) {
+      classes += 'border-l-4 border-blue-500 bg-blue-50 ';
+    } else if (this.hasScheduledActivities(company.id)) {
+      classes += 'border-l-4 border-amber-500 ';
+    }
+
+    return classes;
   }
 }

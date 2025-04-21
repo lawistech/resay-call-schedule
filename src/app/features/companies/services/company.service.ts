@@ -1,6 +1,6 @@
 // src/app/features/companies/services/company.service.ts
 import { Injectable } from '@angular/core';
-import { Observable, from, throwError, map, catchError, switchMap, of } from 'rxjs';
+import { Observable, from, throwError, map, catchError, switchMap, of, combineLatest } from 'rxjs';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -91,13 +91,20 @@ export class CompanyService {
     );
   }
 
-  // Get companies with scheduled activities (calls or contacts with scheduled status)
-  getCompaniesWithScheduledCalls(): Observable<{companies: Company[], scheduledActivitiesMap: {[companyId: string]: number}}> {
+  // Get companies with active quotations and scheduled activities
+  getCompaniesWithScheduledCalls(): Observable<{companies: Company[], scheduledActivitiesMap: {[companyId: string]: number}, activeQuotationsMap: {[companyId: string]: number}}> {
+    console.log('Getting companies with active quotations and scheduled calls');
+
     // First get all companies
-    console.log('Getting companies with scheduled calls');
     return this.getCompanies().pipe(
       switchMap(companies => {
-        // Get all scheduled calls
+        // Get active quotations (draft or sent status)
+        const quotationsPromise = this.supabaseService.supabaseClient
+          .from('quotations')
+          .select('id, company_id, status')
+          .in('status', ['draft', 'sent']);
+
+        // Get scheduled calls
         const callsPromise = this.supabaseService.supabaseClient
           .from('calls')
           .select(`
@@ -107,71 +114,117 @@ export class CompanyService {
           .eq('status', 'scheduled')
           .gte('scheduled_at', new Date().toISOString());
 
-        // Get all contacts with scheduled status
+        // Get contacts with scheduled status
         const contactsPromise = this.supabaseService.supabaseClient
           .from('contacts')
           .select('id, company_id, schedule, status')
           .eq('status', 'scheduled');
 
-        // Combine both promises
-        return from(Promise.all([callsPromise, contactsPromise])).pipe(
-          map(([callsResponse, contactsResponse]) => {
-            if (callsResponse.error) throw callsResponse.error;
-            if (contactsResponse.error) throw contactsResponse.error;
+        // Combine all promises
+        return from(Promise.all([quotationsPromise, callsPromise, contactsPromise])).pipe(
+          map(([quotationsResponse, callsResponse, contactsResponse]) => {
+            if (quotationsResponse.error) {
+              console.error('Error fetching quotations:', quotationsResponse.error);
+              throw quotationsResponse.error;
+            }
+            if (callsResponse.error) {
+              console.error('Error fetching calls:', callsResponse.error);
+              throw callsResponse.error;
+            }
+            if (contactsResponse.error) {
+              console.error('Error fetching contacts:', contactsResponse.error);
+              throw contactsResponse.error;
+            }
 
+            console.log('Active quotations data:', quotationsResponse.data);
             console.log('Scheduled calls data:', callsResponse.data);
             console.log('Scheduled contacts data:', contactsResponse.data);
 
-            // Create a map of company IDs to scheduled activities count
+            // Create maps for tracking
+            const activeQuotationsMap: {[companyId: string]: number} = {};
             const scheduledActivitiesMap: {[companyId: string]: number} = {};
 
-            // Count scheduled calls for each company
+            // Process active quotations
+            quotationsResponse.data.forEach(quotation => {
+              if (quotation.company_id) {
+                const companyId = quotation.company_id;
+                activeQuotationsMap[companyId] = (activeQuotationsMap[companyId] || 0) + 1;
+                console.log(`Company ${companyId} has ${activeQuotationsMap[companyId]} active quotation(s)`);
+              }
+            });
+
+            // Process scheduled calls
             callsResponse.data.forEach(call => {
               if (call.contact && call.contact.company_id) {
                 const companyId = call.contact.company_id;
                 scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
-                console.log(`Added scheduled call for company ${companyId}`);
               }
             });
 
-            // Count contacts with scheduled status for each company
+            // Process contacts with scheduled status
             contactsResponse.data.forEach(contact => {
               if (contact.company_id) {
                 const companyId = contact.company_id;
                 scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
-                console.log(`Added contact with scheduled status for company ${companyId}`);
               }
             });
 
+            console.log('Active quotations map:', activeQuotationsMap);
             console.log('Scheduled activities map:', scheduledActivitiesMap);
 
-            // Sort companies by scheduled activities (companies with activities first)
+            // Sort companies: first by active quotations, then by scheduled activities
             const sortedCompanies = [...companies].sort((a, b) => {
-              const aHasActivities = scheduledActivitiesMap[a.id] ? 1 : 0;
-              const bHasActivities = scheduledActivitiesMap[b.id] ? 1 : 0;
+              // Check if companies have active quotations
+              const aHasQuotations = !!activeQuotationsMap[a.id];
+              const bHasQuotations = !!activeQuotationsMap[b.id];
 
-              // First sort by whether they have activities
+              // If one has quotations and the other doesn't, prioritize the one with quotations
+              if (aHasQuotations !== bHasQuotations) {
+                return aHasQuotations ? -1 : 1;
+              }
+
+              // If both have quotations, sort by number of quotations
+              if (aHasQuotations && bHasQuotations) {
+                const quotationDiff = activeQuotationsMap[b.id] - activeQuotationsMap[a.id];
+                if (quotationDiff !== 0) return quotationDiff;
+              }
+
+              // If tied on quotations, check scheduled activities
+              const aHasActivities = !!scheduledActivitiesMap[a.id];
+              const bHasActivities = !!scheduledActivitiesMap[b.id];
+
               if (aHasActivities !== bHasActivities) {
-                return bHasActivities - aHasActivities;
+                return aHasActivities ? -1 : 1;
               }
 
               // If both have activities, sort by number of activities
               if (aHasActivities && bHasActivities) {
-                return scheduledActivitiesMap[b.id] - scheduledActivitiesMap[a.id];
+                const activityDiff = scheduledActivitiesMap[b.id] - scheduledActivitiesMap[a.id];
+                if (activityDiff !== 0) return activityDiff;
               }
 
-              // If neither has activities, sort alphabetically
+              // If still tied, sort alphabetically by name
               return a.name.localeCompare(b.name);
+            });
+
+            // Add metrics to companies
+            sortedCompanies.forEach(company => {
+              if (!company.metrics) {
+                company.metrics = {};
+              }
+              company.metrics.activeQuotations = activeQuotationsMap[company.id] || 0;
+              company.metrics.scheduledCalls = scheduledActivitiesMap[company.id] || 0;
             });
 
             return {
               companies: sortedCompanies,
+              activeQuotationsMap,
               scheduledActivitiesMap
             };
           }),
           catchError(error => {
-            console.error('Error fetching scheduled activities:', error);
-            this.notificationService.error(`Failed to fetch scheduled activities: ${error.message}`);
+            console.error('Error processing company data:', error);
+            this.notificationService.error(`Failed to load company data: ${error.message}`);
             return throwError(() => error);
           })
         );
@@ -393,16 +446,70 @@ export class CompanyService {
 
   // Calculate company metrics
   calculateCompanyMetrics(companyId: string): Observable<Company['metrics']> {
-    // This would involve multiple queries to calculate metrics
-    // For now, we'll return a placeholder implementation
-    return this.getCompanyContacts(companyId).pipe(
-      map(contacts => {
+    // Get contacts for this company
+    const contactsPromise = this.getCompanyContacts(companyId).pipe(
+      map(contacts => contacts.length)
+    );
+
+    // Get active quotations count
+    const quotationsPromise = from(this.supabaseService.supabaseClient
+      .from('quotations')
+      .select('id')
+      .eq('company_id', companyId)
+      .in('status', ['draft', 'sent'])
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        return response.data.length;
+      })
+    );
+
+    // Get scheduled calls count
+    const scheduledCallsPromise = this.getCompanyContacts(companyId).pipe(
+      switchMap(contacts => {
+        if (contacts.length === 0) return of(0);
+
+        const contactIds = contacts.map(contact => contact.id);
+        return from(this.supabaseService.supabaseClient
+          .from('calls')
+          .select('id')
+          .in('contact_id', contactIds)
+          .eq('status', 'scheduled')
+          .gte('scheduled_at', new Date().toISOString())
+        ).pipe(
+          map(response => {
+            if (response.error) throw response.error;
+            return response.data.length;
+          })
+        );
+      })
+    );
+
+    // Combine all metrics
+    return combineLatest([
+      contactsPromise,
+      quotationsPromise,
+      scheduledCallsPromise
+    ]).pipe(
+      map(([contactCount, activeQuotations, scheduledCalls]) => {
         return {
           totalOrderValue: 0, // Would need to sum from orders table
-          activeQuotations: 0, // Would need to count from quotations table
-          contactCount: contacts.length,
+          activeQuotations,
+          scheduledCalls,
+          contactCount,
           lastContactDate: new Date().toISOString() // Would need to get from communications
         };
+      }),
+      catchError(error => {
+        console.error('Error calculating company metrics:', error);
+        // Return default metrics on error
+        return of({
+          totalOrderValue: 0,
+          activeQuotations: 0,
+          scheduledCalls: 0,
+          contactCount: 0,
+          lastContactDate: new Date().toISOString()
+        });
       })
     );
   }

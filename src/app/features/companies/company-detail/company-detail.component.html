@@ -67,7 +67,7 @@
         </div>
 
         <!-- Company Metrics -->
-        <div class="grid grid-cols-2 gap-4 mt-4 md:mt-0 md:ml-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 md:mt-0 md:ml-6">
           <div class="bg-gray-50 p-3 rounded-lg text-center">
             <p class="text-xs text-gray-500 mb-1">Total Orders Value</p>
             <p class="text-lg font-semibold">${{ company.metrics?.totalOrderValue || 0 }}</p>
@@ -77,10 +77,14 @@
             <p class="text-lg font-semibold">{{ company.metrics?.activeQuotations || 0 }}</p>
           </div>
           <div class="bg-gray-50 p-3 rounded-lg text-center">
+            <p class="text-xs text-gray-500 mb-1">Scheduled Calls</p>
+            <p class="text-lg font-semibold">{{ company.metrics?.scheduledCalls || 0 }}</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg text-center">
             <p class="text-xs text-gray-500 mb-1">Contacts</p>
             <p class="text-lg font-semibold">{{ company.metrics?.contactCount || 0 }}</p>
           </div>
-          <div class="bg-gray-50 p-3 rounded-lg text-center">
+          <div class="bg-gray-50 p-3 rounded-lg text-center md:col-span-2">
             <p class="text-xs text-gray-500 mb-1">Last Contact</p>
             <p class="text-lg font-semibold">{{ formatDate(company.metrics?.lastContactDate) }}</p>
           </div>

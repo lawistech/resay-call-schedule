@@ -4,6 +4,8 @@ import { CompanyService } from '../../services/company.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { Contact } from '../../../../core/models/contact.model';
 import { Router } from '@angular/router';
+import { Call } from '../../../../core/models/call.model';
+import { SupabaseService } from '../../../../core/services/supabase.service';
 
 @Component({
   selector: 'app-company-people',
@@ -20,14 +22,21 @@ export class CompanyPeopleComponent implements OnInit {
   decisionMakers: Contact[] = [];
   departmentContacts: { [department: string]: Contact[] } = {};
 
+  // For call scheduling
+  showCallModal = false;
+  selectedContact: Contact | null = null;
+  scheduledCalls: { [contactId: string]: Call } = {};
+
   constructor(
     private companyService: CompanyService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private supabaseService: SupabaseService
   ) {}
 
   ngOnInit(): void {
     this.loadContacts();
+    this.loadScheduledCalls();
   }
 
   loadContacts(): void {
@@ -111,5 +120,75 @@ export class CompanyPeopleComponent implements OnInit {
 
   getDepartments(): string[] {
     return Object.keys(this.departmentContacts).sort();
+  }
+
+  // Call scheduling methods
+  scheduleCall(contact: Contact, event?: MouseEvent): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    this.selectedContact = contact;
+    this.showCallModal = true;
+  }
+
+  closeCallModal(): void {
+    this.showCallModal = false;
+    this.selectedContact = null;
+  }
+
+  handleCallSaved(call: Call): void {
+    this.loadScheduledCalls();
+    this.notificationService.success('Call scheduled successfully');
+  }
+
+  // Load scheduled calls for all contacts in this company
+  loadScheduledCalls(): void {
+    if (!this.companyId) return;
+
+    this.supabaseService.supabaseClient
+      .from('calls')
+      .select(`
+        *,
+        contact:contacts(id, company_id)
+      `)
+      .eq('status', 'scheduled')
+      .gte('scheduled_at', new Date().toISOString())
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error loading scheduled calls:', error);
+          return;
+        }
+
+        // Reset the scheduled calls map
+        this.scheduledCalls = {};
+
+        // Filter calls for contacts in this company
+        data?.forEach(call => {
+          if (call.contact && call.contact.company_id === this.companyId) {
+            this.scheduledCalls[call.contact_id] = call;
+          }
+        });
+
+        console.log('Scheduled calls for company contacts:', this.scheduledCalls);
+      });
+  }
+
+  // Check if a contact has a scheduled call
+  hasScheduledCall(contactId: string): boolean {
+    return !!this.scheduledCalls[contactId];
+  }
+
+  // Get the scheduled call for a contact
+  getScheduledCall(contactId: string): Call | null {
+    return this.scheduledCalls[contactId] || null;
+  }
+
+  // Format date for display
+  formatDate(date: string): string {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 }

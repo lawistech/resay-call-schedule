@@ -9,6 +9,7 @@ export interface Company {
   metrics?: {
     totalOrderValue?: number;
     activeQuotations?: number;
+    scheduledCalls?: number;
     contactCount?: number;
     lastContactDate?: string;
   };

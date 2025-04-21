@@ -62,6 +62,19 @@
                     </svg>
                     Call
                   </a>
+                  <button (click)="scheduleCall(contact, $event)" class="text-amber-600 hover:text-amber-800 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Schedule
+                  </button>
+                </div>
+                <!-- Scheduled call indicator -->
+                <div *ngIf="hasScheduledCall(contact.id)" class="mt-2 text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full inline-flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Call scheduled: {{ formatDate(getScheduledCall(contact.id)?.scheduled_at || '') }}
                 </div>
               </div>
             </div>
@@ -96,6 +109,19 @@
                     </svg>
                     Call
                   </a>
+                  <button (click)="scheduleCall(contact, $event)" class="text-amber-600 hover:text-amber-800 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Schedule
+                  </button>
+                </div>
+                <!-- Scheduled call indicator -->
+                <div *ngIf="hasScheduledCall(contact.id)" class="mt-2 text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full inline-flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Call scheduled: {{ formatDate(getScheduledCall(contact.id)?.scheduled_at || '') }}
                 </div>
               </div>
             </div>
@@ -148,7 +174,22 @@
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button (click)="viewContact(contact.id)" class="text-blue-600 hover:text-blue-900">View</button>
+              <div class="flex justify-end space-x-2">
+                <button (click)="scheduleCall(contact, $event)" class="text-amber-600 hover:text-amber-800 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Schedule Call
+                </button>
+                <button (click)="viewContact(contact.id)" class="text-blue-600 hover:text-blue-900">View</button>
+              </div>
+              <!-- Scheduled call indicator -->
+              <div *ngIf="hasScheduledCall(contact.id)" class="mt-2 text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full inline-flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ formatDate(getScheduledCall(contact.id)?.scheduled_at || '') }}
+              </div>
             </td>
           </tr>
         </tbody>
@@ -156,3 +197,11 @@
     </div>
   </div>
 </div>
+
+<!-- Call Modal -->
+<app-call-modal
+  [isOpen]="showCallModal"
+  [contact]="selectedContact"
+  (closed)="closeCallModal()"
+  (saved)="handleCallSaved($event)">
+</app-call-modal>
