@@ -158,6 +158,7 @@ export class CompanyService {
               if (call.contact && call.contact.company_id) {
                 const companyId = call.contact.company_id;
                 scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
+                console.log(`Company ${companyId} has a scheduled call with contact ${call.contact.id}`);
               }
             });
 

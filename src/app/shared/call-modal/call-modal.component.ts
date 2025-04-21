@@ -6,6 +6,7 @@ import { Contact } from '../../core/models/contact.model';
 import { Call } from '../../core/models/call.model';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { CompanyRefreshService } from '../../features/companies/services/company-refresh.service';
 
 @Component({
   selector: 'app-call-modal',
@@ -33,7 +34,8 @@ export class CallModalComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private supabaseService: SupabaseService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private companyRefreshService: CompanyRefreshService
   ) {}
 
   ngOnInit(): void {
@@ -139,17 +141,32 @@ export class CallModalComponent implements OnInit {
 
       // Check if data exists and has at least one element before accessing it
       if (result.data && Array.isArray(result.data) && result.data.length > 0) {
-        this.saved.emit(result.data[0]);
+        const savedCall = result.data[0];
+        this.saved.emit(savedCall);
+
+        // Notify that a call has been scheduled for this company
+        if (this.contact && this.contact.company_id) {
+          console.log('Notifying company refresh service for company ID:', this.contact.company_id);
+          this.companyRefreshService.notifyCallScheduled(this.contact.company_id);
+        }
       } else {
         // If no data returned, emit a basic response
-        this.saved.emit({
+        const basicCall = {
           id: this.call?.id || 'temp-id',
           contact_id: formValues.contact_id,
           status: 'scheduled',
           reason: formValues.reason,
           scheduled_at: formValues.scheduled_at,
           method: formValues.method
-        } as Call);
+        } as Call;
+
+        this.saved.emit(basicCall);
+
+        // Notify that a call has been scheduled for this company
+        if (this.contact && this.contact.company_id) {
+          console.log('Notifying company refresh service for company ID:', this.contact.company_id);
+          this.companyRefreshService.notifyCallScheduled(this.contact.company_id);
+        }
       }
 
       this.close();

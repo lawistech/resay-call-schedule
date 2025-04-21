@@ -4,19 +4,20 @@ import { SupabaseService } from '../../core/services/supabase.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Call } from '../../core/models/call.model';
 import { Contact } from '../../core/models/contact.model';
-import { 
-  format, 
-  isToday, 
-  isTomorrow, 
-  startOfToday, 
-  endOfToday, 
-  startOfTomorrow, 
-  endOfTomorrow, 
-  startOfWeek, 
-  endOfWeek, 
-  parseISO 
+import {
+  format,
+  isToday,
+  isTomorrow,
+  startOfToday,
+  endOfToday,
+  startOfTomorrow,
+  endOfTomorrow,
+  startOfWeek,
+  endOfWeek,
+  parseISO
 } from 'date-fns';
 import { CallStateService } from '../../core/services/call-state.service';
+import { CompanyRefreshService } from '../../features/companies/services/company-refresh.service';
 
 @Component({
   selector: 'app-schedule',
@@ -34,11 +35,11 @@ export class ScheduleComponent implements OnInit {
   selectedCall: Call | null = null;
   selectedContact: Contact | null = null;
   filterView: 'all' | 'today' | 'tomorrow' | 'week' = 'today'; // Default to today's view
-  
+
   // Grouping
   groupedEvents: { [key: string]: any[] } = {};
   dateKeys: string[] = [];
-  
+
   // Search and filters
   searchTerm = '';
   selectedStatus = '';
@@ -47,12 +48,13 @@ export class ScheduleComponent implements OnInit {
   constructor(
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
-    private callStateService: CallStateService
+    private callStateService: CallStateService,
+    private companyRefreshService: CompanyRefreshService
   ) {}
 
   ngOnInit(): void {
     this.loadScheduleData();
-    
+
     // Check if there's an active call that needs a post-call modal
     const activeCall = this.callStateService.getActiveCall();
     if (activeCall && this.callStateService.shouldShowPostCallModal()) {
@@ -64,39 +66,39 @@ export class ScheduleComponent implements OnInit {
   async loadScheduleData(): Promise<void> {
     try {
       this.isLoading = true;
-      
+
       // Get all calls from Supabase
       const { data: calls, error: callsError } = await this.supabaseService.getCalls();
-      
+
       if (callsError) {
         throw callsError;
       }
-      
+
       // Filter for upcoming calls (status = scheduled)
       this.upcomingCalls = (calls || [])
         .filter(call => call.status === 'scheduled')
         .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
-      
+
       // Get contacts with schedule dates
       const today = new Date();
       const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-      
+
       // Get contacts scheduled for today onwards
-      const { data: contacts, error: contactsError } = 
+      const { data: contacts, error: contactsError } =
         await this.supabaseService.getContactsWithScheduleForDate(dateStr);
-      
+
       if (contactsError) {
         throw contactsError;
       }
-      
+
       this.scheduledContacts = contacts || [];
-      
+
       // Combine both data sources into a unified timeline
       this.combineEvents();
-      
+
       // Apply the initial filter (default view)
       this.applyFilters();
-      
+
     } catch (error: any) {
       this.notificationService.error('Failed to load schedule data: ' + error.message);
     } finally {
@@ -113,7 +115,7 @@ export class ScheduleComponent implements OnInit {
   for (const call of this.upcomingCalls) {
     try {
       let callDate = new Date(call.scheduled_at);  // Changed from const to let
-      
+
       // Get yesterday's date by subtracting 24 hours from now
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
@@ -128,7 +130,7 @@ export class ScheduleComponent implements OnInit {
         // Replace the callDate with a new date set to 1 hour from now
         callDate = new Date(now.getTime() + 60 * 60 * 1000); // 60 min * 60 sec * 1000 ms
       }
-      
+
       // Only include calls with valid dates
       if (!isNaN(callDate.getTime())) {
         this.combinedEvents.push({
@@ -150,21 +152,21 @@ export class ScheduleComponent implements OnInit {
       if (contact.schedule) {
         try {
           let contactDate = new Date(contact.schedule);
-          
+
           // Get yesterday's date by subtracting 24 hours from now
           const yesterday = new Date();
           yesterday.setDate(yesterday.getDate() - 1);
-          
+
           // Check if the contact schedule is in the past (overdue)
           const isOverdue = contactDate < yesterday;
-          
+
           // If overdue, create a new date object for rescheduling (same approach as calls)
           if (isOverdue) {
             const now = new Date();
             // Create a new date set to 1 hour from now
             contactDate = new Date(now.getTime() + 60 * 60 * 1000); // 60 min * 60 sec * 1000 ms
           }
-          
+
           if (!isNaN(contactDate.getTime())) {
             this.combinedEvents.push({
               type: 'contact',
@@ -188,74 +190,74 @@ export class ScheduleComponent implements OnInit {
   applyFilters(): void {
     // Start with all combined events
     let filtered = [...this.combinedEvents];
-    
+
     // Apply time filter
     if (this.filterView !== 'all') {
       const now = new Date();
-      
+
       if (this.filterView === 'today') {
-        filtered = filtered.filter(event => 
+        filtered = filtered.filter(event =>
           event.date >= startOfToday() && event.date <= endOfToday()
         );
       } else if (this.filterView === 'tomorrow') {
-        filtered = filtered.filter(event => 
+        filtered = filtered.filter(event =>
           event.date >= startOfTomorrow() && event.date <= endOfTomorrow()
         );
       } else if (this.filterView === 'week') {
-        filtered = filtered.filter(event => 
+        filtered = filtered.filter(event =>
           event.date >= startOfWeek(now) && event.date <= endOfWeek(now)
         );
       }
     }
-    
+
     // Apply search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(event => 
-        event.title.toLowerCase().includes(term) || 
+      filtered = filtered.filter(event =>
+        event.title.toLowerCase().includes(term) ||
         event.contact?.first_name?.toLowerCase().includes(term) ||
         event.contact?.last_name?.toLowerCase().includes(term) ||
         event.contact?.email?.toLowerCase().includes(term) ||
         event.contact?.company?.name?.toLowerCase().includes(term)
       );
     }
-    
+
     // Apply status filter (only applies to calls)
     if (this.selectedStatus) {
-      filtered = filtered.filter(event => 
+      filtered = filtered.filter(event =>
         event.type !== 'call' || (event.data as Call).status === this.selectedStatus
       );
     }
-    
+
     // Apply method filter (only applies to calls)
     if (this.selectedMethod) {
-      filtered = filtered.filter(event => 
+      filtered = filtered.filter(event =>
         event.type !== 'call' || (event.data as Call).method === this.selectedMethod
       );
     }
-    
+
     // Group events by date
     this.groupEvents(filtered);
   }
-  
+
   groupEvents(events: any[]): void {
     // Reset the grouping
     this.groupedEvents = {};
-    
+
     // Group events by their date (day)
     events.forEach(event => {
       // Ensure we have a valid date before proceeding
       if (event.date instanceof Date && !isNaN(event.date.getTime())) {
         const dateKey = format(event.date, 'yyyy-MM-dd');
-        
+
         if (!this.groupedEvents[dateKey]) {
           this.groupedEvents[dateKey] = [];
         }
-        
+
         this.groupedEvents[dateKey].push(event);
       }
     });
-    
+
     // Sort the keys by date
     this.dateKeys = Object.keys(this.groupedEvents).sort();
   }
@@ -278,7 +280,7 @@ export class ScheduleComponent implements OnInit {
   formatEventTime(date: Date): string {
     return format(date, 'h:mm a');
   }
-  
+
   // New method to format the short month name for date badges
   formatShortMonth(dateKey: string): string {
     return format(new Date(dateKey), 'MMM');
@@ -312,11 +314,11 @@ export class ScheduleComponent implements OnInit {
         completed_at: new Date().toISOString(),
         notes: data.notes
       });
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.notificationService.success('Call marked as completed');
       this.loadScheduleData(); // Refresh the data
     } catch (error: any) {
@@ -328,17 +330,24 @@ export class ScheduleComponent implements OnInit {
 
   async handleCallRescheduled(data: {callId: string, scheduledAt: string, notes: string}): Promise<void> {
     try {
-      const { error } = await this.supabaseService.updateCall(data.callId, {
+      const { error, data: updatedCall } = await this.supabaseService.updateCall(data.callId, {
         scheduled_at: data.scheduledAt,
         notes: data.notes
       });
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.notificationService.success('Call rescheduled successfully');
       this.loadScheduleData(); // Refresh the data
+
+      // Notify that a call has been rescheduled for this company
+      if (this.selectedCall && this.selectedCall.contact && this.selectedCall.contact.company_id) {
+        console.log('Schedule component notifying company refresh service for company ID after reschedule:',
+          this.selectedCall.contact.company_id);
+        this.companyRefreshService.notifyCallScheduled(this.selectedCall.contact.company_id);
+      }
     } catch (error: any) {
       this.notificationService.error('Failed to reschedule call: ' + error.message);
     } finally {
@@ -348,6 +357,13 @@ export class ScheduleComponent implements OnInit {
 
   handleCallSaved(): void {
     this.loadScheduleData(); // Refresh the data
+
+    // Notify that a call has been scheduled for this company
+    if (this.selectedContact && this.selectedContact.company_id) {
+      console.log('Schedule component notifying company refresh service for company ID:', this.selectedContact.company_id);
+      this.companyRefreshService.notifyCallScheduled(this.selectedContact.company_id);
+    }
+
     this.closeCallModal();
   }
 
@@ -357,20 +373,20 @@ export class ScheduleComponent implements OnInit {
       this.notificationService.warning('No phone number available for this contact');
       return;
     }
-    
+
     // Save call state in the service before any navigation
     this.callStateService.setActiveCall(call);
-    
+
     // Set local component state
     this.selectedCall = call;
     this.showPostCallModal = true;
-    
+
     // If we have an event, prevent default behavior
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
-    
+
     // For phone calls, use a different approach
     window.location.href = `tel:${call.contact.phone}`;
   }
@@ -393,7 +409,7 @@ export class ScheduleComponent implements OnInit {
   getEventNotes(event: any): string {
     return event.data?.notes || '';
   }
-  
+
   // Helper method to get importance label
   getImportanceLabel(value: number | undefined): string {
     switch(value) {
@@ -420,10 +436,10 @@ export class ScheduleComponent implements OnInit {
       event.preventDefault();
       event.stopPropagation();
     }
-    
+
     this.selectedCall = call;
     this.showPostCallModal = true;
-    
+
     // Set a small timeout to ensure the modal is initialized before setting action
     setTimeout(() => {
       // Access the post-call modal component and set the action to 'reschedule'
