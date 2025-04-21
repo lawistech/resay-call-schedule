@@ -42,7 +42,11 @@ export class CompaniesListComponent implements OnInit, OnDestroy {
     // Subscribe to call scheduling events
     this.refreshSubscription = this.companyRefreshService.callScheduled$.subscribe(companyId => {
       console.log('Company list received notification of scheduled call for company:', companyId);
-      this.loadCompanies();
+      // Reload companies to update the indicators
+      setTimeout(() => {
+        console.log('Reloading companies after call scheduling notification');
+        this.loadCompanies();
+      }, 100);
     });
   }
 

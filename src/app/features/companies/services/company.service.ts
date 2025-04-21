@@ -104,7 +104,7 @@ export class CompanyService {
           .select('id, company_id, status')
           .in('status', ['draft', 'sent']);
 
-        // Get scheduled calls
+        // Get scheduled calls - make sure to include all scheduled calls
         const callsPromise = this.supabaseService.supabaseClient
           .from('calls')
           .select(`
@@ -159,6 +159,8 @@ export class CompanyService {
                 const companyId = call.contact.company_id;
                 scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
                 console.log(`Company ${companyId} has a scheduled call with contact ${call.contact.id}`);
+              } else {
+                console.log('Warning: Scheduled call without company_id:', call);
               }
             });
 
@@ -167,6 +169,9 @@ export class CompanyService {
               if (contact.company_id) {
                 const companyId = contact.company_id;
                 scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
+                console.log(`Company ${companyId} has a scheduled contact with id ${contact.id}`);
+              } else {
+                console.log('Warning: Scheduled contact without company_id:', contact);
               }
             });
 

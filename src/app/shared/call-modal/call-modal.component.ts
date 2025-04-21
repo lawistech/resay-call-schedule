@@ -147,7 +147,12 @@ export class CallModalComponent implements OnInit {
         // Notify that a call has been scheduled for this company
         if (this.contact && this.contact.company_id) {
           console.log('Notifying company refresh service for company ID:', this.contact.company_id);
-          this.companyRefreshService.notifyCallScheduled(this.contact.company_id);
+          // Make sure to notify the company refresh service
+          setTimeout(() => {
+            this.companyRefreshService.notifyCallScheduled(this.contact!.company_id!);
+          }, 0);
+        } else {
+          console.error('Cannot notify company refresh service: contact or company_id is missing', this.contact);
         }
       } else {
         // If no data returned, emit a basic response
@@ -165,7 +170,12 @@ export class CallModalComponent implements OnInit {
         // Notify that a call has been scheduled for this company
         if (this.contact && this.contact.company_id) {
           console.log('Notifying company refresh service for company ID:', this.contact.company_id);
-          this.companyRefreshService.notifyCallScheduled(this.contact.company_id);
+          // Make sure to notify the company refresh service
+          setTimeout(() => {
+            this.companyRefreshService.notifyCallScheduled(this.contact!.company_id!);
+          }, 0);
+        } else {
+          console.error('Cannot notify company refresh service: contact or company_id is missing', this.contact);
         }
       }
 
