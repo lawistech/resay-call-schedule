@@ -75,66 +75,92 @@
   <div *ngIf="!isLoading && filteredCompanies.length > 0 && viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div *ngFor="let company of filteredCompanies"
          (click)="viewCompany(company.id)"
-         [ngClass]="getCompanyCardClass(company)">
-      <div class="p-6">
-        <div class="flex justify-between items-start">
-          <div>
-            <div class="flex items-center">
-              <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ company.name }}</h3>
-              <div *ngIf="hasScheduledActivities(company.id)" class="ml-2 px-2 py-1 bg-amber-200 text-amber-800 text-xs font-medium rounded-full flex items-center border border-amber-400 shadow-sm" title="This company has scheduled calls">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="font-bold">{{ getScheduledActivitiesCount(company.id) }} call{{ getScheduledActivitiesCount(company.id) > 1 ? 's' : '' }}</span>
-              </div>
-              <div *ngIf="hasActiveQuotations(company.id)" class="ml-2 px-2 py-1 bg-blue-200 text-blue-800 text-xs font-medium rounded-full flex items-center border border-blue-400 shadow-sm" title="This company has active quotations">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span class="font-bold">{{ getActiveQuotationsCount(company.id) }} quotation{{ getActiveQuotationsCount(company.id) > 1 ? 's' : '' }}</span>
-              </div>
+         [ngClass]="getCompanyCardClass(company)"
+         class="transition-all duration-300 hover:scale-102 hover:shadow-xl">
+      <!-- Company Header -->
+      <div class="p-5 border-b border-gray-100 flex justify-between items-start">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <h3 class="text-lg font-semibold text-gray-900">{{ company.name }}</h3>
+            <div *ngIf="hasScheduledActivities(company.id)" class="px-2 py-1 bg-amber-200 text-amber-800 text-xs font-medium rounded-full flex items-center border border-amber-400 shadow-sm" title="This company has scheduled calls">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="font-bold">{{ getScheduledActivitiesCount(company.id) }} call{{ getScheduledActivitiesCount(company.id) > 1 ? 's' : '' }}</span>
             </div>
-            <p *ngIf="company.industry" class="text-sm text-gray-600 mb-2">{{ company.industry }}</p>
+            <div *ngIf="hasActiveQuotations(company.id)" class="px-2 py-1 bg-blue-200 text-blue-800 text-xs font-medium rounded-full flex items-center border border-blue-400 shadow-sm" title="This company has active quotations">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span class="font-bold">{{ getActiveQuotationsCount(company.id) }} quotation{{ getActiveQuotationsCount(company.id) > 1 ? 's' : '' }}</span>
+            </div>
           </div>
-          <div class="flex space-x-1">
-            <button (click)="editCompany(company.id, $event)" class="p-1 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-            </button>
-            <button (click)="deleteCompany(company.id, $event)" class="p-1 text-gray-500 hover:text-red-600 rounded-full hover:bg-gray-100">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+          <div *ngIf="company.industry" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            {{ company.industry }}
           </div>
         </div>
+        <button (click)="editCompany(company.id, $event)" class="p-1.5 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </button>
+      </div>
 
-        <div class="mt-4 space-y-2">
+      <!-- Company Body -->
+      <div class="p-5">
+        <!-- Contact Information -->
+        <div class="space-y-3">
           <div *ngIf="company.website" class="flex items-center text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-            </svg>
-            <a href="{{ company.website }}" target="_blank" class="text-blue-600 hover:underline" (click)="$event.stopPropagation()">{{ company.website }}</a>
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-0.5">Website</p>
+              <a href="{{ company.website }}" target="_blank" class="text-blue-600 hover:underline font-medium" (click)="$event.stopPropagation()">{{ company.website }}</a>
+            </div>
           </div>
+
           <div *ngIf="company.address" class="flex items-center text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span class="text-gray-600">{{ company.address }}</span>
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-0.5">Address</p>
+              <span class="text-gray-800 font-medium">{{ company.address }}</span>
+            </div>
           </div>
+
+
         </div>
 
         <!-- Company Metrics Preview -->
-        <div *ngIf="company.metrics" class="mt-4 grid grid-cols-2 gap-2">
-          <div class="bg-gray-50 p-2 rounded">
-            <p class="text-xs text-gray-500">Active Quotes</p>
-            <p class="text-lg font-semibold" [class.text-blue-600]="company.metrics && company.metrics.activeQuotations">{{ company.metrics && company.metrics.activeQuotations || 0 }}</p>
+        <div class="mt-5 grid grid-cols-2 gap-3">
+          <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-medium text-blue-800">Active Quotes</p>
+              <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+            </div>
+            <p class="text-xl font-bold text-blue-800 mt-1">{{ company.metrics && company.metrics.activeQuotations || 0 }}</p>
           </div>
-          <div class="bg-gray-50 p-2 rounded">
-            <p class="text-xs text-gray-500">Scheduled Calls</p>
-            <p class="text-lg font-semibold" [class.text-amber-600]="hasScheduledActivities(company.id)">{{ getScheduledActivitiesCount(company.id) }}</p>
+          <div class="bg-amber-50 p-3 rounded-lg border border-amber-100 shadow-sm">
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-medium text-amber-800">Scheduled Calls</p>
+              <div class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            <p class="text-xl font-bold text-amber-800 mt-1">{{ getScheduledActivitiesCount(company.id) }}</p>
           </div>
         </div>
       </div>
@@ -201,8 +227,7 @@
             <div *ngIf="!hasActiveQuotations(company.id)" class="text-sm text-gray-500">0</div>
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <button (click)="editCompany(company.id, $event)" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-            <button (click)="deleteCompany(company.id, $event)" class="text-red-600 hover:text-red-900">Delete</button>
+            <button (click)="editCompany(company.id, $event)" class="text-blue-600 hover:text-blue-900 px-3 py-1 rounded border border-blue-200 hover:bg-blue-50 transition-colors">Edit</button>
           </td>
         </tr>
       </tbody>

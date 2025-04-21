@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { CompanyRefreshService } from '../../../features/companies/services/company-refresh.service';
 import { Contact } from '../../../core/models/contact.model';
 import { Call } from '../../../core/models/call.model';
 
@@ -18,7 +19,7 @@ export class ContactDetailComponent implements OnInit {
   isLoading = true;
   showEditModal = false;
   showCallModal = false;
-  
+
   // Add these new properties
   activeTab: 'details' | 'opportunity' | 'history' | 'calls' = 'details';
 
@@ -27,7 +28,8 @@ export class ContactDetailComponent implements OnInit {
     private router: Router,
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
-    private clipboard: Clipboard
+    private clipboard: Clipboard,
+    private companyRefreshService: CompanyRefreshService
   ) {}
 
   ngOnInit(): void {
@@ -42,29 +44,29 @@ export class ContactDetailComponent implements OnInit {
   async loadContactData(): Promise<void> {
     try {
       this.isLoading = true;
-      
+
       // Fetch contact data
       const { data: contact, error: contactError } = await this.supabaseService.getContactById(this.contactId);
-      
+
       if (contactError) {
         throw contactError;
       }
-      
+
       if (!contact) {
         throw new Error('Contact not found');
       }
-      
+
       this.contact = contact;
-      
+
       // Load contact calls
       const { data: calls, error: callsError } = await this.supabaseService.getCalls();
-      
+
       if (callsError) {
         throw callsError;
       }
-      
+
       this.contactCalls = (calls || []).filter(call => call.contact_id === this.contactId);
-      
+
     } catch (error: any) {
       this.notificationService.error('Failed to load contact: ' + error.message);
       this.router.navigate(['/contacts']);
@@ -72,9 +74,9 @@ export class ContactDetailComponent implements OnInit {
       this.isLoading = false;
     }
   }
-  
+
   // Add these methods that are referenced in the template
-  
+
   // For copying text to clipboard
   copyToClipboard(text: string): void {
     this.clipboard.copy(text);
@@ -116,6 +118,19 @@ export class ContactDetailComponent implements OnInit {
     this.showCallModal = true;
   }
 
+  // Handle call saved event
+  handleCallSaved(call: Call): void {
+    this.loadContactData();
+
+    // Notify the company refresh service if the contact has a company_id
+    if (this.contact && this.contact.company_id) {
+      console.log('Contact detail notifying company refresh service for company ID:', this.contact.company_id);
+      this.companyRefreshService.notifyCallScheduled(this.contact.company_id);
+    }
+
+    this.showCallModal = false;
+  }
+
   // Call-related methods
   viewCallDetails(call: Call): void {
     this.router.navigate(['/call-history', call.id]);
@@ -128,7 +143,7 @@ export class ContactDetailComponent implements OnInit {
 
   calculateCallSuccessRate(): number {
     if (!this.contactCalls || this.contactCalls.length === 0) return 0;
-    
+
     const completedCalls = this.getCallCountByStatus('completed');
     return Math.round((completedCalls / this.contactCalls.length) * 100);
   }
@@ -136,14 +151,14 @@ export class ContactDetailComponent implements OnInit {
   // For the opportunity pipeline progress
   calculateProgress(): number {
     if (!this.contact) return 0;
-    
+
     // This is a simplified example. Adjust according to your opportunity stages
     if (this.contact.status === 'Active') return 100;
     if (this.contact.key1_quoted) return 80;
     if (this.contact.quote_no) return 60;
     if (this.contact.status === 'In Progress') return 40;
     if (this.contact.status === 'Prospect') return 20;
-    
+
     return 10; // Default minimal progress
   }
 

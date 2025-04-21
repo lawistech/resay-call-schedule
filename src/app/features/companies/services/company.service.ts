@@ -111,8 +111,8 @@ export class CompanyService {
             *,
             contact:contacts(id, company_id)
           `)
-          .eq('status', 'scheduled')
-          .gte('scheduled_at', new Date().toISOString());
+          .eq('status', 'scheduled');
+          // Removed the date filter to include all scheduled calls
 
         // Get contacts with scheduled status
         const contactsPromise = this.supabaseService.supabaseClient
@@ -160,7 +160,20 @@ export class CompanyService {
                 scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
                 console.log(`Company ${companyId} has a scheduled call with contact ${call.contact.id}`);
               } else {
-                console.log('Warning: Scheduled call without company_id:', call);
+                // Try to get company_id from the contact_id
+                if (call.contact_id) {
+                  // Find the contact in the contacts response
+                  const contact = contactsResponse.data.find(c => c.id === call.contact_id);
+                  if (contact && contact.company_id) {
+                    const companyId = contact.company_id;
+                    scheduledActivitiesMap[companyId] = (scheduledActivitiesMap[companyId] || 0) + 1;
+                    console.log(`Company ${companyId} has a scheduled call with contact ${call.contact_id} (found via contact_id)`);
+                  } else {
+                    console.log('Warning: Scheduled call without company_id and contact not found:', call);
+                  }
+                } else {
+                  console.log('Warning: Scheduled call without company_id and contact_id:', call);
+                }
               }
             });
 
