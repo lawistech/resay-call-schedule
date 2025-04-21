@@ -12,8 +12,9 @@ export class TodaysScheduledCallsComponent implements OnInit {
   @Input() maxCalls: number = 5;
   @Output() viewCallDetails = new EventEmitter<string>();
   @Output() initiateCall = new EventEmitter<Call>();
-  @Output() rescheduleCall = new EventEmitter<Call>(); // New output for rescheduling
-  
+  @Output() rescheduleCall = new EventEmitter<Call>(); // Output for rescheduling
+  @Output() completeCall = new EventEmitter<string>(); // New output for completing calls
+
   constructor() {}
 
   ngOnInit(): void {}
@@ -39,10 +40,17 @@ export class TodaysScheduledCallsComponent implements OnInit {
     this.initiateCall.emit(call);
   }
 
-  // New method for rescheduling calls
+  // Method for rescheduling calls
   onRescheduleCall(call: Call, event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
     this.rescheduleCall.emit(call);
+  }
+
+  // New method for completing calls
+  onCompleteCall(callId: string, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.completeCall.emit(callId);
   }
 }

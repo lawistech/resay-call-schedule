@@ -1,11 +1,11 @@
 <!-- src/app/features/dashboard/components/todays-scheduled-calls/todays-scheduled-calls.component.html -->
 <div class="card">
   <h2 class="text-lg font-semibold text-stone-800 mb-4">Today's Scheduled Calls</h2>
-  
+
   <div *ngIf="todaysScheduledCalls.length === 0" class="text-center py-6 text-stone-500">
     No calls scheduled for today
   </div>
-  
+
   <div *ngIf="todaysScheduledCalls.length > 0" class="space-y-4">
     <div *ngFor="let call of todaysScheduledCalls" class="flex items-start pb-3 border-b border-stone-200 last:border-b-0 hover:bg-stone-50 rounded-md p-2 transition-colors cursor-pointer"
          (click)="onViewCallDetails(call.id, $event)">
@@ -19,35 +19,35 @@
             'bg-purple-100 text-purple-800': call.lead_source === 'androidepos',
             'bg-yellow-100 text-yellow-800': !call.lead_source
           }">
-            {{ call.lead_source ? (call.lead_source === 'resay' ? 'Resay' : 
-                                   call.lead_source === 'barcodesforbusiness' ? 'BCB' : 
-                                   call.lead_source === 'androidepos' ? 'AE' : 
+            {{ call.lead_source ? (call.lead_source === 'resay' ? 'Resay' :
+                                   call.lead_source === 'barcodesforbusiness' ? 'BCB' :
+                                   call.lead_source === 'androidepos' ? 'AE' :
                                    call.lead_source) : 'Unknown Source' }}
           </span>
         </div>
       </div>
-      
+
       <div class="flex-1">
         <!-- Contact Name with Company in brackets -->
         <div class="flex items-center">
           <div class="font-bold text-stone-900">
             {{ call.contact?.first_name }} {{ call.contact?.last_name }}
             <span *ngIf="call.contact?.company?.name" class="font-normal text-stone-600"> [
-              <a [href]="'/companies/' + call.contact?.company?.id" 
-                target="_blank" 
+              <a [href]="'/companies/' + call.contact?.company?.id"
+                target="_blank"
                 class="text-blue-600 hover:underline hover:text-blue-800"
                 (click)="$event.stopPropagation()">
                 {{ call.contact?.company?.name }}
               </a>
             ]</span>
           </div>
-          
-         
+
+
         </div>
-        
+
         <!-- Call Reason -->
         <div class="text-stone-700 mt-1">{{ call.reason }}</div>
-        
+
         <!-- Importance Indicator -->
         <div *ngIf="call.importance" class="flex items-center mt-1">
           <div class="flex space-x-1 items-center">
@@ -61,7 +61,7 @@
             </ng-container>
           </div>
         </div>
-        
+
         <!-- Phone Number -->
          <!-- First Call Indicator -->
          <div *ngIf="call.is_first_call" class="ml-2 px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full flex items-center">
@@ -71,7 +71,7 @@
           First Call
         </div>
       </div>
-      
+
       <div class="flex flex-col space-y-2">
         <button (click)="onInitiateCall(call, $event)" class="btn btn-success text-xs py-1 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,8 +79,16 @@
           </svg>
           Call
         </button>
-        
-        <!-- Added Reschedule Button -->
+
+        <!-- Complete Button -->
+        <button (click)="onCompleteCall(call.id, $event)" class="btn btn-primary text-xs py-1 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          Complete
+        </button>
+
+        <!-- Reschedule Button -->
         <button (click)="onRescheduleCall(call, $event)" class="btn btn-secondary text-xs py-1 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
