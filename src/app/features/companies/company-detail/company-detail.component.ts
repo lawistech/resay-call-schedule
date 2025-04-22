@@ -17,7 +17,7 @@ import { Subscription } from 'rxjs';
 export class CompanyDetailComponent implements OnInit, OnDestroy {
   company: Company | null = null;
   isLoading = true;
-  activeTab: 'overview' | 'people' | 'communication' | 'opportunities' = 'overview';
+  activeTab: 'overview' | 'people' | 'communication' | 'opportunities' | 'scheduled-calls' = 'overview';
   companyId: string = '';
 
   // Subscription to handle component cleanup
@@ -103,7 +103,7 @@ export class CompanyDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  setActiveTab(tab: 'overview' | 'people' | 'communication' | 'opportunities'): void {
+  setActiveTab(tab: 'overview' | 'people' | 'communication' | 'opportunities' | 'scheduled-calls'): void {
     console.log('Setting active tab:', tab);
     this.activeTab = tab;
 

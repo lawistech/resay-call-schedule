@@ -40,7 +40,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboardData();
-    
+
     // Check if there's an active call that needs a post-call modal
     const activeCall = this.callStateService.getActiveCall();
     if (activeCall && this.callStateService.shouldShowPostCallModal()) {
@@ -53,40 +53,40 @@ export class DashboardComponent implements OnInit {
   async loadDashboardData(): Promise<void> {
     try {
       this.isLoading = true;
-      
+
       // Fetch calls data
       const { data: calls, error: callsError } = await this.supabaseService.getCalls();
-      
+
       if (callsError) {
         throw callsError;
       }
-      
+
       this.calls = calls || [];
-      
+
       // Calculate call stats
       this.calculateCallStats();
-      
+
       // Get today's date as string (YYYY-MM-DD)
       const today = new Date().toISOString().split('T')[0];
-      
+
       // Filter for today's scheduled calls and overdue calls
       this.scheduledCalls = this.calls.filter(call => {
         const callDate = new Date(call.scheduled_at);
         const now = new Date();
-        
-        // Include if: 
+
+        // Include if:
         // 1. Scheduled for today
         // 2. Status is 'scheduled'
         // 3. OR it's overdue (past date with status still 'scheduled')
         const isForToday = call.scheduled_at.startsWith(today);
         const isOverdue = callDate < now && call.status === 'scheduled';
-        
+
         return (isForToday || isOverdue) && call.status === 'scheduled';
       }).sort((a, b) => {
         // Sort by scheduled time
         return new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime();
       });
-      
+
       // Add an 'isOverdue' property to identify overdue calls
       this.scheduledCalls = this.scheduledCalls.map(call => {
         const callDate = new Date(call.scheduled_at);
@@ -94,7 +94,7 @@ export class DashboardComponent implements OnInit {
         call.isOverdue = callDate < now;
         return call;
       });
-      
+
     } catch (error: any) {
       this.notificationService.error('Failed to load dashboard data: ' + error.message);
     } finally {
@@ -104,45 +104,45 @@ export class DashboardComponent implements OnInit {
 
   calculateCallStats(): void {
     const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
-    
+
     // Calculate today's calls
-    const todayCalls = this.calls.filter(call => 
+    const todayCalls = this.calls.filter(call =>
       call.scheduled_at.startsWith(today)
     );
-    
+
     this.callStats.todayCalls = todayCalls.length;
-    
+
     // Calculate completed calls
-    const completedCalls = this.calls.filter(call => 
+    const completedCalls = this.calls.filter(call =>
       call.status === 'completed'
     );
-    
+
     this.callStats.completedCalls = completedCalls.length;
-    
+
     // Calculate completion rate
-    this.callStats.completionRate = this.calls.length > 0 
-      ? Math.round((completedCalls.length / this.calls.length) * 100) 
+    this.callStats.completionRate = this.calls.length > 0
+      ? Math.round((completedCalls.length / this.calls.length) * 100)
       : 0;
-    
+
     // Calculate calls by method
     const methodCounts: {[key: string]: number} = {};
-    
+
     this.calls.forEach(call => {
       const method = call.method || 'phone';
       methodCounts[method] = (methodCounts[method] || 0) + 1;
     });
-    
+
     this.callStats.callsByMethod = Object.entries(methodCounts)
       .map(([method, count]) => ({ method, count }))
       .sort((a, b) => b.count - a.count);
-    
+
     // Calculate calls by status
     const statusCounts: {[key: string]: number} = {};
-    
+
     this.calls.forEach(call => {
       statusCounts[call.status] = (statusCounts[call.status] || 0) + 1;
     });
-    
+
     this.callStats.callsByStatus = Object.entries(statusCounts)
       .map(([status, count]) => ({ status, count }))
       .sort((a, b) => b.count - a.count);
@@ -159,26 +159,40 @@ export class DashboardComponent implements OnInit {
     return this.calls.filter(call => call.status === 'scheduled').length;
   }
 
-  markCallAsCompleted(callId: string): void {
+  async markCallAsCompleted(callId: string): Promise<void> {
     // Find the call index
     const callIndex = this.calls.findIndex(call => call.id === callId);
-    
+
     if (callIndex === -1) {
       return;
     }
-    
-    // Update call status in the local state
-    this.calls[callIndex] = {
-      ...this.calls[callIndex],
-      status: 'completed',
-      completed_at: new Date().toISOString()
-    };
-    
-    // Recalculate stats
-    this.calculateCallStats();
-    
-    // Show a notification
-    this.notificationService.success('Call marked as completed');
+
+    try {
+      // Update call in the database
+      const { error } = await this.supabaseService.updateCall(callId, {
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Update call status in the local state
+      this.calls[callIndex] = {
+        ...this.calls[callIndex],
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      };
+
+      // Recalculate stats
+      this.calculateCallStats();
+
+      // Show a notification
+      this.notificationService.success('Call marked as completed');
+    } catch (error: any) {
+      this.notificationService.error('Failed to mark call as completed: ' + error.message);
+    }
   }
 
   // Now this will open the call detail view
@@ -189,7 +203,7 @@ export class DashboardComponent implements OnInit {
   // For initiating calls
   initiateCall(call: Call): void {
     this.notificationService.info('Initiating call... (Demo feature)');
-    
+
     // In a real implementation, this would use a native dialer or VoIP service
     if (call.contact?.phone) {
       window.location.href = `tel:${call.contact.phone}`;
@@ -207,7 +221,7 @@ export class DashboardComponent implements OnInit {
     this.showPostCallModal = false;
     this.selectedCall = null;
     this.callStateService.clearActiveCall();
-  }  
+  }
 
   async handleCallCompleted(data: {callId: string, notes: string}): Promise<void> {
     try {
@@ -216,11 +230,11 @@ export class DashboardComponent implements OnInit {
         completed_at: new Date().toISOString(),
         notes: data.notes
       });
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.notificationService.success('Call marked as completed');
       this.loadDashboardData(); // Refresh the data
     } catch (error: any) {
@@ -236,11 +250,11 @@ export class DashboardComponent implements OnInit {
         scheduled_at: data.scheduledAt,
         notes: data.notes
       });
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.notificationService.success('Call rescheduled successfully');
       this.loadDashboardData(); // Refresh the data
     } catch (error: any) {
@@ -275,15 +289,15 @@ export class DashboardComponent implements OnInit {
     if (this.syncInProgress) {
       return;
     }
-    
+
     try {
       this.syncInProgress = true;
       this.notificationService.info('Syncing contacts with external systems...');
-      
+
       // Call your sync service method here
       // For demo purposes, we'll just simulate a delay
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Simulate successful sync
       this.notificationService.success('Contacts synced successfully');
       this.loadDashboardData(); // Refresh the data
@@ -301,7 +315,7 @@ export class DashboardComponent implements OnInit {
   openRescheduleModal(call: Call): void {
     this.selectedCall = call;
     this.showPostCallModal = true;
-    
+
     // Set a small timeout to ensure the modal is initialized before setting action
     setTimeout(() => {
       // Access the post-call modal component and set the action to 'reschedule'

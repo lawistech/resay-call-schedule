@@ -1,0 +1,102 @@
+<!-- src/app/features/companies/company-detail/company-scheduled-calls/company-scheduled-calls.component.html -->
+<div class="bg-white rounded-lg shadow-md p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h3 class="text-lg font-semibold text-gray-900">Scheduled Calls</h3>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+    <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  </div>
+
+  <!-- No Scheduled Calls -->
+  <div *ngIf="!isLoading && scheduledCalls.length === 0" class="text-center py-8">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">No scheduled calls</h3>
+    <p class="text-gray-500 mb-4">There are no upcoming calls scheduled with this company</p>
+  </div>
+
+  <!-- Scheduled Calls List -->
+  <div *ngIf="!isLoading && scheduledCalls.length > 0" class="space-y-4">
+    <div *ngFor="let call of scheduledCalls" class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <div class="p-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+          <!-- Call Info -->
+          <div class="mb-4 md:mb-0">
+            <div class="flex items-center mb-2">
+              <div class="mr-3 text-center min-w-[50px]">
+                <div class="text-primary font-bold">{{ formatTime(call.scheduled_at) }}</div>
+                <div class="text-xs text-gray-500 mt-1">{{ formatDate(call.scheduled_at) }}</div>
+              </div>
+
+              <div>
+                <h4 class="text-lg font-medium text-gray-900">
+                  {{ call.contact?.first_name }} {{ call.contact?.last_name }}
+                </h4>
+                <div class="flex flex-wrap items-center gap-2 mt-1">
+                  <span *ngIf="call.contact?.job_title" class="text-sm text-gray-600">
+                    {{ call.contact?.job_title }}
+                  </span>
+
+                  <span *ngIf="call.method" [class]="getCallMethodClass(call.method) + ' px-2 py-0.5 text-xs rounded-full'">
+                    {{ capitalize(call.method) }}
+                  </span>
+
+                  <span *ngIf="call.is_first_call" class="bg-yellow-100 text-yellow-800 px-2 py-0.5 text-xs rounded-full flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="currentColor" viewBox="0 0 24 24" stroke="none">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    First Call
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="call.reason" class="text-sm text-gray-600 mt-2">
+              <span class="font-medium">Reason:</span> {{ call.reason }}
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap gap-2">
+            <button (click)="initiateCall(call, $event)" class="btn-success text-xs py-1.5 px-3 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              Call Now
+            </button>
+
+            <button (click)="markCallAsCompleted(call.id)" class="btn-primary text-xs py-1.5 px-3 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Complete
+            </button>
+
+            <button (click)="openRescheduleModal(call)" class="btn-secondary text-xs py-1.5 px-3 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Reschedule
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Call Modal for Rescheduling -->
+<app-call-modal
+  *ngIf="showRescheduleModal && selectedCall"
+  [isOpen]="showRescheduleModal"
+  [call]="selectedCall"
+  [isEditing]="true"
+  (closed)="closeRescheduleModal()"
+  (saved)="handleCallSaved()">
+</app-call-modal>

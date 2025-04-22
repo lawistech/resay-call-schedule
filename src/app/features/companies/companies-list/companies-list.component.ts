@@ -162,9 +162,9 @@ export class CompaniesListComponent implements OnInit, OnDestroy {
   getCompanyCardClass(company: Company): string {
     let classes = 'bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer ';
 
-    if (this.hasActiveQuotations(company.id)) {
+    if (this.getActiveQuotationsCount(company.id) > 0) {
       classes += 'border-l-4 border-blue-500 shadow-lg bg-blue-50 ';
-    } else if (this.hasScheduledActivities(company.id)) {
+    } else if (this.getScheduledActivitiesCount(company.id) > 0) {
       classes += 'border-l-4 border-amber-500 shadow-md ';
     } else {
       classes += 'shadow-md ';
@@ -177,9 +177,9 @@ export class CompaniesListComponent implements OnInit, OnDestroy {
   getCompanyRowClass(company: Company): string {
     let classes = 'hover:bg-gray-50 cursor-pointer ';
 
-    if (this.hasActiveQuotations(company.id)) {
+    if (this.getActiveQuotationsCount(company.id) > 0) {
       classes += 'border-l-4 border-blue-500 bg-blue-50 ';
-    } else if (this.hasScheduledActivities(company.id)) {
+    } else if (this.getScheduledActivitiesCount(company.id) > 0) {
       classes += 'border-l-4 border-amber-500 ';
     }
 

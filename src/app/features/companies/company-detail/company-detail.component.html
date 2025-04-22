@@ -17,12 +17,6 @@
         </svg>
         Edit
       </button>
-      <button (click)="deleteCompany()" class="btn-danger flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-        Delete
-      </button>
     </div>
   </div>
 
@@ -142,7 +136,19 @@
             [class.hover:text-gray-700]="activeTab !== 'opportunities'"
             [class.hover:border-gray-300]="activeTab !== 'opportunities'"
           >
-            Products & Opportunities
+            Products & Quotations
+          </button>
+          <button
+            (click)="setActiveTab('scheduled-calls')"
+            class="py-4 px-6 text-center border-b-2 font-medium text-sm focus:outline-none"
+            [class.border-stone-800]="activeTab === 'scheduled-calls'"
+            [class.text-stone-800]="activeTab === 'scheduled-calls'"
+            [class.border-transparent]="activeTab !== 'scheduled-calls'"
+            [class.text-gray-500]="activeTab !== 'scheduled-calls'"
+            [class.hover:text-gray-700]="activeTab !== 'scheduled-calls'"
+            [class.hover:border-gray-300]="activeTab !== 'scheduled-calls'"
+          >
+            Scheduled Calls
           </button>
         </nav>
       </div>
@@ -214,6 +220,11 @@
       <!-- Products & Opportunities Tab -->
       <div *ngIf="activeTab === 'opportunities'">
         <app-company-opportunities [companyId]="companyId"></app-company-opportunities>
+      </div>
+
+      <!-- Scheduled Calls Tab -->
+      <div *ngIf="activeTab === 'scheduled-calls'">
+        <app-company-scheduled-calls [companyId]="companyId"></app-company-scheduled-calls>
       </div>
     </div>
   </div>
