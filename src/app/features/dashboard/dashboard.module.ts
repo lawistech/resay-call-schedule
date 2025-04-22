@@ -10,6 +10,7 @@ import { RecentCallsComponent } from './components/recent-calls/recent-calls.com
 import { UpcomingCallsComponent } from './components/upcoming-calls/upcoming-calls.component';
 import { ContactScheduleComponent } from './components/contact-schedule/contact-schedule.component';
 import { TodaysScheduledCallsComponent } from './components/todays-scheduled-calls/todays-scheduled-calls.component';
+import { QuotationDetailsModalComponent } from '../quotations/quotation-details-modal/quotation-details-modal.component';
 
 const routes: Routes = [
   { path: '', component: DashboardComponent }
@@ -27,7 +28,8 @@ const routes: Routes = [
   imports: [
     CommonModule,
     SharedModule,
-    RouterModule.forChild(routes)
+    RouterModule.forChild(routes),
+    QuotationDetailsModalComponent
   ],
   exports:[
     DashboardComponent

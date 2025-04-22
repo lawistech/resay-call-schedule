@@ -8,6 +8,11 @@ import { Contact } from '../../core/models/contact.model';
 import { CallStats } from '../../core/models/call-stats.model';
 import { CallStateService } from '../../core/services/call-state.service';
 import { format, isToday } from 'date-fns';
+import { QuotationService } from '../quotations/services/quotation.service';
+import { Quotation } from '../../core/models/quotation.model';
+import { CompanyService } from '../companies/services/company.service';
+import { Company } from '../../core/models/company.model';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -31,11 +36,31 @@ export class DashboardComponent implements OnInit {
   showPostCallModal = false;
   selectedCall: Call | null = null;
 
+  // Dashboard view mode (classic or new)
+  dashboardView: 'classic' | 'new' = 'new'; // Set new as default
+
+  // Quotations data
+  activeQuotations: Quotation[] = [];
+
+  // Companies data
+  companiesWithScheduledCalls: Company[] = [];
+  companiesWithActiveQuotations: Company[] = [];
+  companiesNeedingAttention: any[] = []; // Companies that need attention (combined metric)
+  scheduledActivitiesMap: {[companyId: string]: number} = {};
+  activeQuotationsMap: {[companyId: string]: number} = {};
+
+  // Selected items for modals
+  selectedQuotation: Quotation | null = null;
+  selectedCompany: Company | null = null;
+  showQuotationDetailsModal = false;
+
   constructor(
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
     private callStateService: CallStateService,
-    private router: Router
+    private router: Router,
+    private quotationService: QuotationService,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit(): void {
@@ -46,6 +71,12 @@ export class DashboardComponent implements OnInit {
     if (activeCall && this.callStateService.shouldShowPostCallModal()) {
       this.selectedCall = activeCall;
       this.showPostCallModal = true;
+    }
+
+    // Load saved dashboard view preference
+    const savedView = localStorage.getItem('dashboardView');
+    if (savedView && (savedView === 'classic' || savedView === 'new')) {
+      this.dashboardView = savedView;
     }
   }
 
@@ -94,6 +125,9 @@ export class DashboardComponent implements OnInit {
         call.isOverdue = callDate < now;
         return call;
       });
+
+      // Load quotations and companies data
+      this.loadQuotationsAndCompanies();
 
     } catch (error: any) {
       this.notificationService.error('Failed to load dashboard data: ' + error.message);
@@ -329,5 +363,199 @@ export class DashboardComponent implements OnInit {
         }
       }
     }, 100);
+  }
+
+  /**
+   * Toggle between classic and new dashboard views
+   */
+  toggleDashboardView(): void {
+    this.dashboardView = this.dashboardView === 'classic' ? 'new' : 'classic';
+    // Save preference to localStorage
+    localStorage.setItem('dashboardView', this.dashboardView);
+  }
+
+  /**
+   * Get the number of completed calls in the last 7 days
+   */
+  getRecentCompletedCallsCount(): number {
+    if (!this.calls) return 0;
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    return this.calls.filter(call => {
+      return call.status === 'completed' &&
+             call.completed_at &&
+             new Date(call.completed_at) >= sevenDaysAgo;
+    }).length;
+  }
+
+  /**
+   * Get the number of upcoming calls in the next 7 days
+   */
+  getUpcomingCallsCount(): number {
+    if (!this.calls) return 0;
+
+    const now = new Date();
+    const sevenDaysLater = new Date();
+    sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+
+    return this.calls.filter(call => {
+      if (call.status !== 'scheduled') return false;
+
+      const callDate = new Date(call.scheduled_at);
+      return callDate >= now && callDate <= sevenDaysLater;
+    }).length;
+  }
+
+  /**
+   * Load quotations and companies data
+   */
+  loadQuotationsAndCompanies(): void {
+    console.log('Loading quotations and companies data...');
+    // Create an observable that combines both API calls
+    forkJoin({
+      quotations: this.quotationService.getQuotations(),
+      companies: this.companyService.getCompaniesWithScheduledCalls()
+    }).subscribe({
+      next: (result) => {
+        console.log('Data received:', result);
+        // Process quotations
+        this.activeQuotations = result.quotations.filter(q =>
+          q.status === 'draft' || q.status === 'sent'
+        ).sort((a, b) => {
+          // Sort by most recent first
+          return new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime();
+        });
+        console.log('Active quotations:', this.activeQuotations);
+
+        // Process companies
+        this.scheduledActivitiesMap = result.companies.scheduledActivitiesMap;
+        this.activeQuotationsMap = result.companies.activeQuotationsMap;
+        console.log('Scheduled activities map:', this.scheduledActivitiesMap);
+        console.log('Active quotations map:', this.activeQuotationsMap);
+
+        // Get companies with scheduled calls
+        this.companiesWithScheduledCalls = result.companies.companies.filter(company =>
+          this.scheduledActivitiesMap[company.id] && this.scheduledActivitiesMap[company.id] > 0
+        ).sort((a, b) => {
+          // Sort by most scheduled activities first
+          return (this.scheduledActivitiesMap[b.id] || 0) - (this.scheduledActivitiesMap[a.id] || 0);
+        });
+        console.log('Companies with scheduled calls:', this.companiesWithScheduledCalls);
+
+        // Get companies with active quotations
+        this.companiesWithActiveQuotations = result.companies.companies.filter(company =>
+          this.activeQuotationsMap[company.id] && this.activeQuotationsMap[company.id] > 0
+        ).sort((a, b) => {
+          // Sort by most active quotations first
+          return (this.activeQuotationsMap[b.id] || 0) - (this.activeQuotationsMap[a.id] || 0);
+        });
+        console.log('Companies with active quotations:', this.companiesWithActiveQuotations);
+
+        // Combine companies that need attention (have both scheduled calls and active quotations)
+        const companiesNeedingAttention = new Map();
+
+        // Add companies with scheduled calls
+        this.companiesWithScheduledCalls.forEach(company => {
+          companiesNeedingAttention.set(company.id, {
+            ...company,
+            scheduledCalls: this.scheduledActivitiesMap[company.id] || 0,
+            activeQuotations: this.activeQuotationsMap[company.id] || 0,
+            attentionScore: (this.scheduledActivitiesMap[company.id] || 0) * 2 // Weight scheduled calls higher
+          });
+        });
+
+        // Add or update companies with active quotations
+        this.companiesWithActiveQuotations.forEach(company => {
+          if (companiesNeedingAttention.has(company.id)) {
+            // Update existing entry
+            const existingCompany = companiesNeedingAttention.get(company.id);
+            existingCompany.attentionScore += (this.activeQuotationsMap[company.id] || 0);
+            companiesNeedingAttention.set(company.id, existingCompany);
+          } else {
+            // Add new entry
+            companiesNeedingAttention.set(company.id, {
+              ...company,
+              scheduledCalls: this.scheduledActivitiesMap[company.id] || 0,
+              activeQuotations: this.activeQuotationsMap[company.id] || 0,
+              attentionScore: this.activeQuotationsMap[company.id] || 0
+            });
+          }
+        });
+
+        // Convert map to array and sort by attention score
+        this.companiesNeedingAttention = Array.from(companiesNeedingAttention.values())
+          .sort((a, b) => b.attentionScore - a.attentionScore)
+          .slice(0, 10); // Limit to top 10 companies needing attention
+      },
+      error: (error) => {
+        console.error('Error loading quotations and companies:', error);
+        this.notificationService.error('Failed to load quotations and companies data');
+      }
+    });
+  }
+
+  /**
+   * View quotation details
+   */
+  viewQuotationDetails(quotationId: string): void {
+    this.quotationService.getQuotationById(quotationId).subscribe({
+      next: (quotation) => {
+        this.selectedQuotation = quotation;
+        this.showQuotationDetailsModal = true;
+      },
+      error: (error) => {
+        console.error('Error loading quotation details:', error);
+        this.notificationService.error('Failed to load quotation details');
+        // Fallback to navigation
+        this.router.navigate(['/quotations', quotationId]);
+      }
+    });
+  }
+
+  /**
+   * Close quotation details modal
+   */
+  closeQuotationDetailsModal(): void {
+    this.showQuotationDetailsModal = false;
+    this.selectedQuotation = null;
+  }
+
+  /**
+   * Navigate to company details
+   */
+  viewCompanyDetails(companyId: string): void {
+    this.router.navigate(['/companies', companyId]);
+  }
+
+  /**
+   * Get the number of scheduled activities for a company
+   */
+  getScheduledActivitiesCount(companyId: string): number {
+    return this.scheduledActivitiesMap[companyId] || 0;
+  }
+
+  /**
+   * Get the number of active quotations for a company
+   */
+  getActiveQuotationsCount(companyId: string): number {
+    return this.activeQuotationsMap[companyId] || 0;
+  }
+
+  /**
+   * Format currency
+   */
+  formatCurrency(amount?: number): string {
+    if (amount === undefined || amount === null) return '£0.00';
+    return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
+  }
+
+  /**
+   * Format date
+   */
+  formatDate(dateString?: string): string {
+    if (!dateString) return 'N/A';
+    return format(new Date(dateString), 'dd MMM yyyy');
   }
 }
