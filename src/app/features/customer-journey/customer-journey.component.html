@@ -1,0 +1,183 @@
+<!-- src/app/features/customer-journey/customer-journey.component.html -->
+<div class="customer-journey-container p-6">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-stone-800">Customer Journey Mapping</h1>
+    <p class="text-stone-600">Track and visualize your customer's path from lead to loyal customer</p>
+  </div>
+  
+  <!-- Tab Navigation -->
+  <div class="mb-6 border-b border-stone-200">
+    <nav class="flex space-x-8">
+      <button (click)="changeTab('journey')" class="py-4 px-1 border-b-2 font-medium text-sm" 
+              [ngClass]="activeTab === 'journey' ? 'border-primary text-primary' : 'border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300'">
+        Journey Mapping
+      </button>
+      <button (click)="changeTab('analytics')" class="py-4 px-1 border-b-2 font-medium text-sm"
+              [ngClass]="activeTab === 'analytics' ? 'border-primary text-primary' : 'border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300'">
+        Analytics & Insights
+      </button>
+    </nav>
+  </div>
+  
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+  
+  <!-- Journey Mapping Tab -->
+  <div *ngIf="!isLoading && activeTab === 'journey'" class="journey-tab">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Journey List -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-stone-800">Customer Journeys</h3>
+            <button type="button" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              New Journey
+            </button>
+          </div>
+          
+          <!-- Search and Filter -->
+          <div class="mb-4 space-y-3">
+            <div class="relative">
+              <input type="text" [(ngModel)]="searchTerm" placeholder="Search journeys..." class="block w-full pl-10 pr-3 py-2 border border-stone-300 rounded-md leading-5 bg-white placeholder-stone-500 focus:outline-none focus:placeholder-stone-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+            
+            <select [(ngModel)]="stageFilter" class="block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+              <option value="">All Stages</option>
+              <option *ngFor="let stage of uniqueStages" [value]="stage.id">{{ stage.name }}</option>
+            </select>
+          </div>
+          
+          <!-- Journey List -->
+          <div class="space-y-2 max-h-[600px] overflow-y-auto">
+            <div *ngIf="filteredJourneys.length === 0" class="text-center py-8 text-stone-500">
+              No journeys found. Try adjusting your filters.
+            </div>
+            
+            <div *ngFor="let journey of filteredJourneys" 
+                 (click)="selectJourney(journey)"
+                 class="p-3 border rounded-md cursor-pointer transition-colors"
+                 [ngClass]="selectedJourney?.id === journey.id ? 'border-primary bg-primary-50' : 'border-stone-200 hover:border-stone-300'">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-medium text-stone-800">{{ journey.customerName }}</h4>
+                  <p *ngIf="journey.companyName" class="text-xs text-stone-500">{{ journey.companyName }}</p>
+                </div>
+                <span class="px-2 py-1 text-xs rounded-full"
+                      [ngClass]="{
+                        'bg-blue-100 text-blue-800': journey.currentStage === 'lead',
+                        'bg-green-100 text-green-800': journey.currentStage === 'qualified',
+                        'bg-purple-100 text-purple-800': journey.currentStage === 'opportunity',
+                        'bg-amber-100 text-amber-800': journey.currentStage === 'proposal',
+                        'bg-pink-100 text-pink-800': journey.currentStage === 'negotiation',
+                        'bg-emerald-100 text-emerald-800': journey.currentStage === 'closed',
+                        'bg-teal-100 text-teal-800': journey.currentStage === 'customer',
+                        'bg-violet-100 text-violet-800': journey.currentStage === 'loyal'
+                      }">
+                  {{ journey.stages.find(stage => stage.id === journey.currentStage)?.name || 'Unknown' }}
+                </span>
+              </div>
+              <div class="mt-2 flex justify-between items-center text-xs text-stone-500">
+                <span>{{ journey.totalTouchpoints }} touchpoints</span>
+                <span>Started: {{ journey.startDate | date:'mediumDate' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Create New Journey -->
+        <div class="bg-white rounded-lg shadow-sm p-4">
+          <h3 class="text-md font-semibold text-stone-800 mb-3">Create New Journey</h3>
+          <p class="text-sm text-stone-600 mb-3">Select a contact to generate a journey based on their interactions:</p>
+          
+          <select class="block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md mb-3">
+            <option value="">Select a contact...</option>
+            <option *ngFor="let contact of contacts" [value]="contact.id">
+              {{ contact.first_name }} {{ contact.last_name }}
+              <span *ngIf="contact.company?.name">({{ contact.company?.name }})</span>
+            </option>
+          </select>
+          
+          <button type="button" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+            Generate Journey
+          </button>
+        </div>
+      </div>
+      
+      <!-- Journey Visualization -->
+      <div class="lg:col-span-2">
+        <div *ngIf="!selectedJourney" class="bg-white rounded-lg shadow-sm p-8 text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-stone-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+          </svg>
+          <h3 class="text-lg font-medium text-stone-800 mb-2">No Journey Selected</h3>
+          <p class="text-stone-500 mb-4">Select a customer journey from the list to view details</p>
+        </div>
+        
+        <div *ngIf="selectedJourney">
+          <app-journey-visualization 
+            [journey]="selectedJourney"
+            [selectedStage]="selectedStage">
+          </app-journey-visualization>
+          
+          <!-- Add Touchpoint Button -->
+          <div *ngIf="selectedJourney" class="mt-4 flex justify-end">
+            <button (click)="addTouchpoint()" type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Touchpoint
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Analytics Tab -->
+  <div *ngIf="!isLoading && activeTab === 'analytics'" class="analytics-tab">
+    <app-journey-analytics></app-journey-analytics>
+  </div>
+  
+  <!-- Touchpoint Modal -->
+  <div *ngIf="showTouchpointModal" class="fixed inset-0 overflow-y-auto z-50">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+        <div class="absolute inset-0 bg-stone-500 opacity-75"></div>
+      </div>
+      
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      
+      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="absolute top-0 right-0 pt-4 pr-4">
+          <button (click)="closeTouchpointModal()" type="button" class="bg-white rounded-md text-stone-400 hover:text-stone-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+            <span class="sr-only">Close</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <app-touchpoint-details
+          [touchpoint]="selectedTouchpoint"
+          [isEditing]="isEditingTouchpoint"
+          [customerId]="selectedJourney?.customerId || ''"
+          [companyId]="selectedJourney?.companyId || ''"
+          [journeyId]="selectedJourney?.id || ''"
+          [stageId]="selectedStage?.id || ''"
+          (save)="saveTouchpoint($event)"
+          (cancel)="closeTouchpointModal()">
+        </app-touchpoint-details>
+      </div>
+    </div>
+  </div>
+</div>

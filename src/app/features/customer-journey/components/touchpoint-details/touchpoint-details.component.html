@@ -1,0 +1,116 @@
+<!-- src/app/features/customer-journey/components/touchpoint-details/touchpoint-details.component.html -->
+<div class="touchpoint-details bg-white rounded-lg shadow-sm p-4">
+  <h3 class="text-lg font-semibold text-stone-800 mb-4">
+    {{ isEditing ? (touchpoint ? 'Edit' : 'Add') : 'View' }} Touchpoint
+  </h3>
+  
+  <!-- View Mode -->
+  <div *ngIf="touchpoint && !isEditing" class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <p class="text-sm font-medium text-stone-600">Type</p>
+        <p class="text-stone-800">{{ touchpoint.type.charAt(0).toUpperCase() + touchpoint.type.slice(1) }}</p>
+      </div>
+      
+      <div *ngIf="touchpoint.subtype">
+        <p class="text-sm font-medium text-stone-600">Subtype</p>
+        <p class="text-stone-800">{{ touchpoint.subtype }}</p>
+      </div>
+      
+      <div>
+        <p class="text-sm font-medium text-stone-600">Channel</p>
+        <p class="text-stone-800">{{ touchpoint.channel.charAt(0).toUpperCase() + touchpoint.channel.slice(1) }}</p>
+      </div>
+      
+      <div>
+        <p class="text-sm font-medium text-stone-600">Date & Time</p>
+        <p class="text-stone-800">{{ touchpoint.timestamp | date:'medium' }}</p>
+      </div>
+      
+      <div *ngIf="touchpoint.outcome">
+        <p class="text-sm font-medium text-stone-600">Outcome</p>
+        <p class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+           [ngClass]="{
+             'bg-green-100 text-green-800': touchpoint.outcome === 'positive',
+             'bg-yellow-100 text-yellow-800': touchpoint.outcome === 'neutral',
+             'bg-red-100 text-red-800': touchpoint.outcome === 'negative'
+           }">
+          {{ touchpoint.outcome.charAt(0).toUpperCase() + touchpoint.outcome.slice(1) }}
+        </p>
+      </div>
+    </div>
+    
+    <div *ngIf="touchpoint.description">
+      <p class="text-sm font-medium text-stone-600">Description</p>
+      <p class="text-stone-800">{{ touchpoint.description }}</p>
+    </div>
+    
+    <div *ngIf="touchpoint.notes">
+      <p class="text-sm font-medium text-stone-600">Notes</p>
+      <p class="text-stone-800 whitespace-pre-line">{{ touchpoint.notes }}</p>
+    </div>
+  </div>
+  
+  <!-- Edit/Add Mode -->
+  <form *ngIf="isEditing" [formGroup]="touchpointForm" (ngSubmit)="onSubmit()" class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Type -->
+      <div>
+        <label for="type" class="block text-sm font-medium text-stone-700">Type *</label>
+        <select id="type" formControlName="type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+          <option *ngFor="let type of touchpointTypes" [value]="type.value">{{ type.label }}</option>
+        </select>
+      </div>
+      
+      <!-- Subtype -->
+      <div>
+        <label for="subtype" class="block text-sm font-medium text-stone-700">Subtype</label>
+        <input type="text" id="subtype" formControlName="subtype" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-stone-300 rounded-md">
+      </div>
+      
+      <!-- Channel -->
+      <div>
+        <label for="channel" class="block text-sm font-medium text-stone-700">Channel *</label>
+        <select id="channel" formControlName="channel" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+          <option *ngFor="let channel of channels" [value]="channel.value">{{ channel.label }}</option>
+        </select>
+      </div>
+      
+      <!-- Timestamp -->
+      <div>
+        <label for="timestamp" class="block text-sm font-medium text-stone-700">Date & Time *</label>
+        <input type="datetime-local" id="timestamp" formControlName="timestamp" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-stone-300 rounded-md">
+      </div>
+      
+      <!-- Outcome -->
+      <div>
+        <label for="outcome" class="block text-sm font-medium text-stone-700">Outcome</label>
+        <select id="outcome" formControlName="outcome" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-stone-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md">
+          <option *ngFor="let outcome of outcomes" [value]="outcome.value">{{ outcome.label }}</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- Description -->
+    <div>
+      <label for="description" class="block text-sm font-medium text-stone-700">Description</label>
+      <input type="text" id="description" formControlName="description" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-stone-300 rounded-md">
+    </div>
+    
+    <!-- Notes -->
+    <div>
+      <label for="notes" class="block text-sm font-medium text-stone-700">Notes</label>
+      <textarea id="notes" rows="3" formControlName="notes" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-stone-300 rounded-md"></textarea>
+    </div>
+    
+    <!-- Form Actions -->
+    <div class="flex justify-end space-x-3">
+      <button type="button" (click)="onCancel()" class="px-4 py-2 border border-stone-300 rounded-md shadow-sm text-sm font-medium text-stone-700 bg-white hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+        Cancel
+      </button>
+      <button type="submit" [disabled]="touchpointForm.invalid" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+        Save
+      </button>
+    </div>
+  </form>
+</div>

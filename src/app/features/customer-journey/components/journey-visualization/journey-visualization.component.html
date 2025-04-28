@@ -1,0 +1,125 @@
+<!-- src/app/features/customer-journey/components/journey-visualization/journey-visualization.component.html -->
+<div class="journey-visualization">
+  <!-- Journey Header -->
+  <div *ngIf="journey" class="mb-4">
+    <div class="flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-stone-800">
+        {{ journey.customerName }}'s Journey
+        <span *ngIf="journey.companyName" class="text-stone-500 text-sm ml-2">({{ journey.companyName }})</span>
+      </h3>
+      <div class="text-sm text-stone-500">
+        Started: {{ formatDate(journey.startDate) }}
+      </div>
+    </div>
+    
+    <!-- Current Stage Indicator -->
+    <div class="mt-2 flex items-center">
+      <span class="text-sm font-medium text-stone-600">Current Stage:</span>
+      <span class="ml-2 px-3 py-1 rounded-full text-xs font-medium"
+            [ngClass]="{
+              'bg-blue-100 text-blue-800': journey.currentStage === 'lead',
+              'bg-green-100 text-green-800': journey.currentStage === 'qualified',
+              'bg-purple-100 text-purple-800': journey.currentStage === 'opportunity',
+              'bg-amber-100 text-amber-800': journey.currentStage === 'proposal',
+              'bg-pink-100 text-pink-800': journey.currentStage === 'negotiation',
+              'bg-emerald-100 text-emerald-800': journey.currentStage === 'closed',
+              'bg-teal-100 text-teal-800': journey.currentStage === 'customer',
+              'bg-violet-100 text-violet-800': journey.currentStage === 'loyal'
+            }">
+        {{ journey.stages.find(stage => stage.id === journey.currentStage)?.name || 'Unknown' }}
+      </span>
+      <span class="ml-4 text-sm text-stone-500">
+        {{ journey.totalTouchpoints }} touchpoints
+      </span>
+    </div>
+  </div>
+  
+  <!-- Journey Chart -->
+  <div class="journey-chart-container bg-white rounded-lg shadow-sm p-4 mb-6" style="height: 300px;">
+    <canvas #journeyCanvas></canvas>
+  </div>
+  
+  <!-- Journey Timeline -->
+  <div *ngIf="journey" class="journey-timeline bg-white rounded-lg shadow-sm p-4">
+    <h4 class="text-md font-semibold text-stone-800 mb-3">Journey Timeline</h4>
+    
+    <!-- Timeline visualization -->
+    <div class="relative">
+      <!-- Timeline line -->
+      <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-stone-200"></div>
+      
+      <!-- Timeline stages -->
+      <div *ngFor="let stage of journey.stages; let i = 0; let isLast = last" class="relative pl-10 pb-6">
+        <!-- Stage marker -->
+        <div class="absolute left-2 w-5 h-5 rounded-full mt-1.5 -ml-2.5"
+             [ngClass]="{
+               'bg-blue-400': stage.id === 'lead',
+               'bg-green-400': stage.id === 'qualified',
+               'bg-purple-400': stage.id === 'opportunity',
+               'bg-amber-500': stage.id === 'proposal',
+               'bg-pink-500': stage.id === 'negotiation',
+               'bg-emerald-500': stage.id === 'closed',
+               'bg-teal-500': stage.id === 'customer',
+               'bg-violet-500': stage.id === 'loyal'
+             }">
+        </div>
+        
+        <!-- Stage content -->
+        <div class="flex flex-col">
+          <h5 class="text-sm font-semibold text-stone-800">{{ stage.name }}</h5>
+          <p *ngIf="stage.description" class="text-xs text-stone-500 mb-2">{{ stage.description }}</p>
+          
+          <!-- Touchpoints for this stage -->
+          <div *ngIf="stage.touchpoints && stage.touchpoints.length > 0" class="mt-2">
+            <div *ngFor="let touchpoint of stage.touchpoints" class="mb-2 p-2 rounded-md border border-stone-200 hover:border-stone-300 transition-colors">
+              <div class="flex items-start">
+                <!-- Touchpoint icon -->
+                <div class="w-8 h-8 flex items-center justify-center rounded-full mr-3"
+                     [ngClass]="{
+                       'bg-blue-100 text-blue-600': touchpoint.type === 'email',
+                       'bg-green-100 text-green-600': touchpoint.type === 'call',
+                       'bg-purple-100 text-purple-600': touchpoint.type === 'meeting',
+                       'bg-amber-100 text-amber-600': touchpoint.type === 'quote',
+                       'bg-pink-100 text-pink-600': touchpoint.type === 'order',
+                       'bg-emerald-100 text-emerald-600': touchpoint.type === 'website',
+                       'bg-gray-100 text-gray-600': touchpoint.type === 'other'
+                     }">
+                  {{ touchpointIcons[touchpoint.type] || '📌' }}
+                </div>
+                
+                <!-- Touchpoint details -->
+                <div class="flex-1">
+                  <div class="flex justify-between items-start">
+                    <h6 class="text-sm font-medium text-stone-800">
+                      {{ touchpoint.type.charAt(0).toUpperCase() + touchpoint.type.slice(1) }}
+                      <span *ngIf="touchpoint.subtype" class="text-xs text-stone-500">({{ touchpoint.subtype }})</span>
+                    </h6>
+                    <span class="text-xs text-stone-500">{{ formatDate(touchpoint.timestamp) }}</span>
+                  </div>
+                  <p *ngIf="touchpoint.description" class="text-xs text-stone-600 mt-1">{{ touchpoint.description }}</p>
+                  
+                  <!-- Outcome indicator -->
+                  <div *ngIf="touchpoint.outcome" class="mt-1">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                          [ngClass]="{
+                            'bg-green-100 text-green-800': touchpoint.outcome === 'positive',
+                            'bg-yellow-100 text-yellow-800': touchpoint.outcome === 'neutral',
+                            'bg-red-100 text-red-800': touchpoint.outcome === 'negative'
+                          }">
+                      {{ touchpoint.outcome.charAt(0).toUpperCase() + touchpoint.outcome.slice(1) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- No touchpoints message -->
+          <div *ngIf="!stage.touchpoints || stage.touchpoints.length === 0" class="text-xs text-stone-400 italic mt-1">
+            No touchpoints in this stage
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+.journey-visualization {
+  .journey-chart-container {
+    position: relative;
+    width: 100%;
+  }
+  
+  .journey-timeline {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+}

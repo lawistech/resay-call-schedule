@@ -121,7 +121,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadChildren: () => import('./features/quotations/quotations.module').then(m => m.QuotationsModule)
   },
-
+  {
+    path: 'customer-journey',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./features/customer-journey/customer-journey.module').then(m => m.CustomerJourneyModule)
+  },
   {
     path: '**',
     redirectTo: 'dashboard'
