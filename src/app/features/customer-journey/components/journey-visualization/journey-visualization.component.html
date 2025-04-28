@@ -11,7 +11,7 @@
         Started: {{ formatDate(journey.startDate) }}
       </div>
     </div>
-    
+
     <!-- Current Stage Indicator -->
     <div class="mt-2 flex items-center">
       <span class="text-sm font-medium text-stone-600">Current Stage:</span>
@@ -26,30 +26,30 @@
               'bg-teal-100 text-teal-800': journey.currentStage === 'customer',
               'bg-violet-100 text-violet-800': journey.currentStage === 'loyal'
             }">
-        {{ journey.stages.find(stage => stage.id === journey.currentStage)?.name || 'Unknown' }}
+        {{ getStageNameById(journey.currentStage) }}
       </span>
       <span class="ml-4 text-sm text-stone-500">
         {{ journey.totalTouchpoints }} touchpoints
       </span>
     </div>
   </div>
-  
+
   <!-- Journey Chart -->
   <div class="journey-chart-container bg-white rounded-lg shadow-sm p-4 mb-6" style="height: 300px;">
     <canvas #journeyCanvas></canvas>
   </div>
-  
+
   <!-- Journey Timeline -->
   <div *ngIf="journey" class="journey-timeline bg-white rounded-lg shadow-sm p-4">
     <h4 class="text-md font-semibold text-stone-800 mb-3">Journey Timeline</h4>
-    
+
     <!-- Timeline visualization -->
     <div class="relative">
       <!-- Timeline line -->
       <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-stone-200"></div>
-      
+
       <!-- Timeline stages -->
-      <div *ngFor="let stage of journey.stages; let i = 0; let isLast = last" class="relative pl-10 pb-6">
+      <div *ngFor="let stage of journey.stages; let i = index; let isLast = last" class="relative pl-10 pb-6">
         <!-- Stage marker -->
         <div class="absolute left-2 w-5 h-5 rounded-full mt-1.5 -ml-2.5"
              [ngClass]="{
@@ -63,12 +63,12 @@
                'bg-violet-500': stage.id === 'loyal'
              }">
         </div>
-        
+
         <!-- Stage content -->
         <div class="flex flex-col">
           <h5 class="text-sm font-semibold text-stone-800">{{ stage.name }}</h5>
           <p *ngIf="stage.description" class="text-xs text-stone-500 mb-2">{{ stage.description }}</p>
-          
+
           <!-- Touchpoints for this stage -->
           <div *ngIf="stage.touchpoints && stage.touchpoints.length > 0" class="mt-2">
             <div *ngFor="let touchpoint of stage.touchpoints" class="mb-2 p-2 rounded-md border border-stone-200 hover:border-stone-300 transition-colors">
@@ -86,7 +86,7 @@
                      }">
                   {{ touchpointIcons[touchpoint.type] || '📌' }}
                 </div>
-                
+
                 <!-- Touchpoint details -->
                 <div class="flex-1">
                   <div class="flex justify-between items-start">
@@ -97,7 +97,7 @@
                     <span class="text-xs text-stone-500">{{ formatDate(touchpoint.timestamp) }}</span>
                   </div>
                   <p *ngIf="touchpoint.description" class="text-xs text-stone-600 mt-1">{{ touchpoint.description }}</p>
-                  
+
                   <!-- Outcome indicator -->
                   <div *ngIf="touchpoint.outcome" class="mt-1">
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
@@ -113,7 +113,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- No touchpoints message -->
           <div *ngIf="!stage.touchpoints || stage.touchpoints.length === 0" class="text-xs text-stone-400 italic mt-1">
             No touchpoints in this stage

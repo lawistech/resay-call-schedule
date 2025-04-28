@@ -1,14 +1,17 @@
 // src/app/features/customer-journey/customer-journey.module.ts
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '../../shared/shared.module';
+import { DecimalPipe, DatePipe } from '@angular/common';
 
-import { CustomerJourneyComponent } from './customer-journey.component';
-import { JourneyVisualizationComponent } from './components/journey-visualization/journey-visualization.component';
-import { TouchpointDetailsComponent } from './components/touchpoint-details/touchpoint-details.component';
-import { JourneyAnalyticsComponent } from './components/journey-analytics/journey-analytics.component';
+import {
+  CustomerJourneyComponent,
+  JourneyVisualizationComponent,
+  TouchpointDetailsComponent,
+  JourneyAnalyticsComponent
+} from './index';
 
 const routes: Routes = [
   { path: '', component: CustomerJourneyComponent }
@@ -28,8 +31,16 @@ const routes: Routes = [
     SharedModule,
     RouterModule.forChild(routes)
   ],
+  providers: [
+    DatePipe,
+    DecimalPipe
+  ],
   exports: [
     CustomerJourneyComponent
+  ],
+  schemas: [
+    CUSTOM_ELEMENTS_SCHEMA,
+    NO_ERRORS_SCHEMA
   ]
 })
 export class CustomerJourneyModule { }

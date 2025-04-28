@@ -8,6 +8,7 @@ import { Contact } from '../../core/models/contact.model';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { format } from 'date-fns';
 
 @Component({
   selector: 'app-customer-journey',
@@ -20,18 +21,18 @@ export class CustomerJourneyComponent implements OnInit {
   activeTab: 'journey' | 'analytics' = 'journey';
   showTouchpointModal = false;
   isEditingTouchpoint = false;
-  
+
   // Data
   journeys: CustomerJourney[] = [];
   selectedJourney: CustomerJourney | null = null;
   selectedStage: JourneyStage | null = null;
   selectedTouchpoint: CustomerTouchpoint | null = null;
   contacts: Contact[] = [];
-  
+
   // Filter options
   searchTerm = '';
   stageFilter = '';
-  
+
   constructor(
     private customerJourneyService: CustomerJourneyService,
     private supabaseService: SupabaseService,
@@ -43,13 +44,13 @@ export class CustomerJourneyComponent implements OnInit {
   ngOnInit(): void {
     // Load initial data
     this.loadData();
-    
+
     // Check for query parameters
     this.route.queryParams.subscribe(params => {
       if (params['tab']) {
         this.activeTab = params['tab'] as 'journey' | 'analytics';
       }
-      
+
       if (params['journeyId']) {
         this.loadJourneyDetails(params['journeyId']);
       }
@@ -58,7 +59,7 @@ export class CustomerJourneyComponent implements OnInit {
 
   loadData(): void {
     this.isLoading = true;
-    
+
     // Load journeys and contacts in parallel
     forkJoin({
       journeys: this.customerJourneyService.getCustomerJourneys().pipe(
@@ -67,7 +68,7 @@ export class CustomerJourneyComponent implements OnInit {
           return of([]);
         })
       ),
-      contacts: this.supabaseService.getContacts().pipe(
+      contacts: of(this.contacts).pipe(
         catchError(error => {
           console.error('Error loading contacts:', error);
           return of([]);
@@ -89,7 +90,7 @@ export class CustomerJourneyComponent implements OnInit {
 
   loadJourneyDetails(journeyId: string): void {
     this.isLoading = true;
-    
+
     this.customerJourneyService.getCustomerJourneyById(journeyId).subscribe({
       next: (journey) => {
         this.selectedJourney = journey;
@@ -123,7 +124,7 @@ export class CustomerJourneyComponent implements OnInit {
 
   createNewJourney(contactId: string): void {
     this.isLoading = true;
-    
+
     this.customerJourneyService.generateJourneyForCustomer(contactId).pipe(
       switchMap(journey => this.customerJourneyService.createCustomerJourney(journey))
     ).subscribe({
@@ -146,7 +147,7 @@ export class CustomerJourneyComponent implements OnInit {
       this.notificationService.error('Please select a journey and stage first');
       return;
     }
-    
+
     this.selectedTouchpoint = null;
     this.showTouchpointModal = true;
     this.isEditingTouchpoint = true;
@@ -158,24 +159,30 @@ export class CustomerJourneyComponent implements OnInit {
     this.isEditingTouchpoint = true;
   }
 
-  saveTouchpoint(touchpoint: Partial<CustomerTouchpoint>): void {
+  saveTouchpoint(event: any): void {
     if (!this.selectedJourney) {
       this.notificationService.error('No journey selected');
       return;
     }
-    
+
     this.isLoading = true;
-    
-    // Add journey ID to the touchpoint
-    touchpoint.journeyId = this.selectedJourney.id;
-    
+
+    // Convert event to CustomerTouchpoint if needed
+    const touchpoint: Partial<CustomerTouchpoint> = event;
+
+    // Add journey ID to the touchpoint metadata
+    if (!touchpoint.metadata) {
+      touchpoint.metadata = {};
+    }
+    touchpoint.metadata.journeyId = this.selectedJourney.id;
+
     this.customerJourneyService.addTouchpoint(touchpoint).subscribe({
       next: (savedTouchpoint) => {
         this.notificationService.success('Touchpoint saved successfully');
-        
+
         // Refresh journey details
         this.loadJourneyDetails(this.selectedJourney!.id);
-        
+
         this.showTouchpointModal = false;
         this.isLoading = false;
       },
@@ -193,7 +200,7 @@ export class CustomerJourneyComponent implements OnInit {
 
   changeTab(tab: 'journey' | 'analytics'): void {
     this.activeTab = tab;
-    
+
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab },
@@ -204,12 +211,12 @@ export class CustomerJourneyComponent implements OnInit {
   // Filter journeys based on search term and stage filter
   get filteredJourneys(): CustomerJourney[] {
     return this.journeys.filter(journey => {
-      const matchesSearch = !this.searchTerm || 
+      const matchesSearch = !this.searchTerm ||
         journey.customerName?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         journey.companyName?.toLowerCase().includes(this.searchTerm.toLowerCase());
-      
+
       const matchesStage = !this.stageFilter || journey.currentStage === this.stageFilter;
-      
+
       return matchesSearch && matchesStage;
     });
   }
@@ -217,13 +224,32 @@ export class CustomerJourneyComponent implements OnInit {
   // Get all unique stages from journeys
   get uniqueStages(): { id: string, name: string }[] {
     const stages = new Map<string, string>();
-    
+
     this.journeys.forEach(journey => {
       journey.stages.forEach(stage => {
         stages.set(stage.id, stage.name);
       });
     });
-    
+
     return Array.from(stages.entries()).map(([id, name]) => ({ id, name }));
+  }
+
+  // Format date for display
+  formatDate(date: string): string {
+    return format(new Date(date), 'MMM d, yyyy');
+  }
+
+  // Helper method to find stage by ID
+  findStageById(stageId: string, journey: CustomerJourney): JourneyStage | undefined {
+    if (!journey || !journey.stages) {
+      return undefined;
+    }
+    return journey.stages.find(stage => stage.id === stageId);
+  }
+
+  // Helper method to get stage name by ID
+  getStageNameById(stageId: string, journey: CustomerJourney): string {
+    const stage = this.findStageById(stageId, journey);
+    return stage?.name || 'Unknown';
   }
 }
