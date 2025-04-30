@@ -214,7 +214,7 @@ export class ProductScraperService {
 
     if (typeof priceStr === 'string') {
       // Remove currency symbols, commas, and spaces
-      const cleanedStr = priceStr.replace(/[£$€,\s]/g, '');
+      const cleanedStr = priceStr.replace(/[£€,\s]/g, '');
 
       // Parse the clean string to a float
       const price = parseFloat(cleanedStr);

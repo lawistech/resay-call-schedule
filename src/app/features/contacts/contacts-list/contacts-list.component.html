@@ -32,20 +32,20 @@
           </button>
         </div>
       </div>
-      
+
       <!-- Advanced filters -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="relative">
           <input [(ngModel)]="searchTerm" class="w-full p-2 border rounded-lg" type="text" placeholder="Search contacts...">
         </div>
-        
+
         <div>
           <select [(ngModel)]="selectedCompanyId" class="w-full p-2 border rounded-lg">
             <option value="">All Companies</option>
             <option *ngFor="let company of companies" [value]="company.id">{{ company.name }}</option>
           </select>
         </div>
-        
+
         <div>
           <select [(ngModel)]="selectedStatus" class="w-full p-2 border rounded-lg">
             <option value="">All Statuses</option>
@@ -56,7 +56,7 @@
             <option value="Dead">Dead</option>
           </select>
         </div>
-        
+
         <div>
           <select [(ngModel)]="selectedAssigned" class="w-full p-2 border rounded-lg">
             <option value="">All Assignments</option>
@@ -64,7 +64,7 @@
           </select>
         </div>
       </div>
-      
+
       <!-- Additional filters row -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         <div>
@@ -75,7 +75,7 @@
             <option value="key1">KEY1 Quoted</option>
           </select>
         </div>
-        
+
         <div>
           <div class="flex space-x-2 items-center">
             <label class="text-sm text-gray-700">Date Received:</label>
@@ -84,14 +84,14 @@
             <input [(ngModel)]="dateTo" type="date" class="p-2 border rounded-lg flex-grow" placeholder="To">
           </div>
         </div>
-        
+
         <div class="text-right self-center">
           <button (click)="applyFilters()" class="bg-stone-600 text-white px-4 py-2 rounded-lg mr-2">Apply Filters</button>
           <button (click)="resetFilters()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg">Reset</button>
         </div>
       </div>
     </div>
-    
+
     <!-- Contact count & view toggles -->
     <div class="flex justify-between items-center mb-4">
       <p class="text-stone-500">{{ filteredContacts.length }} contacts found</p>
@@ -116,8 +116,8 @@
 
     <!-- Grid View -->
     <div *ngIf="viewMode === 'grid' && filteredContacts.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let contact of filteredContacts" 
-           class="bg-white hover:bg-gray-50 shadow-lg rounded-xl p-5 space-y-3 cursor-pointer transition-colors duration-200" 
+      <div *ngFor="let contact of filteredContacts"
+           class="bg-white hover:bg-gray-50 shadow-lg rounded-xl p-5 space-y-3 cursor-pointer transition-colors duration-200"
            [routerLink]="['/contacts', contact.id]">
         <div class="flex justify-between items-center">
           <div class="flex items-center space-x-4">
@@ -135,7 +135,7 @@
                   'bg-blue-100 text-blue-800': contact.status === 'Prospect',
                   'bg-yellow-100 text-yellow-800': contact.status === 'In Progress'
                 }">{{ contact.status }}</span>
-                
+
                 <span *ngIf="contact.key1_quoted" class="px-1.5 py-0.5 text-xs rounded-full bg-purple-100 text-purple-800">
                   KEY1
                 </span>
@@ -143,16 +143,16 @@
             </div>
           </div>
         </div>
-    
+
         <div class="text-sm space-y-1 text-stone-600">
           <p *ngIf="contact.company?.name"><strong>Company:</strong> {{ contact.company?.name }}</p>
           <p *ngIf="contact.email"><strong>Email:</strong> {{ contact.email }}</p>
           <p *ngIf="contact.phone"><strong>Phone:</strong> {{ contact.phone }}</p>
           <p *ngIf="contact.quote_no"><strong>Quote No:</strong> {{ contact.quote_no }}</p>
           <p *ngIf="contact.opportunity_name"><strong>Opportunity:</strong> {{ contact.opportunity_name }}</p>
-          <p *ngIf="contact.total"><strong>Total:</strong> {{ contact.total | currency }}</p>
+          <p *ngIf="contact.total"><strong>Total:</strong> {{ contact.total | currency:'GBP':'symbol' }}</p>
           <div class="flex-row">
-            <button (click)="openCallModal(contact); $event.stopPropagation()" 
+            <button (click)="openCallModal(contact); $event.stopPropagation()"
                     class="bg-green-500 text-white px-3 py-1 rounded-lg shadow hover:bg-green-600 text-sm">
               Schedule Call
             </button>
@@ -160,7 +160,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Table View -->
     <div *ngIf="viewMode === 'table' && filteredContacts.length > 0" class="bg-white shadow-lg rounded-xl overflow-hidden">
       <div class="overflow-x-auto">
@@ -178,7 +178,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr *ngFor="let contact of filteredContacts" 
+            <tr *ngFor="let contact of filteredContacts"
     class="hover:bg-stone-100 transition-colors duration-150 border-b border-gray-100 last:border-b-0">
       <!-- Contact info with improved visual hierarchy -->
       <td class="px-6 py-4">
@@ -196,7 +196,7 @@
           </div>
         </div>
       </td>
-      
+
       <!-- Company with icon -->
       <td class="px-6 py-4">
         <div class="flex items-center text-stone-700">
@@ -206,7 +206,7 @@
           <span>{{ contact.company?.name || 'No company' }}</span>
         </div>
       </td>
-      
+
       <!-- Quote info with better spacing -->
       <td class="px-6 py-4">
         <div *ngIf="contact.quote_no" class="text-stone-700">
@@ -215,15 +215,15 @@
         </div>
         <div *ngIf="!contact.quote_no" class="text-stone-400 text-sm italic">No quote</div>
       </td>
-      
+
       <!-- Amount with currency styling -->
       <td class="px-6 py-4">
         <div *ngIf="contact.total" class="font-medium text-stone-900">
-          {{ contact.total | currency }}
+          {{ contact.total | currency:'GBP':'symbol' }}
         </div>
         <div *ngIf="!contact.total" class="text-stone-400 text-sm italic">No amount</div>
       </td>
-      
+
       <!-- Status badges with improved design -->
       <td class="px-6 py-4">
         <div class="flex flex-wrap gap-1.5">
@@ -235,7 +235,7 @@
             'bg-yellow-100 text-yellow-800 border border-yellow-200': contact.status === 'In Progress',
             'bg-gray-100 text-gray-800 border border-gray-200': !contact.status
           }">
-            <span class="w-1.5 h-1.5 rounded-full mr-1.5" 
+            <span class="w-1.5 h-1.5 rounded-full mr-1.5"
                   [ngClass]="{
                     'bg-green-500': contact.status === 'Active',
                     'bg-red-500': contact.status === 'Inactive' || contact.is_dead,
@@ -245,7 +245,7 @@
                   }"></span>
             {{ contact.status || 'No Status' }}
           </span>
-          
+
           <span *ngIf="contact.key1_quoted" class="px-2.5 py-1 text-xs rounded-full font-medium bg-purple-100 text-purple-800 border border-purple-200 inline-flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -254,7 +254,7 @@
           </span>
         </div>
       </td>
-      
+
       <!-- Chase date with improved formatting -->
       <td class="px-6 py-4">
         <div *ngIf="contact.chased_date" class="text-stone-700">
@@ -268,20 +268,20 @@
         </div>
         <div *ngIf="!contact.chased_date" class="text-stone-400 text-sm italic">Not chased</div>
       </td>
-      
+
       <!-- Actions with improved buttons -->
       <!-- Actions with improved alignment and button styling -->
       <td class="px-6 py-4 whitespace-nowrap">
         <div class="flex items-center justify-end gap-2">
-          <button (click)="openCallModal(contact)" 
+          <button (click)="openCallModal(contact)"
                   class="inline-flex items-center px-2 py-1 rounded text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
             Call
           </button>
-          
-          <a [routerLink]="['/contacts', contact.id]" 
+
+          <a [routerLink]="['/contacts', contact.id]"
             class="inline-flex items-center px-2 py-1 rounded text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -289,8 +289,8 @@
             </svg>
             View
           </a>
-          
-          <button (click)="openEditContactModal(contact)" 
+
+          <button (click)="openEditContactModal(contact)"
                   class="inline-flex items-center px-2 py-1 rounded text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

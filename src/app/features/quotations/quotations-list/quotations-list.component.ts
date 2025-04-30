@@ -26,14 +26,14 @@ export class QuotationsListComponent implements OnInit {
   quotations: Quotation[] = [];
   filteredQuotations: Quotation[] = [];
   isLoading = true;
-  
+
   // Filtering
   searchTerm = '';
   activeStatuses: Set<string> = new Set(['draft', 'sent']);
-  
+
   // View mode
   viewMode: 'grid' | 'table' = 'grid';
-  
+
   // Modal state
   showQuotationForm = false;
   showDetailsModal = false;
@@ -72,7 +72,7 @@ export class QuotationsListComponent implements OnInit {
     // Apply search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(quotation => 
+      filtered = filtered.filter(quotation =>
         (quotation.title?.toLowerCase() || '').includes(term) ||
         (quotation.notes?.toLowerCase() || '').includes(term)
       );
@@ -206,7 +206,7 @@ export class QuotationsListComponent implements OnInit {
   }
 
   formatCurrency(amount?: number): string {
-    if (amount === undefined) return '$0.00';
-    return `$${amount.toFixed(2)}`;
+    if (amount === undefined) return '£0.00';
+    return `£${amount.toFixed(2)}`;
   }
 }

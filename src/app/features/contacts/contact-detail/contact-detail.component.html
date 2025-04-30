@@ -134,7 +134,7 @@
                   </div>
 
                   <div *ngIf="contact.amount" class="mt-2 text-xl font-bold text-stone-800">
-                    {{ (contact.amount || 0) | currency:'USD' }}
+                    {{ (contact.amount || 0) | currency:'GBP':'symbol' }}
                   </div>
                 </div>
               </div>
@@ -353,7 +353,7 @@
                 <div class="p-4 space-y-4">
                   <div>
                     <p class="text-sm font-medium text-stone-500">Amount</p>
-                    <p class="mt-1 text-xl font-bold text-stone-800">{{ (contact.amount || 0) | currency:'USD' }}</p>
+                    <p class="mt-1 text-xl font-bold text-stone-800">{{ (contact.amount || 0) | currency:'GBP':'symbol' }}</p>
                   </div>
 
                   <div *ngIf="contact.discount">
@@ -363,7 +363,7 @@
 
                   <div>
                     <p class="text-sm font-medium text-stone-500">Total</p>
-                    <p class="mt-1 text-2xl font-bold text-green-600">{{ (contact.total || 0) | currency:'USD' }}</p>
+                    <p class="mt-1 text-2xl font-bold text-green-600">{{ (contact.total || 0) | currency:'GBP':'symbol' }}</p>
                   </div>
                 </div>
               </div>

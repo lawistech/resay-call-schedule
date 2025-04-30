@@ -105,8 +105,8 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
   }
 
   formatCurrency(amount?: number): string {
-    if (amount === undefined) return '$0.00';
-    return `$${amount.toFixed(2)}`;
+    if (amount === undefined) return '£0.00';
+    return `£${amount.toFixed(2)}`;
   }
 
   getStatusClass(status: string): string {
