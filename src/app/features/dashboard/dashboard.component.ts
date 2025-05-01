@@ -236,25 +236,43 @@ export class DashboardComponent implements OnInit {
 
   // For initiating calls
   initiateCall(call: Call): void {
+    console.log('Dashboard: initiateCall called with call:', call);
     this.notificationService.info('Initiating call... (Demo feature)');
+
+    // First, set up the post-call modal
+    this.selectedCall = call;
+    this.showPostCallModal = true;
+
+    // Store the call in the service
+    this.callStateService.setActiveCall(call);
+
+    console.log('Dashboard: Post-call modal should be visible now. showPostCallModal =', this.showPostCallModal);
+    console.log('Dashboard: selectedCall =', this.selectedCall);
 
     // In a real implementation, this would use a native dialer or VoIP service
     if (call.contact?.phone) {
+      // Initiate the call - this might navigate away from the page in some browsers
+      // so we set up the modal first
       window.location.href = `tel:${call.contact.phone}`;
-      // After initiating the call, open the post-call modal
-      this.selectedCall = call;
-      this.showPostCallModal = true;
-      this.callStateService.setActiveCall(call);
     } else {
       this.notificationService.warning('No phone number available for this contact');
     }
+
+    // Force Angular change detection by using setTimeout
+    setTimeout(() => {
+      console.log('Dashboard: Checking modal visibility after timeout');
+      console.log('Dashboard: showPostCallModal =', this.showPostCallModal);
+      console.log('Dashboard: selectedCall =', this.selectedCall);
+    }, 100);
   }
 
   // Add these methods to handle the post-call modal
   closePostCallModal(): void {
+    console.log('Dashboard: closePostCallModal called');
     this.showPostCallModal = false;
     this.selectedCall = null;
     this.callStateService.clearActiveCall();
+    console.log('Dashboard: Post-call modal closed. showPostCallModal =', this.showPostCallModal);
   }
 
   async handleCallCompleted(data: {callId: string, notes: string}): Promise<void> {
@@ -347,6 +365,10 @@ export class DashboardComponent implements OnInit {
    * @param call The call to be rescheduled
    */
   openRescheduleModal(call: Call): void {
+    // Store the call in the service
+    this.callStateService.setActiveCall(call);
+
+    // Set the selected call and show the modal
     this.selectedCall = call;
     this.showPostCallModal = true;
 
@@ -526,8 +548,18 @@ export class DashboardComponent implements OnInit {
    * Navigate to company details
    * If coming from the "Companies with Scheduled Calls" section,
    * automatically navigate to the scheduled-calls tab
+   *
+   * Note: This method should only navigate to the company details page
+   * and not show any modals on the dashboard. The company details page
+   * will handle showing any necessary modals.
    */
   viewCompanyDetails(companyId: string): void {
+    // Clear any selected call to prevent the call modal from showing on the dashboard
+    this.selectedCall = null;
+    this.showPostCallModal = false;
+    this.callStateService.clearActiveCall();
+
+    // Navigate to the company details page with the scheduled-calls tab
     this.router.navigate(['/companies', companyId], {
       queryParams: { tab: 'scheduled-calls' }
     });

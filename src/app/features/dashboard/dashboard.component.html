@@ -156,7 +156,7 @@
 
   <!-- New Dashboard Content -->
   <div *ngIf="!isLoading && dashboardView === 'new'" class="space-y-8 new-dashboard dashboard-fade-in">
-   
+
       <!-- Activity Summary Section -->
       <div class="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-100">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Activity Summary</h2>
@@ -325,10 +325,17 @@
     *ngIf="showPostCallModal && selectedCall"
     [isOpen]="showPostCallModal"
     [call]="selectedCall"
+    [initialAction]="'complete'"
     (closed)="closePostCallModal()"
     (completed)="handleCallCompleted($event)"
     (rescheduled)="handleCallRescheduled($event)"
   ></app-post-call-modal>
+
+  <!-- Debug info for post-call modal -->
+  <div style="display: none;">
+    showPostCallModal: {{ showPostCallModal }}
+    selectedCall: {{ selectedCall | json }}
+  </div>
 
   <!-- Quotation Details Modal -->
   <app-quotation-details-modal

@@ -1,4 +1,11 @@
 <!-- src/app/shared/post-call-modal/post-call-modal.component.html -->
+<!-- Debug info -->
+<div style="display: none;">
+  isOpen: {{ isOpen }}
+  call: {{ call | json }}
+  selectedAction: {{ selectedAction }}
+</div>
+
 <div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
     <!-- Background overlay -->
@@ -17,7 +24,7 @@
             <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
               Call Summary
             </h3>
-            
+
             <!-- Contact info with company name, phone and email -->
             <div *ngIf="call && call.contact" class="mt-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
               <div class="flex flex-col">
@@ -30,7 +37,7 @@
                     {{ call.contact.company?.name }}
                   </p>
                 </div>
-                
+
                 <!-- Contact details with actionable links -->
                 <div class="grid grid-cols-1 gap-2 mt-2">
                   <!-- Phone number with click-to-call -->
@@ -42,7 +49,7 @@
                       <a [href]="'tel:' + call.contact.phone" class="text-sm text-blue-600 hover:text-blue-800 hover:underline">
                         {{ call.contact.phone }}
                       </a>
-                      <button 
+                      <button
                         (click)="copyPhoneNumber(call.contact.phone)"
                         class="text-xs text-gray-500 hover:text-gray-700 hover:underline"
                         title="Copy phone number">
@@ -50,7 +57,7 @@
                       </button>
                     </div>
                   </div>
-                  
+
                   <!-- Email with direct mailto link -->
                   <div *ngIf="call.contact?.email" class="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,7 +67,7 @@
                       <a [href]="'mailto:' + call.contact.email" class="text-sm text-blue-600 hover:text-blue-800 hover:underline">
                         {{ call.contact.email }}
                       </a>
-                      <button 
+                      <button
                         (click)="copyEmail(call.contact.email)"
                         class="text-xs text-gray-500 hover:text-gray-700 hover:underline"
                         title="Copy email">
@@ -71,7 +78,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Action selection -->
             <div class="mb-4 flex gap-4">
               <div class="flex items-center">
@@ -83,7 +90,7 @@
                 <label for="reschedule" class="ml-2 text-sm text-gray-700">Reschedule Call</label>
               </div>
             </div>
-            
+
             <!-- Post-call form -->
             <form [formGroup]="postCallForm" (ngSubmit)="submitForm()">
               <!-- Notes field (always shown) -->
@@ -91,7 +98,7 @@
                 <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
                 <textarea id="notes" formControlName="notes" rows="3" class="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"></textarea>
               </div>
-              
+
               <!-- Reschedule date (shown only when reschedule is selected) -->
               <div *ngIf="selectedAction === 'reschedule'" class="mb-4">
                 <label for="scheduledAt" class="block text-sm font-medium text-gray-700">Reschedule for</label>
@@ -101,10 +108,10 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Modal Actions -->
       <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-        <button (click)="submitForm()" type="button" 
+        <button (click)="submitForm()" type="button"
                 [disabled]="postCallForm.invalid"
                 class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-stone-800 text-base font-medium text-white hover:bg-stone-700 sm:ml-3 sm:w-auto sm:text-sm">
           {{ selectedAction === 'complete' ? 'Complete Call' : 'Reschedule Call' }}

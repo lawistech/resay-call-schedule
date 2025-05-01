@@ -29,6 +29,21 @@ export class CompanyScheduledCallsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadScheduledCalls();
+
+    // Check if there's an active call that needs to be displayed
+    // This handles the case when navigating from the dashboard's "Companies with Scheduled Calls" section
+    const activeCall = this.callStateService.getActiveCall();
+    if (activeCall) {
+      // Check if the call is related to this company
+      if (activeCall.contact?.company_id === this.companyId) {
+        console.log('Found active call for this company, showing call modal:', activeCall);
+        this.selectedCall = activeCall;
+        this.showRescheduleModal = true;
+
+        // Clear the active call from the service to prevent it from showing again
+        this.callStateService.clearActiveCall();
+      }
+    }
   }
 
   loadScheduledCalls(): void {
@@ -101,9 +116,6 @@ export class CompanyScheduledCallsComponent implements OnInit {
       return;
     }
 
-    // Save call state in the service before any navigation
-    this.callStateService.setActiveCall(call);
-
     // If we have an event, prevent default behavior
     if (event) {
       event.preventDefault();
@@ -112,6 +124,11 @@ export class CompanyScheduledCallsComponent implements OnInit {
 
     // For phone calls, use a different approach
     window.location.href = `tel:${call.contact.phone}`;
+
+    // After initiating the call, open the reschedule modal directly
+    // This keeps the call summary on the company details page
+    this.selectedCall = call;
+    this.showRescheduleModal = true;
   }
 
   async markCallAsCompleted(callId: string): Promise<void> {
