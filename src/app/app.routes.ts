@@ -127,6 +127,11 @@ export const routes: Routes = [
     loadChildren: () => import('./features/customer-journey/customer-journey.module').then(m => m.CustomerJourneyModule)
   },
   {
+    path: 'admin',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
+  },
+  {
     path: '**',
     redirectTo: 'dashboard'
   }
