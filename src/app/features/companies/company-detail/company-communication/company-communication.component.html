@@ -25,6 +25,8 @@
           >
             <option value="note">Note</option>
             <option value="meeting">Meeting</option>
+            <option value="email">Email</option>
+            <option value="call">Call</option>
           </select>
         </div>
 
@@ -200,6 +202,26 @@
 
           <!-- Call Details (if type is call) -->
           <div *ngIf="comm.type === 'call'" class="mt-2 p-2 bg-gray-50 rounded text-sm">
+            <div *ngIf="comm.contactId" class="text-gray-600">
+              <span class="font-medium">Contact:</span> {{ getContactName(comm.contactId) }}
+            </div>
+            <div *ngIf="comm.followUpDate" class="text-gray-600">
+              <span class="font-medium">Follow-up:</span> {{ formatDate(comm.followUpDate) }}
+            </div>
+          </div>
+
+          <!-- Email Details (if type is email) -->
+          <div *ngIf="comm.type === 'email'" class="mt-2 p-2 bg-blue-50 rounded text-sm">
+            <div *ngIf="comm.contactId" class="text-gray-600">
+              <span class="font-medium">Contact:</span> {{ getContactName(comm.contactId) }}
+            </div>
+            <div *ngIf="comm.followUpDate" class="text-gray-600">
+              <span class="font-medium">Follow-up:</span> {{ formatDate(comm.followUpDate) }}
+            </div>
+          </div>
+
+          <!-- Meeting Details (if type is meeting) -->
+          <div *ngIf="comm.type === 'meeting'" class="mt-2 p-2 bg-purple-50 rounded text-sm">
             <div *ngIf="comm.contactId" class="text-gray-600">
               <span class="font-medium">Contact:</span> {{ getContactName(comm.contactId) }}
             </div>
