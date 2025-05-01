@@ -1,0 +1,157 @@
+<!-- src/app/features/ecommerce/product-knowledge-base/knowledge-base-history.component.html -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+  <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+    <h3 class="text-lg font-medium text-gray-900">Version History</h3>
+    <div class="flex space-x-2">
+      <button *ngIf="selectedVersions.length === 2" (click)="compareVersions()" 
+              class="text-blue-600 hover:text-blue-800 text-sm flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+        Compare Selected
+      </button>
+      <button (click)="toggleManualVersionForm()" 
+              class="text-blue-600 hover:text-blue-800 text-sm flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        {{ showManualVersionForm ? 'Cancel' : 'Create Version' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Manual Version Form -->
+  <div *ngIf="showManualVersionForm" class="p-4 bg-blue-50 border-b border-blue-100">
+    <div class="mb-3">
+      <label for="changeSummary" class="block text-sm font-medium text-gray-700 mb-1">Change Summary</label>
+      <textarea id="changeSummary" [(ngModel)]="changeSummary" rows="2"
+                placeholder="Describe the changes made to this entry..."
+                class="w-full border border-blue-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+    </div>
+    
+    <div class="flex justify-end">
+      <button (click)="createManualVersion()" [disabled]="isCreatingVersion"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm flex items-center">
+        <span *ngIf="isCreatingVersion" class="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></span>
+        {{ isCreatingVersion ? 'Creating...' : 'Create Version' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="p-4 text-center">
+    <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mb-2"></div>
+    <p class="text-gray-600">Loading version history...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && historyEntries.length === 0" class="p-4 text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <p class="text-gray-500">No version history available</p>
+    <p class="text-gray-400 text-sm">Changes to this entry will be tracked automatically</p>
+  </div>
+
+  <!-- Version Comparison -->
+  <div *ngIf="comparisonResult" class="p-4 bg-gray-50 border-b border-gray-200">
+    <div class="flex justify-between items-center mb-3">
+      <h4 class="font-medium text-gray-800">Version Comparison</h4>
+      <button (click)="comparisonResult = null" class="text-gray-500 hover:text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="bg-white p-3 rounded border border-gray-200">
+        <div class="text-sm font-medium text-gray-700 mb-1">
+          Version {{ comparisonResult.version1.version }}
+          <span class="text-gray-500 text-xs ml-1">
+            ({{ formatDate(comparisonResult.version1.createdAt) }})
+          </span>
+        </div>
+        <div class="text-sm mb-2">{{ comparisonResult.version1.title }}</div>
+        <div class="text-xs text-gray-600 bg-gray-50 p-2 rounded max-h-40 overflow-y-auto">
+          {{ comparisonResult.version1.content }}
+        </div>
+      </div>
+      
+      <div class="bg-white p-3 rounded border border-gray-200">
+        <div class="text-sm font-medium text-gray-700 mb-1">
+          Version {{ comparisonResult.version2.version }}
+          <span class="text-gray-500 text-xs ml-1">
+            ({{ formatDate(comparisonResult.version2.createdAt) }})
+          </span>
+        </div>
+        <div class="text-sm mb-2">{{ comparisonResult.version2.title }}</div>
+        <div class="text-xs text-gray-600 bg-gray-50 p-2 rounded max-h-40 overflow-y-auto">
+          {{ comparisonResult.version2.content }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restore Confirmation -->
+  <div *ngIf="showRestoreConfirm" class="p-4 bg-yellow-50 border-b border-yellow-100">
+    <div class="flex items-start">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600 mt-0.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <div>
+        <p class="text-yellow-800 font-medium">Restore Version {{ versionToRestore }}</p>
+        <p class="text-yellow-700 text-sm mt-1">
+          This will replace the current content with version {{ versionToRestore }}. This action cannot be undone.
+        </p>
+        <div class="mt-3 flex space-x-3">
+          <button (click)="cancelRestore()" class="text-yellow-800 hover:text-yellow-900 text-sm">
+            Cancel
+          </button>
+          <button (click)="restoreVersion()" [disabled]="isRestoring"
+                  class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded-md text-sm flex items-center">
+            <span *ngIf="isRestoring" class="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></span>
+            {{ isRestoring ? 'Restoring...' : 'Restore Version' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History List -->
+  <div *ngIf="!isLoading && historyEntries.length > 0" class="divide-y divide-gray-200">
+    <div *ngFor="let entry of historyEntries" class="p-4 hover:bg-gray-50 transition-colors">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+            <span class="text-sm font-medium">v{{ entry.version }}</span>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-sm font-medium text-gray-900">{{ entry.title }}</h4>
+            <div class="flex items-center text-xs text-gray-500">
+              <span>{{ formatDate(entry.createdAt) }}</span>
+              <span *ngIf="entry.changeSummary" class="ml-2 bg-gray-100 px-2 py-0.5 rounded-full">
+                {{ entry.changeSummary }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="flex space-x-2">
+          <button (click)="toggleVersionSelection(entry.version)" 
+                  [class.bg-blue-100]="selectedVersions.includes(entry.version)"
+                  [class.text-blue-800]="selectedVersions.includes(entry.version)"
+                  class="text-gray-600 hover:text-gray-800 text-sm px-2 py-1 rounded">
+            {{ selectedVersions.includes(entry.version) ? 'Selected' : 'Select' }}
+          </button>
+          <button (click)="confirmRestore(entry.version)" 
+                  class="text-blue-600 hover:text-blue-800 text-sm flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Restore
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

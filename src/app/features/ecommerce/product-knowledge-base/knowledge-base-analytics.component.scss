@@ -1,0 +1,44 @@
+// src/app/features/ecommerce/product-knowledge-base/knowledge-base-analytics.component.scss
+
+// Stat card hover effects
+.bg-blue-50,
+.bg-green-50,
+.bg-amber-50,
+.bg-purple-50 {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+}
+
+// Tab button hover effects
+button.border-transparent:hover {
+  @apply border-gray-300 text-gray-700;
+  transition: all 0.2s ease-in-out;
+}
+
+// Status button effects
+button.px-3.py-1 {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &.bg-blue-100,
+  &.bg-green-100,
+  &.bg-red-100 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Popular entry hover effect
+.bg-white.p-4.rounded-lg.border {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #93c5fd; // border-blue-300
+  }
+}

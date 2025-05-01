@@ -1,0 +1,44 @@
+// src/app/features/ecommerce/product-knowledge-base/knowledge-base-attachments.component.scss
+
+// File type icon colors
+.fa-file-pdf {
+  color: #e53e3e;
+}
+
+.fa-file-word {
+  color: #2b6cb0;
+}
+
+.fa-file-excel {
+  color: #2f855a;
+}
+
+.fa-file-powerpoint {
+  color: #c05621;
+}
+
+.fa-file-image {
+  color: #6b46c1;
+}
+
+.fa-file-alt {
+  color: #4a5568;
+}
+
+.fa-file {
+  color: #718096;
+}
+
+// Hover effects for buttons
+button.text-blue-600:hover,
+button.text-red-600:hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+// File input styling
+input[type="file"] {
+  &::-webkit-file-upload-button {
+    visibility: hidden;
+  }
+}

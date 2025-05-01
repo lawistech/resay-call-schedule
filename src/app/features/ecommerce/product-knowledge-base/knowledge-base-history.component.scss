@@ -1,0 +1,38 @@
+// src/app/features/ecommerce/product-knowledge-base/knowledge-base-history.component.scss
+
+// Version badge styling
+.flex-shrink-0.h-8.w-8 {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+// Version selection button
+button.text-gray-600.hover\:text-gray-800 {
+  transition: all 0.2s ease;
+  
+  &.bg-blue-100 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Comparison content scrollbar
+.max-h-40.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+}

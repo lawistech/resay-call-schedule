@@ -1,0 +1,41 @@
+// src/app/features/ecommerce/product-knowledge-base/knowledge-base-viewer.component.scss
+
+// Improve tab button hover states
+button.border-transparent:hover {
+  @apply border-gray-300 text-gray-700;
+  transition: all 0.2s ease-in-out;
+}
+
+// Style for active tabs
+button.border-blue-500,
+button.border-green-500,
+button.border-purple-500,
+button.border-amber-500 {
+  transition: all 0.2s ease-in-out;
+}
+
+// Improve prose content
+.prose {
+  p {
+    margin-bottom: 0.75rem;
+  }
+  
+  ul, ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  a {
+    @apply text-blue-600 hover:text-blue-800;
+    text-decoration: underline;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  nav button {
+    @apply text-xs;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

@@ -1,0 +1,32 @@
+// src/app/features/ecommerce/product-knowledge-base/knowledge-base-feedback.component.scss
+
+// Star rating styling
+button.text-2xl {
+  line-height: 1;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.2);
+  }
+  
+  &.text-yellow-400 {
+    text-shadow: 0 0 5px rgba(250, 204, 21, 0.5);
+  }
+}
+
+// Helpful/Not helpful buttons
+button.px-3.py-1 {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &.bg-green-100 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  &.bg-red-100 {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}

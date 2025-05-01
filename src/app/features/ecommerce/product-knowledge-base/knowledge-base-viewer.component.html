@@ -1,0 +1,265 @@
+<!-- src/app/features/ecommerce/product-knowledge-base/knowledge-base-viewer.component.html -->
+<div class="container mx-auto px-4 py-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-semibold text-gray-800">Product Knowledge Base</h1>
+    <div class="flex space-x-4">
+      <a routerLink="/ecommerce/knowledge-base/analytics" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        Analytics
+      </a>
+      <a routerLink="/ecommerce/knowledge-base/manage" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+        Manage Knowledge Base
+      </a>
+    </div>
+  </div>
+
+  <!-- Product Selection and Search -->
+  <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Product Selection -->
+      <div>
+        <label for="productSelect" class="block text-sm font-medium text-gray-700 mb-1">Select Product</label>
+        <select id="productSelect" [(ngModel)]="selectedProductId" (ngModelChange)="onProductChange()"
+                class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+          <option *ngFor="let product of products" [value]="product.id">{{ product.name }}</option>
+        </select>
+      </div>
+
+      <!-- Search -->
+      <div>
+        <label for="searchTerm" class="block text-sm font-medium text-gray-700 mb-1">Search Knowledge Base</label>
+        <input type="text" id="searchTerm" [(ngModel)]="searchTerm"
+               placeholder="Search for information..."
+               class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="bg-white rounded-lg shadow-md p-6 text-center">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-2"></div>
+    <p class="text-gray-600">Loading product information...</p>
+  </div>
+
+  <!-- No Product Selected State -->
+  <div *ngIf="!isLoading && !knowledgeBase" class="bg-white rounded-lg shadow-md p-6 text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+    <p class="text-gray-600 mb-2">No product selected or no knowledge base entries found</p>
+    <p class="text-gray-500">Please select a product or add knowledge base entries</p>
+  </div>
+
+  <!-- Knowledge Base Content -->
+  <div *ngIf="!isLoading && knowledgeBase" class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Product Header -->
+    <div class="bg-gray-50 p-4 border-b border-gray-200">
+      <div class="flex items-center">
+        <div *ngIf="knowledgeBase.product.imageUrl" class="flex-shrink-0 h-16 w-16 mr-4">
+          <img [src]="knowledgeBase.product.imageUrl" alt="Product image" class="h-16 w-16 object-cover rounded-md">
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800">{{ knowledgeBase.product.name }}</h2>
+          <p class="text-sm text-gray-500">SKU: {{ knowledgeBase.product.sku }}</p>
+          <p class="text-sm text-gray-500">Category: {{ knowledgeBase.product.category || 'Uncategorized' }}</p>
+        </div>
+        <div class="ml-auto text-right">
+          <p class="text-lg font-bold text-gray-800">£{{ knowledgeBase.product.price.toFixed(2) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="border-b border-gray-200">
+      <nav class="flex -mb-px">
+        <button (click)="setActiveTab('specs')"
+                [ngClass]="{'border-blue-500 text-blue-600': activeTab === 'specs', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'specs'}"
+                class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm">
+          Technical Specs
+          <span *ngIf="!hasEntries('specs')" class="ml-1 text-xs text-gray-400">(Empty)</span>
+        </button>
+        <button (click)="setActiveTab('usage')"
+                [ngClass]="{'border-green-500 text-green-600': activeTab === 'usage', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'usage'}"
+                class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm">
+          Usage Scenarios
+          <span *ngIf="!hasEntries('usage')" class="ml-1 text-xs text-gray-400">(Empty)</span>
+        </button>
+        <button (click)="setActiveTab('faq')"
+                [ngClass]="{'border-purple-500 text-purple-600': activeTab === 'faq', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'faq'}"
+                class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm">
+          FAQ
+          <span *ngIf="!hasEntries('faq')" class="ml-1 text-xs text-gray-400">(Empty)</span>
+        </button>
+        <button (click)="setActiveTab('competitive')"
+                [ngClass]="{'border-amber-500 text-amber-600': activeTab === 'competitive', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'competitive'}"
+                class="w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm">
+          Competitive Analysis
+          <span *ngIf="!hasEntries('competitive')" class="ml-1 text-xs text-gray-400">(Empty)</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="p-4">
+      <!-- Technical Specifications Tab -->
+      <div *ngIf="activeTab === 'specs'">
+        <div *ngIf="knowledgeBase.technicalSpecs.length === 0" class="text-center py-8">
+          <p class="text-gray-500">No technical specifications available for this product.</p>
+        </div>
+
+        <div *ngIf="knowledgeBase.technicalSpecs.length > 0">
+          <div *ngFor="let spec of filterEntries(knowledgeBase.technicalSpecs)" class="mb-6 border-b border-gray-200 pb-4 last:border-b-0">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ spec.title }}</h3>
+            <div class="prose prose-sm max-w-none text-gray-700">
+              <p [innerHTML]="formatContent(spec.content)"></p>
+            </div>
+            <div *ngIf="spec.tags && spec.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+              <span *ngFor="let tag of spec.tags" class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full">
+                {{ tag }}
+              </span>
+            </div>
+
+            <!-- Attachments, Feedback, and History for this entry -->
+            <div class="mt-6 space-y-4">
+              <app-knowledge-base-attachments [knowledgeBaseEntry]="spec"></app-knowledge-base-attachments>
+              <app-knowledge-base-feedback [knowledgeBaseEntry]="spec"></app-knowledge-base-feedback>
+              <app-knowledge-base-history [knowledgeBaseEntry]="spec"></app-knowledge-base-history>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage Scenarios Tab -->
+      <div *ngIf="activeTab === 'usage'">
+        <div *ngIf="knowledgeBase.usageScenarios.length === 0" class="text-center py-8">
+          <p class="text-gray-500">No usage scenarios available for this product.</p>
+        </div>
+
+        <div *ngIf="knowledgeBase.usageScenarios.length > 0">
+          <div *ngFor="let scenario of filterEntries(knowledgeBase.usageScenarios)" class="mb-6 border-b border-gray-200 pb-4 last:border-b-0">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ scenario.title }}</h3>
+            <div class="prose prose-sm max-w-none text-gray-700">
+              <p [innerHTML]="formatContent(scenario.content)"></p>
+            </div>
+            <div *ngIf="scenario.tags && scenario.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+              <span *ngFor="let tag of scenario.tags" class="bg-green-50 text-green-700 text-xs px-2 py-1 rounded-full">
+                {{ tag }}
+              </span>
+            </div>
+
+            <!-- Attachments, Feedback, and History for this entry -->
+            <div class="mt-6 space-y-4">
+              <app-knowledge-base-attachments [knowledgeBaseEntry]="scenario"></app-knowledge-base-attachments>
+              <app-knowledge-base-feedback [knowledgeBaseEntry]="scenario"></app-knowledge-base-feedback>
+              <app-knowledge-base-history [knowledgeBaseEntry]="scenario"></app-knowledge-base-history>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ Tab -->
+      <div *ngIf="activeTab === 'faq'">
+        <div *ngIf="knowledgeBase.faqs.length === 0" class="text-center py-8">
+          <p class="text-gray-500">No FAQs available for this product.</p>
+        </div>
+
+        <div *ngIf="knowledgeBase.faqs.length > 0" class="divide-y divide-gray-200">
+          <div *ngFor="let faq of filterEntries(knowledgeBase.faqs)" class="py-4">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ faq.title }}</h3>
+            <div class="prose prose-sm max-w-none text-gray-700">
+              <p [innerHTML]="formatContent(faq.content)"></p>
+            </div>
+            <div *ngIf="faq.tags && faq.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+              <span *ngFor="let tag of faq.tags" class="bg-purple-50 text-purple-700 text-xs px-2 py-1 rounded-full">
+                {{ tag }}
+              </span>
+            </div>
+
+            <!-- Attachments, Feedback, and History for this entry -->
+            <div class="mt-6 space-y-4">
+              <app-knowledge-base-attachments [knowledgeBaseEntry]="faq"></app-knowledge-base-attachments>
+              <app-knowledge-base-feedback [knowledgeBaseEntry]="faq"></app-knowledge-base-feedback>
+              <app-knowledge-base-history [knowledgeBaseEntry]="faq"></app-knowledge-base-history>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Competitive Analysis Tab -->
+      <div *ngIf="activeTab === 'competitive'">
+        <div *ngIf="knowledgeBase.competitiveAnalysis.entries.length === 0" class="text-center py-8">
+          <p class="text-gray-500">No competitive analysis available for this product.</p>
+        </div>
+
+        <div *ngIf="knowledgeBase.competitiveAnalysis.entries.length > 0">
+          <div *ngFor="let analysis of filterEntries(knowledgeBase.competitiveAnalysis.entries)" class="mb-6 border-b border-gray-200 pb-4 last:border-b-0">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ analysis.title }}</h3>
+            <div class="prose prose-sm max-w-none text-gray-700">
+              <p [innerHTML]="formatContent(analysis.content)"></p>
+            </div>
+
+            <!-- Detailed Competitive Analysis if available -->
+            <div *ngIf="knowledgeBase.competitiveAnalysis.details.length > 0" class="mt-4">
+              <div *ngFor="let detail of knowledgeBase.competitiveAnalysis.details" class="bg-amber-50 p-3 rounded-md mb-3">
+                <h4 class="font-medium text-amber-800">{{ detail.competitorName }} - {{ detail.competitorProduct }}</h4>
+
+                <!-- Strengths and Weaknesses -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                  <div>
+                    <h5 class="text-sm font-medium text-amber-700 mb-1">Our Strengths</h5>
+                    <ul class="list-disc list-inside text-sm text-gray-700">
+                      <li *ngFor="let strength of detail.strengths">{{ strength }}</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 class="text-sm font-medium text-amber-700 mb-1">Their Strengths</h5>
+                    <ul class="list-disc list-inside text-sm text-gray-700">
+                      <li *ngFor="let weakness of detail.weaknesses">{{ weakness }}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="analysis.tags && analysis.tags.length > 0" class="mt-2 flex flex-wrap gap-1">
+              <span *ngFor="let tag of analysis.tags" class="bg-amber-50 text-amber-700 text-xs px-2 py-1 rounded-full">
+                {{ tag }}
+              </span>
+            </div>
+
+            <!-- Attachments, Feedback, and History for this entry -->
+            <div class="mt-6 space-y-4">
+              <app-knowledge-base-attachments [knowledgeBaseEntry]="analysis"></app-knowledge-base-attachments>
+              <app-knowledge-base-feedback [knowledgeBaseEntry]="analysis"></app-knowledge-base-feedback>
+              <app-knowledge-base-history [knowledgeBaseEntry]="analysis"></app-knowledge-base-history>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Popular Entries Section -->
+      <div *ngIf="knowledgeBase.popularEntries && knowledgeBase.popularEntries.length > 0" class="mt-8 bg-gray-50 p-4 rounded-lg">
+        <h3 class="text-lg font-medium text-gray-900 mb-3">Popular Content</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let entry of knowledgeBase.popularEntries" class="bg-white p-3 rounded shadow-sm">
+            <div class="flex items-center">
+              <div [ngClass]="{
+                'bg-blue-100 text-blue-800': entry.category === 'technical_specs',
+                'bg-green-100 text-green-800': entry.category === 'usage_scenarios',
+                'bg-purple-100 text-purple-800': entry.category === 'faq',
+                'bg-amber-100 text-amber-800': entry.category === 'competitive_analysis'
+              }" class="w-2 h-2 rounded-full mr-2"></div>
+              <h4 class="text-sm font-medium text-gray-800">{{ entry.title }}</h4>
+            </div>
+            <p class="text-xs text-gray-500 mt-1 truncate">{{ entry.content }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
