@@ -524,9 +524,13 @@ export class DashboardComponent implements OnInit {
 
   /**
    * Navigate to company details
+   * If coming from the "Companies with Scheduled Calls" section,
+   * automatically navigate to the scheduled-calls tab
    */
   viewCompanyDetails(companyId: string): void {
-    this.router.navigate(['/companies', companyId]);
+    this.router.navigate(['/companies', companyId], {
+      queryParams: { tab: 'scheduled-calls' }
+    });
   }
 
   /**
