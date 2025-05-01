@@ -37,7 +37,7 @@ export class DashboardComponent implements OnInit {
   selectedCall: Call | null = null;
 
   // Dashboard view mode (classic or new)
-  dashboardView: 'classic' | 'new' = 'new'; // Set new as default
+  dashboardView: 'classic' | 'new' = 'classic'; // Set classic as default
 
   // Quotations data
   activeQuotations: Quotation[] = [];
