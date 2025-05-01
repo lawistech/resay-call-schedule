@@ -239,31 +239,44 @@ export class DashboardComponent implements OnInit {
     console.log('Dashboard: initiateCall called with call:', call);
     this.notificationService.info('Initiating call... (Demo feature)');
 
-    // First, set up the post-call modal
-    this.selectedCall = call;
-    this.showPostCallModal = true;
+    // Check if we have a company ID to navigate to
+    const companyId = call.contact?.company_id;
 
-    // Store the call in the service
-    this.callStateService.setActiveCall(call);
+    if (companyId) {
+      // Store the call in the service with flag to navigate to company details
+      this.callStateService.setActiveCall(call, true);
 
-    console.log('Dashboard: Post-call modal should be visible now. showPostCallModal =', this.showPostCallModal);
-    console.log('Dashboard: selectedCall =', this.selectedCall);
+      // In a real implementation, this would use a native dialer or VoIP service
+      if (call.contact?.phone) {
+        // Initiate the call
+        window.location.href = `tel:${call.contact.phone}`;
+      } else {
+        this.notificationService.warning('No phone number available for this contact');
+      }
 
-    // In a real implementation, this would use a native dialer or VoIP service
-    if (call.contact?.phone) {
-      // Initiate the call - this might navigate away from the page in some browsers
-      // so we set up the modal first
-      window.location.href = `tel:${call.contact.phone}`;
+      // Navigate to the company details page with the scheduled-calls tab active
+      this.router.navigate(['/companies', companyId], {
+        queryParams: { tab: 'scheduled-calls' }
+      });
     } else {
-      this.notificationService.warning('No phone number available for this contact');
-    }
+      // If no company ID, fall back to showing the modal on the dashboard
+      this.selectedCall = call;
+      this.showPostCallModal = true;
 
-    // Force Angular change detection by using setTimeout
-    setTimeout(() => {
-      console.log('Dashboard: Checking modal visibility after timeout');
-      console.log('Dashboard: showPostCallModal =', this.showPostCallModal);
+      // Store the call in the service without navigation flag
+      this.callStateService.setActiveCall(call, false);
+
+      console.log('Dashboard: Post-call modal should be visible now. showPostCallModal =', this.showPostCallModal);
       console.log('Dashboard: selectedCall =', this.selectedCall);
-    }, 100);
+
+      // In a real implementation, this would use a native dialer or VoIP service
+      if (call.contact?.phone) {
+        // Initiate the call
+        window.location.href = `tel:${call.contact.phone}`;
+      } else {
+        this.notificationService.warning('No phone number available for this contact');
+      }
+    }
   }
 
   // Add these methods to handle the post-call modal
@@ -554,10 +567,19 @@ export class DashboardComponent implements OnInit {
    * will handle showing any necessary modals.
    */
   viewCompanyDetails(companyId: string): void {
-    // Clear any selected call to prevent the call modal from showing on the dashboard
-    this.selectedCall = null;
-    this.showPostCallModal = false;
-    this.callStateService.clearActiveCall();
+    // Get the active call if there is one
+    const activeCall = this.callStateService.getActiveCall();
+
+    // If there's an active call and it's for this company, set the flag to navigate to company details
+    if (activeCall && activeCall.contact?.company_id === companyId) {
+      // Update the call state to indicate we're navigating to company details
+      this.callStateService.setActiveCall(activeCall, true);
+    } else {
+      // Clear any selected call to prevent the call modal from showing on the dashboard
+      this.selectedCall = null;
+      this.showPostCallModal = false;
+      this.callStateService.clearActiveCall();
+    }
 
     // Navigate to the company details page with the scheduled-calls tab
     this.router.navigate(['/companies', companyId], {

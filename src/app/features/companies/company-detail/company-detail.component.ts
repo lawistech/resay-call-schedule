@@ -6,6 +6,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { Company } from '../../../core/models/company.model';
 import { DatePipe } from '@angular/common';
 import { CompanyRefreshService } from '../services/company-refresh.service';
+import { CallStateService } from '../../../core/services/call-state.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -29,7 +30,8 @@ export class CompanyDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private notificationService: NotificationService,
     private datePipe: DatePipe,
-    private companyRefreshService: CompanyRefreshService
+    private companyRefreshService: CompanyRefreshService,
+    private callStateService: CallStateService
   ) {}
 
   ngOnInit(): void {
@@ -40,6 +42,17 @@ export class CompanyDetailComponent implements OnInit, OnDestroy {
         this.companyId = id;
         console.log('Company ID set in CompanyDetailComponent:', this.companyId);
         this.loadCompany(id);
+
+        // Check if there's an active call that needs to be displayed
+        // and if we should navigate to the scheduled-calls tab
+        const activeCall = this.callStateService.getActiveCall();
+        if (activeCall && this.callStateService.shouldNavigateToCompanyDetails()) {
+          // Check if the call is related to this company
+          if (activeCall.contact?.company_id === this.companyId) {
+            console.log('Found active call for this company, setting scheduled-calls tab active');
+            this.setActiveTab('scheduled-calls');
+          }
+        }
       } else {
         console.error('No company ID found in route params');
         this.router.navigate(['/companies']);

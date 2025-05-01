@@ -32,6 +32,7 @@ export class CompanyScheduledCallsComponent implements OnInit {
 
     // Check if there's an active call that needs to be displayed
     // This handles the case when navigating from the dashboard's "Companies with Scheduled Calls" section
+    // or when a call is initiated from the dashboard
     const activeCall = this.callStateService.getActiveCall();
     if (activeCall) {
       // Check if the call is related to this company
@@ -129,6 +130,8 @@ export class CompanyScheduledCallsComponent implements OnInit {
     // This keeps the call summary on the company details page
     this.selectedCall = call;
     this.showRescheduleModal = true;
+
+    console.log('Company scheduled calls: showing call modal for call:', call);
   }
 
   async markCallAsCompleted(callId: string): Promise<void> {
