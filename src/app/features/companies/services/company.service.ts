@@ -350,8 +350,39 @@ export class CompanyService {
   getCompanyCommunications(companyId: string): Observable<CompanyCommunication[]> {
     console.log(`Getting communications for company ID: ${companyId}`);
 
-    // First get all contacts for this company
-    return this.getCompanyContacts(companyId).pipe(
+    // Create an observable to get communications from the company_communications table
+    const directCommunicationsObs = from(this.supabaseService.supabaseClient
+      .from('company_communications')
+      .select(`
+        *,
+        contact:contacts(id, first_name, last_name, company_id)
+      `)
+      .eq('company_id', companyId)
+      .order('date', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+
+        console.log(`Found ${response.data.length} direct communications for company ID: ${companyId}`);
+
+        // Convert to CompanyCommunication format
+        return response.data.map(comm => ({
+          id: comm.id,
+          companyId: comm.company_id,
+          type: comm.type as 'email' | 'call' | 'meeting' | 'note',
+          date: comm.date,
+          summary: comm.summary,
+          contactId: comm.contact_id,
+          userId: comm.user_id,
+          followUpDate: comm.follow_up_date,
+          created_at: comm.created_at,
+          updated_at: comm.updated_at
+        }));
+      })
+    );
+
+    // Get all contacts for this company
+    const callCommunicationsObs = this.getCompanyContacts(companyId).pipe(
       switchMap(contacts => {
         // Extract contact IDs
         const contactIds = contacts.map(contact => contact.id);
@@ -376,7 +407,6 @@ export class CompanyService {
             if (response.error) throw response.error;
 
             console.log(`Found ${response.data.length} calls for company ID: ${companyId}`);
-            console.log('Call data:', response.data);
 
             // Convert call data to CompanyCommunication format
             return response.data.map(call => {
@@ -417,10 +447,67 @@ export class CompanyService {
             });
           })
         );
+      })
+    );
+
+    // Combine both observables and return the merged results
+    return combineLatest([directCommunicationsObs, callCommunicationsObs]).pipe(
+      map(([directComms, callComms]) => {
+        const allComms = [...directComms, ...callComms];
+        // Sort by date, newest first
+        return allComms.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       }),
       catchError(error => {
         console.error('Error fetching company communications:', error);
         this.notificationService.error(`Failed to fetch company communications: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Add a new communication
+  addCompanyCommunication(communication: Partial<CompanyCommunication>): Observable<CompanyCommunication> {
+    console.log('Adding new communication:', communication);
+
+    // Convert from our model format to database format
+    const dbCommunication = {
+      company_id: communication.companyId,
+      contact_id: communication.contactId,
+      user_id: this.authService.getCurrentUser()?.id,
+      type: communication.type,
+      date: communication.date,
+      summary: communication.summary,
+      follow_up_date: communication.followUpDate
+    };
+
+    return from(this.supabaseService.supabaseClient
+      .from('company_communications')
+      .insert(dbCommunication)
+      .select()
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+
+        console.log('Communication added successfully:', response.data[0]);
+
+        // Convert back to our model format
+        const newComm = response.data[0];
+        return {
+          id: newComm.id,
+          companyId: newComm.company_id,
+          type: newComm.type as 'email' | 'call' | 'meeting' | 'note',
+          date: newComm.date,
+          summary: newComm.summary,
+          contactId: newComm.contact_id,
+          userId: newComm.user_id,
+          followUpDate: newComm.follow_up_date,
+          created_at: newComm.created_at,
+          updated_at: newComm.updated_at
+        };
+      }),
+      catchError(error => {
+        console.error('Error adding communication:', error);
+        this.notificationService.error(`Failed to add communication: ${error.message}`);
         return throwError(() => error);
       })
     );

@@ -28,6 +28,9 @@ export class CompanyCommunicationComponent implements OnInit {
   // Store contacts for reference
   contacts: {[id: string]: {first_name: string, last_name: string}} = {};
 
+  // Make Object available in the template
+  Object = Object;
+
   constructor(
     private companyService: CompanyService,
     private notificationService: NotificationService,
@@ -122,27 +125,32 @@ export class CompanyCommunicationComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    // In a real implementation, this would call a service method to save the communication
-    // For now, we'll simulate adding it to the list
-    const newCommunication: CompanyCommunication = {
-      id: 'temp-' + Date.now(),
+    // Create a new communication object from the form values
+    const newCommunication: Partial<CompanyCommunication> = {
       companyId: this.companyId,
       type: this.communicationForm.value.type,
       date: this.communicationForm.value.date,
       summary: this.communicationForm.value.summary,
       contactId: this.communicationForm.value.contactId || undefined,
-      followUpDate: this.communicationForm.value.followUpDate || undefined,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      followUpDate: this.communicationForm.value.followUpDate || undefined
     };
 
-    // Simulate API call
-    setTimeout(() => {
-      this.communications.unshift(newCommunication);
-      this.notificationService.success('Communication added successfully');
-      this.toggleAddForm();
-      this.isSubmitting = false;
-    }, 500);
+    // Call the service method to save the communication
+    this.companyService.addCompanyCommunication(newCommunication).subscribe({
+      next: (savedCommunication) => {
+        console.log('Communication saved successfully:', savedCommunication);
+        // Add the new communication to the beginning of the list
+        this.communications.unshift(savedCommunication);
+        this.notificationService.success('Communication added successfully');
+        this.toggleAddForm();
+        this.isSubmitting = false;
+      },
+      error: (error) => {
+        console.error('Error saving communication:', error);
+        this.notificationService.error('Failed to save communication');
+        this.isSubmitting = false;
+      }
+    });
   }
 
   formatDate(date: string): string {
