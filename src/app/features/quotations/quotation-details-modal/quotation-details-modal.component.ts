@@ -51,6 +51,29 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
 
   ngOnChanges(changes: SimpleChanges): void {
     // This method is called when input properties change
+    if (changes['quotation'] && changes['quotation'].currentValue) {
+      const quotation = changes['quotation'].currentValue;
+      console.log('Quotation changed in details modal:', quotation);
+
+      // If we have a quotation but no items, try to fetch the full quotation
+      if (quotation && (!quotation.items || quotation.items.length === 0)) {
+        console.log('Quotation has no items, fetching full details');
+        this.fetchFullQuotationDetails(quotation.id);
+      }
+    }
+  }
+
+  fetchFullQuotationDetails(quotationId: string): void {
+    this.quotationService.getQuotationById(quotationId).subscribe({
+      next: (fullQuotation) => {
+        console.log('Fetched full quotation with items:', fullQuotation);
+        this.quotation = fullQuotation;
+      },
+      error: (error) => {
+        console.error('Error fetching full quotation details:', error);
+        this.notificationService.error('Failed to load quotation products');
+      }
+    });
   }
 
   close() {
@@ -74,11 +97,22 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
 
   // Helper methods for template
   hasItems(): boolean {
-    return !!this.quotation?.items && Array.isArray(this.quotation.items) && this.quotation.items.length > 0;
+    const hasItemsResult = !!this.quotation?.items && Array.isArray(this.quotation.items) && this.quotation.items.length > 0;
+    console.log('hasItems check result:', hasItemsResult, 'items:', this.quotation?.items);
+
+    // If we have a quotation but no items, try to fetch the full quotation
+    if (this.quotation && (!this.quotation.items || this.quotation.items.length === 0)) {
+      console.log('hasItems: Quotation has no items, triggering fetch');
+      this.fetchFullQuotationDetails(this.quotation.id);
+    }
+
+    return hasItemsResult;
   }
 
   noItems(): boolean {
-    return !this.hasItems();
+    const result = !this.hasItems();
+    console.log('noItems check result:', result);
+    return result;
   }
 
   hasTags(product: QuotationItem): boolean {

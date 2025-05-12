@@ -2,11 +2,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { QuotationService } from '../services/quotation.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Quotation } from '../../../core/models/quotation.model';
-import { QuotationFormComponent } from '../quotation-form/quotation-form.component';
 import { QuotationDetailsModalComponent } from '../quotation-details-modal/quotation-details-modal.component';
 
 @Component({
@@ -16,7 +15,6 @@ import { QuotationDetailsModalComponent } from '../quotation-details-modal/quota
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    QuotationFormComponent,
     QuotationDetailsModalComponent
   ],
   templateUrl: './quotations-list.component.html',
@@ -43,11 +41,69 @@ export class QuotationsListComponent implements OnInit {
   constructor(
     private quotationService: QuotationService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.loadQuotations();
+    // Check if we have a quotation ID in the route
+    this.route.paramMap.subscribe(params => {
+      const quotationId = params.get('id');
+      if (quotationId) {
+        // Load the specific quotation and show details modal
+        this.loadQuotationDetails(quotationId);
+      } else {
+        // Load all quotations
+        this.loadQuotations();
+      }
+    });
+  }
+
+  loadQuotationDetails(id: string): void {
+    this.isLoading = true;
+    this.quotationService.getQuotationById(id).subscribe({
+      next: (quotation) => {
+        console.log('Loaded quotation details:', quotation);
+        console.log('Quotation items:', quotation.items);
+
+        // Make sure we have the full quotation with items
+        if (!quotation.items || quotation.items.length === 0) {
+          console.log('No items found in quotation, fetching again with items');
+          // Try to fetch the quotation again to ensure we get the items
+          this.refreshQuotationWithItems(id);
+        } else {
+          this.selectedQuotation = quotation;
+          this.showDetailsModal = true;
+          this.isLoading = false;
+          // Also load all quotations in the background
+          this.loadQuotations();
+        }
+      },
+      error: (error) => {
+        console.error('Error loading quotation details:', error);
+        this.notificationService.error('Failed to load quotation details');
+        this.isLoading = false;
+        this.loadQuotations();
+      }
+    });
+  }
+
+  refreshQuotationWithItems(id: string): void {
+    // This is a second attempt to load the quotation with its items
+    this.quotationService.getQuotationById(id).subscribe({
+      next: (quotation) => {
+        console.log('Refreshed quotation with items:', quotation);
+        this.selectedQuotation = quotation;
+        this.showDetailsModal = true;
+        this.isLoading = false;
+        this.loadQuotations();
+      },
+      error: (error) => {
+        console.error('Error refreshing quotation details:', error);
+        this.isLoading = false;
+        this.loadQuotations();
+      }
+    });
   }
 
   loadQuotations(): void {
@@ -106,8 +162,8 @@ export class QuotationsListComponent implements OnInit {
   }
 
   createQuotation(): void {
-    this.selectedQuotation = null;
-    this.showQuotationForm = true;
+    // Navigate to the quotation form page instead of showing a modal
+    this.router.navigate(['/quotations/new']);
   }
 
   editQuotation(quotation: Quotation, event?: Event): void {
@@ -118,8 +174,16 @@ export class QuotationsListComponent implements OnInit {
   }
 
   viewQuotation(quotation: Quotation): void {
-    this.selectedQuotation = quotation;
-    this.showDetailsModal = true;
+    // Check if the quotation already has items
+    if (quotation.items && quotation.items.length > 0) {
+      console.log('Quotation already has items, using it directly');
+      this.selectedQuotation = quotation;
+      this.showDetailsModal = true;
+    } else {
+      // If not, fetch the full quotation with items from the server
+      console.log('Quotation has no items, fetching full details');
+      this.loadQuotationDetails(quotation.id);
+    }
   }
 
   closeQuotationForm(): void {

@@ -90,7 +90,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       status: ['draft', Validators.required],
       stage: ['Prospecting', Validators.required],
       probability: [0, [Validators.min(0), Validators.max(100)]],
-      expectedCloseDate: [null, Validators.required],
+      expectedCloseDate: [new Date().toISOString().split('T')[0], Validators.required],
       amount: [0, [Validators.required, Validators.min(0)]],
       notes: [''],
       products: this.fb.array([])
@@ -515,7 +515,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       title: formValues.title,
       description: formValues.description,
       companyId: formValues.companyId,
-      status: formValues.status || 'New',
+      status: formValues.status || 'draft',
       stage: formValues.stage,
       probability: formValues.probability,
       total: formValues.amount || 0,

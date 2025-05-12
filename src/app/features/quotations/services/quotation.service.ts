@@ -22,7 +22,11 @@ export class QuotationService {
       .from('quotations')
       .select(`
         *,
-        company:companies(id, name)
+        company:companies(id, name),
+        items:quotation_items(
+          *,
+          product:product_catalog(*)
+        )
       `)
       .order('created_at', { ascending: false })
     ).pipe(
@@ -30,7 +34,7 @@ export class QuotationService {
         if (response.error) throw response.error;
 
         // Format the data to match our Quotation model
-        return response.data.map(q => this.formatQuotationFromDatabase(q));
+        return response.data.map(q => this.formatQuotationFromDatabase(q, true));
       }),
       catchError(error => {
         this.notificationService.error(`Failed to fetch quotations: ${error.message}`);
@@ -45,7 +49,11 @@ export class QuotationService {
       .from('quotations')
       .select(`
         *,
-        company:companies(id, name)
+        company:companies(id, name),
+        items:quotation_items(
+          *,
+          product:product_catalog(*)
+        )
       `)
       .eq('company_id', companyId)
       .order('created_at', { ascending: false })
@@ -55,7 +63,7 @@ export class QuotationService {
         console.log('QuotationService: Received response for company quotations:', response.data);
 
         // Format the data to match our Quotation model
-        const formattedQuotations = response.data.map(q => this.formatQuotationFromDatabase(q));
+        const formattedQuotations = response.data.map(q => this.formatQuotationFromDatabase(q, true));
         console.log('QuotationService: Formatted quotations:', formattedQuotations);
         return formattedQuotations;
       }),
@@ -68,6 +76,7 @@ export class QuotationService {
   }
 
   getQuotationById(id: string): Observable<Quotation> {
+    console.log('Fetching quotation by ID:', id);
     return from(this.supabaseService.supabaseClient
       .from('quotations')
       .select(`
@@ -84,8 +93,19 @@ export class QuotationService {
       map(response => {
         if (response.error) throw response.error;
 
+        console.log('Raw quotation data from database:', response.data);
+
+        // Check if items are included in the response
+        if (!response.data.items || !Array.isArray(response.data.items)) {
+          console.warn('No items array found in quotation response');
+        } else {
+          console.log(`Found ${response.data.items.length} items in quotation`);
+        }
+
         // Format the data to match our Quotation model
-        return this.formatQuotationFromDatabase(response.data, true);
+        const formattedQuotation = this.formatQuotationFromDatabase(response.data, true);
+        console.log('Formatted quotation:', formattedQuotation);
+        return formattedQuotation;
       }),
       catchError(error => {
         console.error('Error fetching quotation:', error);
@@ -297,33 +317,52 @@ export class QuotationService {
 
     // Add items if included in the response
     if (includeItems && data.items && Array.isArray(data.items)) {
-      quotation.items = data.items.map((item: any) => ({
-        id: item.id,
-        quotationId: item.quotation_id,
-        productId: item.product_id,
-        product: item.product ? {
-          id: item.product.id,
-          supplierId: item.product.supplier_id,
-          name: item.product.name,
-          sku: item.product.sku,
-          description: item.product.description,
-          price: item.product.price,
-          cost: item.product.cost,
-          stockQuantity: item.product.stock_quantity,
-          category: item.product.category,
-          tags: item.product.tags,
-          imageUrl: item.product.image_url,
-          isActive: item.product.is_active,
-          createdAt: item.product.created_at,
-          updatedAt: item.product.updated_at
-        } : undefined,
-        quantity: item.quantity,
-        price: item.price,
-        total: item.total,
-        notes: item.notes,
-        createdAt: item.created_at,
-        updatedAt: item.updated_at
-      }));
+      console.log(`Processing ${data.items.length} items for quotation ${data.id}`);
+
+      quotation.items = data.items.map((item: any) => {
+        // Check if product data is available
+        if (!item.product) {
+          console.warn(`No product data for item ${item.id} in quotation ${data.id}`);
+        } else {
+          console.log(`Found product data for item ${item.id}: ${item.product.name}`);
+        }
+
+        return {
+          id: item.id,
+          quotationId: item.quotation_id,
+          productId: item.product_id,
+          product: item.product ? {
+            id: item.product.id,
+            supplierId: item.product.supplier_id,
+            name: item.product.name,
+            sku: item.product.sku,
+            description: item.product.description,
+            price: item.product.price,
+            cost: item.product.cost,
+            stockQuantity: item.product.stock_quantity,
+            category: item.product.category,
+            tags: item.product.tags,
+            imageUrl: item.product.image_url,
+            isActive: item.product.is_active,
+            createdAt: item.product.created_at,
+            updatedAt: item.product.updated_at
+          } : undefined,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.total,
+          notes: item.notes,
+          createdAt: item.created_at,
+          updatedAt: item.updated_at
+        };
+      });
+
+      console.log(`Processed ${quotation.items?.length || 0} items for quotation model`);
+    } else {
+      console.warn(`Cannot process items for quotation ${data.id}:`, {
+        includeItems,
+        hasItems: !!data.items,
+        isArray: Array.isArray(data.items)
+      });
     }
 
     return quotation;
