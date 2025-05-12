@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { Quotation, QuotationItem } from '../../../core/models/quotation.model';
 import { QuotationService } from '../services/quotation.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { QuotationPdfService } from '../../../core/services/quotation-pdf.service';
 
 @Component({
   selector: 'app-quotation-details-modal',
@@ -40,7 +41,8 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
   constructor(
     private quotationService: QuotationService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private quotationPdfService: QuotationPdfService
   ) {}
 
   ngOnInit(): void {
@@ -122,6 +124,47 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
     if (this.quotation) {
       this.router.navigate(['/quotations', this.quotation.id, 'edit']);
       this.close();
+    }
+  }
+
+  /**
+   * Generate a PDF for the quotation
+   */
+  generatePdf() {
+    if (!this.quotation) {
+      this.notificationService.error('No quotation data available');
+      return;
+    }
+
+    try {
+      this.notificationService.info('Generating PDF...');
+
+      // Get contact information if available
+      if (this.quotation.contactId) {
+        // In a real implementation, you would fetch the contact details
+        // For now, we'll just pass the quotation to the PDF service
+        this.quotationPdfService.generatePdf(this.quotation)
+          .then(() => {
+            this.notificationService.success('PDF generated successfully');
+          })
+          .catch(error => {
+            console.error('Error generating PDF:', error);
+            this.notificationService.error('Failed to generate PDF');
+          });
+      } else {
+        // No contact associated, just generate with quotation data
+        this.quotationPdfService.generatePdf(this.quotation)
+          .then(() => {
+            this.notificationService.success('PDF generated successfully');
+          })
+          .catch(error => {
+            console.error('Error generating PDF:', error);
+            this.notificationService.error('Failed to generate PDF');
+          });
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      this.notificationService.error('Failed to generate PDF');
     }
   }
 

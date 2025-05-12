@@ -6,6 +6,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { routes } from './app.routes';
 import { DateUtilsService } from './core/services/date-utils.service';
 import { ReminderService } from './core/services/reminder.service';
+import { QuotationPdfService } from './core/services/quotation-pdf.service';
 
 // Function to initialize app settings
 function initializeApp(dateUtils: DateUtilsService, reminderService: ReminderService) {
