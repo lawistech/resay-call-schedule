@@ -88,6 +88,7 @@ export class QuotationService {
         return this.formatQuotationFromDatabase(response.data, true);
       }),
       catchError(error => {
+        console.error('Error fetching quotation:', error);
         this.notificationService.error(`Failed to fetch quotation: ${error.message}`);
         return throwError(() => error);
       })
@@ -124,6 +125,9 @@ export class QuotationService {
       dbQuotation.valid_until = quotation.validUntil;
     }
 
+    // Store items to add after quotation is created
+    const items = quotation.items || [];
+
     return from(this.supabaseService.supabaseClient
       .from('quotations')
       .insert(dbQuotation)
@@ -131,10 +135,16 @@ export class QuotationService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
-        this.notificationService.success('Quotation created successfully');
 
-        // Format the data to match our Quotation model
-        return this.formatQuotationFromDatabase(response.data[0]);
+        const createdQuotation = this.formatQuotationFromDatabase(response.data[0]);
+
+        // If there are items, add them to the quotation
+        if (items.length > 0) {
+          this.addQuotationItems(createdQuotation.id, items);
+        }
+
+        this.notificationService.success('Quotation created successfully');
+        return createdQuotation;
       }),
       catchError(error => {
         this.notificationService.error(`Failed to create quotation: ${error.message}`);
@@ -173,6 +183,9 @@ export class QuotationService {
       dbQuotation.valid_until = quotation.validUntil;
     }
 
+    // Store items to update after quotation is updated
+    const items = quotation.items || [];
+
     return from(this.supabaseService.supabaseClient
       .from('quotations')
       .update(dbQuotation)
@@ -181,16 +194,68 @@ export class QuotationService {
     ).pipe(
       map(response => {
         if (response.error) throw response.error;
-        this.notificationService.success('Quotation updated successfully');
 
-        // Format the data to match our Quotation model
-        return this.formatQuotationFromDatabase(response.data[0]);
+        const updatedQuotation = this.formatQuotationFromDatabase(response.data[0]);
+
+        // If there are items, update them for the quotation
+        if (items.length > 0) {
+          // First delete existing items
+          this.deleteQuotationItems(id).then(() => {
+            // Then add the new items
+            this.addQuotationItems(id, items);
+          });
+        }
+
+        this.notificationService.success('Quotation updated successfully');
+        return updatedQuotation;
       }),
       catchError(error => {
         this.notificationService.error(`Failed to update quotation: ${error.message}`);
         return throwError(() => error);
       })
     );
+  }
+
+  // Add quotation items to the database
+  private addQuotationItems(quotationId: string, items: QuotationItem[]): void {
+    // Convert items to database format
+    const dbItems = items.map(item => ({
+      quotation_id: quotationId,
+      product_id: item.productId,
+      quantity: item.quantity,
+      price: item.price,
+      total: item.total,
+      notes: item.notes || null,
+      created_at: new Date().toISOString()
+    }));
+
+    // Insert items into the database
+    this.supabaseService.supabaseClient
+      .from('quotation_items')
+      .insert(dbItems)
+      .then(response => {
+        if (response.error) {
+          console.error('Error adding quotation items:', response.error);
+          this.notificationService.error('Failed to add products to quotation');
+        }
+      });
+  }
+
+  // Delete all items for a quotation
+  private deleteQuotationItems(quotationId: string): Promise<any> {
+    // Convert PromiseLike to Promise by wrapping with Promise.resolve()
+    return Promise.resolve(
+      this.supabaseService.supabaseClient
+        .from('quotation_items')
+        .delete()
+        .eq('quotation_id', quotationId)
+    ).then(response => {
+      if (response.error) {
+        console.error('Error deleting quotation items:', response.error);
+        this.notificationService.error('Failed to update quotation products');
+      }
+      return response;
+    });
   }
 
   // Helper functions to format data
@@ -213,7 +278,8 @@ export class QuotationService {
       validUntil: data.valid_until,
       notes: data.notes,
       createdAt: data.created_at,
-      updatedAt: data.updated_at
+      updatedAt: data.updated_at,
+      items: [] // Initialize items as an empty array
     };
 
     // Add company if it exists
@@ -230,7 +296,7 @@ export class QuotationService {
     if (data.probability) quotation.probability = data.probability;
 
     // Add items if included in the response
-    if (includeItems && data.items) {
+    if (includeItems && data.items && Array.isArray(data.items)) {
       quotation.items = data.items.map((item: any) => ({
         id: item.id,
         quotationId: item.quotation_id,

@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, OnInit, SimpleChange
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Quotation } from '../../../core/models/quotation.model';
+import { Quotation, QuotationItem } from '../../../core/models/quotation.model';
 import { QuotationService } from '../services/quotation.service';
 import { NotificationService } from '../../../core/services/notification.service';
 
@@ -22,6 +22,10 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
 
   statuses: Array<'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'> = ['draft', 'sent', 'accepted', 'rejected', 'expired'];
   isUpdating = false;
+
+  // Product details modal
+  showProductDetailsModal = false;
+  selectedProduct: QuotationItem | null = null;
 
   // Dropdown toggles
   showStatusDropdown = false;
@@ -44,9 +48,7 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['quotation'] && this.quotation) {
-      console.log('Quotation details loaded:', this.quotation);
-    }
+    // This method is called when input properties change
   }
 
   close() {
@@ -55,6 +57,30 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
 
   closeAllDropdowns() {
     this.showStatusDropdown = false;
+  }
+
+  // Product details methods
+  viewProductDetails(item: QuotationItem) {
+    this.selectedProduct = item;
+    this.showProductDetailsModal = true;
+  }
+
+  closeProductDetailsModal() {
+    this.showProductDetailsModal = false;
+    this.selectedProduct = null;
+  }
+
+  // Helper methods for template
+  hasItems(): boolean {
+    return !!this.quotation?.items && Array.isArray(this.quotation.items) && this.quotation.items.length > 0;
+  }
+
+  noItems(): boolean {
+    return !this.hasItems();
+  }
+
+  hasTags(product: QuotationItem): boolean {
+    return !!product?.product?.tags && product.product.tags.length > 0;
   }
 
   toggleStatusDropdown(event: Event) {
@@ -104,8 +130,8 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
     return new Date(date).toLocaleDateString();
   }
 
-  formatCurrency(amount?: number): string {
-    if (amount === undefined) return '£0.00';
+  formatCurrency(amount?: number | null): string {
+    if (amount === undefined || amount === null) return '£0.00';
     return `£${amount.toFixed(2)}`;
   }
 
