@@ -591,15 +591,33 @@ export class CompanyService {
       })
     );
 
+    // Get total order value
+    const totalOrderValuePromise = from(this.supabaseService.supabaseClient
+      .from('orders')
+      .select('total')
+      .eq('company_id', companyId)
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        // Calculate the total order value
+        return response.data.reduce((sum, order) => sum + (order.total || 0), 0);
+      }),
+      catchError(error => {
+        console.error('Error calculating total order value:', error);
+        return of(0);
+      })
+    );
+
     // Combine all metrics
     return combineLatest([
       contactsPromise,
       quotationsPromise,
-      scheduledCallsPromise
+      scheduledCallsPromise,
+      totalOrderValuePromise
     ]).pipe(
-      map(([contactCount, activeQuotations, scheduledCalls]) => {
+      map(([contactCount, activeQuotations, scheduledCalls, totalOrderValue]) => {
         return {
-          totalOrderValue: 0, // Would need to sum from orders table
+          totalOrderValue,
           activeQuotations,
           scheduledCalls,
           contactCount,

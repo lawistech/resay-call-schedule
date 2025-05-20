@@ -1,11 +1,12 @@
 // src/app/features/quotations/services/quotation.service.ts
 import { Injectable } from '@angular/core';
-import { Observable, from, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable, from, throwError, tap } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Quotation, QuotationItem } from '../../../core/models/quotation.model';
+import { OrderService } from '../../orders/order.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,8 @@ export class QuotationService {
   constructor(
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private orderService: OrderService
   ) {}
 
   getQuotations(): Observable<Quotation[]> {
@@ -223,6 +225,23 @@ export class QuotationService {
           this.deleteQuotationItems(id).then(() => {
             // Then add the new items
             this.addQuotationItems(id, items);
+          });
+        }
+
+        // If the quotation status is changed to 'accepted', create an order
+        if (dbStatus === 'accepted') {
+          // Get the full quotation with items to create the order
+          this.getQuotationById(id).subscribe(fullQuotation => {
+            this.orderService.createOrderFromQuotation(fullQuotation)
+              .subscribe({
+                next: (order) => {
+                  this.notificationService.success('Order created from accepted quotation');
+                },
+                error: (error) => {
+                  console.error('Error creating order from quotation:', error);
+                  this.notificationService.error('Failed to create order from quotation');
+                }
+              });
           });
         }
 

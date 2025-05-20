@@ -6,6 +6,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { Order, OrderItem } from '../../core/models/order.model';
 import { Opportunity, OpportunityProduct } from '../../core/models/company.model';
+import { Quotation, QuotationItem } from '../../core/models/quotation.model';
+import { CompanyService } from '../companies/services/company.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +16,8 @@ export class OrderService {
   constructor(
     private supabaseService: SupabaseService,
     private authService: AuthService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private companyService: CompanyService
   ) {}
 
   getOrders(): Observable<Order[]> {
@@ -84,6 +87,97 @@ export class OrderService {
     );
   }
 
+  createOrderFromQuotation(quotation: Quotation, successNotes?: string): Observable<Order> {
+    const currentUser = this.authService.getCurrentUser();
+
+    if (!currentUser) {
+      return throwError(() => new Error('User must be logged in to create orders'));
+    }
+
+    // Create order from quotation data
+    const order: Partial<Order> = {
+      companyId: quotation.companyId,
+      contactId: quotation.contactId,
+      title: quotation.title,
+      status: 'pending',
+      total: quotation.total || 0,
+      notes: quotation.notes,
+      successNotes: successNotes || 'Created from accepted quotation',
+      orderDate: new Date().toISOString(),
+      lastContactDate: new Date().toISOString()
+    };
+
+    const dbOrder = this.formatOrderForDatabase(order);
+
+    // Add created_by and timestamps
+    dbOrder.created_by = currentUser.id;
+    dbOrder.created_at = new Date().toISOString();
+
+    return from(this.supabaseService.supabaseClient
+      .from('orders')
+      .insert(dbOrder)
+      .select()
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+
+        const createdOrder = this.formatOrderFromDatabase(response.data[0]);
+
+        // If quotation has items, add them as order items
+        if (quotation.items && quotation.items.length > 0) {
+          this.addOrderItemsFromQuotation(createdOrder.id, quotation.items);
+        } else {
+          // If no items, create a default order item
+          const defaultItem = {
+            order_id: createdOrder.id,
+            product_id: null,
+            product_name: quotation.title,
+            quantity: 1,
+            price: quotation.total || 0,
+            total: quotation.total || 0,
+            notes: 'Created from accepted quotation',
+            created_at: new Date().toISOString()
+          };
+
+          this.supabaseService.supabaseClient
+            .from('order_items')
+            .insert(defaultItem)
+            .then(response => {
+              if (response.error) {
+                console.error('Error adding default order item:', response.error);
+              }
+            });
+        }
+
+        // Update the company's total order value
+        this.updateCompanyTotalOrderValue(quotation.companyId);
+
+        this.notificationService.success('Order created successfully from accepted quotation');
+        return createdOrder;
+      }),
+      catchError(error => {
+        console.error('Error creating order from quotation:', error);
+        this.notificationService.error(`Failed to create order: ${error.message}`);
+
+        // For development, return a mock order if the table doesn't exist yet
+        const mockOrder: Order = {
+          id: 'mock-' + Date.now(),
+          companyId: quotation.companyId,
+          contactId: quotation.contactId,
+          title: quotation.title,
+          status: 'pending',
+          total: quotation.total || 0,
+          notes: quotation.notes,
+          successNotes: successNotes || 'Created from accepted quotation',
+          orderDate: new Date(),
+          lastContactDate: new Date(),
+          createdAt: new Date()
+        };
+        return of(mockOrder);
+      })
+    );
+  }
+
   createOrderFromOpportunity(opportunity: Opportunity, successNotes?: string): Observable<Order> {
     const currentUser = this.authService.getCurrentUser();
 
@@ -146,6 +240,9 @@ export class OrderService {
             });
         }
 
+        // Update the company's total order value
+        this.updateCompanyTotalOrderValue(opportunity.companyId);
+
         this.notificationService.success('Order created successfully');
         return createdOrder;
       }),
@@ -192,6 +289,40 @@ export class OrderService {
           console.error('Error adding order items:', response.error);
         }
       });
+  }
+
+  private addOrderItemsFromQuotation(orderId: string, items: QuotationItem[]): void {
+    const orderItems = items.map(item => ({
+      order_id: orderId,
+      product_id: item.productId,
+      product_name: item.product?.name || 'Unknown Product',
+      quantity: item.quantity,
+      price: item.price,
+      total: item.total,
+      notes: item.notes || 'Created from quotation item',
+      created_at: new Date().toISOString()
+    }));
+
+    this.supabaseService.supabaseClient
+      .from('order_items')
+      .insert(orderItems)
+      .then(response => {
+        if (response.error) {
+          console.error('Error adding order items from quotation:', response.error);
+        }
+      });
+  }
+
+  private updateCompanyTotalOrderValue(companyId: string): void {
+    // Use the CompanyService to refresh the company metrics
+    this.companyService.calculateCompanyMetrics(companyId).subscribe({
+      next: (metrics) => {
+        console.log(`Updated total order value for company ${companyId}: ${metrics?.totalOrderValue || 0}`);
+      },
+      error: (error) => {
+        console.error('Error updating company total order value:', error);
+      }
+    });
   }
 
   // Helper functions to format data
