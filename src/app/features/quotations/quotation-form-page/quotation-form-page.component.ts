@@ -27,7 +27,7 @@ import { QuotationFormComponent } from '../quotation-form/quotation-form.compone
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="p-6">
         <app-quotation-form
           [quotation]="quotation"
           [isSaving]="isSaving"

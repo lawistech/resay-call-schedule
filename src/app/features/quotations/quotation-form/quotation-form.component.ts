@@ -22,7 +22,7 @@ import { SupabaseService } from '../../../core/services/supabase.service';
     FormsModule
   ],
   templateUrl: './quotation-form.component.html',
-  styleUrls: ['./quotation-form.component.css']
+  styleUrls: ['./quotation-form.component.scss']
 })
 export class QuotationFormComponent implements OnInit, OnDestroy {
   @Input() quotation: Quotation | null = null;

@@ -1,58 +1,86 @@
-<div class="relative mx-auto p-0 w-full max-w-4xl rounded-lg form-container">
+<div class="relative mx-auto w-full max-w-4xl rounded-lg form-container bg-white shadow-lg">
     <!-- Paper corner fold effect -->
     <div class="paper-corner"></div>
     <!-- Close Button -->
-    <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" (click)="onCancel()">
+    <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 z-10 transition-all duration-200 hover:scale-110" (click)="onCancel()" title="Close form">
       <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
 
     <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex justify-center items-center py-12">
-      <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <div *ngIf="isLoading" class="flex flex-col justify-center items-center py-16">
+      <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
+      <p class="mt-3 text-gray-600">Loading quotation data...</p>
     </div>
 
     <!-- Quotation Form -->
-    <form *ngIf="!isLoading" [formGroup]="quotationForm" (ngSubmit)="onSubmit()" class="p-6 space-y-6">
+    <form *ngIf="!isLoading" [formGroup]="quotationForm" (ngSubmit)="onSubmit()" class="p-4 space-y-4">
       <div class="paper-section">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Quotation Details</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-4 md:col-span-1">
+        <h3 class="text-lg font-medium text-gray-900 mb-3">Quotation Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-3 md:col-span-1">
             <!-- Left Column -->
             <!-- Title -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Title*</label>
-              <input type="text" formControlName="title"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <div *ngIf="quotationForm.get('title')?.errors?.['required'] && quotationForm.get('title')?.touched"
-                  class="text-red-500 text-xs mt-1">
-                Title is required
+            <div class="form-group">
+              <label class="block text-sm font-medium text-gray-700 required-field">Title</label>
+              <div class="relative">
+                <input type="text" formControlName="title"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                      [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': quotationForm.get('title')?.errors?.['required'] && quotationForm.get('title')?.touched}"
+                      placeholder="Enter quotation title">
+                <div *ngIf="quotationForm.get('title')?.errors?.['required'] && quotationForm.get('title')?.touched"
+                    class="text-red-500 text-xs mt-1 slide-in">
+                  <span class="flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    Title is required
+                  </span>
+                </div>
               </div>
             </div>
 
             <!-- Description -->
-            <div>
+            <div class="form-group">
               <label class="block text-sm font-medium text-gray-700">Description</label>
-              <textarea formControlName="description" rows="3"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+              <div class="relative">
+                <textarea formControlName="description" rows="3"
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                          placeholder="Enter a detailed description of this quotation..."></textarea>
+                <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+                  Optional
+                </div>
+              </div>
             </div>
 
             <!-- Company Search -->
-            <div>
-              <div class="flex justify-between">
-                <label for="company_search" class="block text-sm font-medium text-gray-700">Company*</label>
-                <button type="button" (click)="toggleNewCompanyForm()" class="text-xs text-primary">
-                  {{ showNewCompanyForm ? 'Select Existing Company' : 'Add New Company' }}
+            <div class="form-group">
+              <div class="flex justify-between items-center mb-1">
+                <label for="company_search" class="block text-sm font-medium text-gray-700 required-field">Company</label>
+                <button type="button" (click)="toggleNewCompanyForm()"
+                        class="text-xs text-blue-600 hover:text-blue-800 transition-colors duration-200 flex items-center">
+                  <span>{{ showNewCompanyForm ? 'Select Existing Company' : 'Add New Company' }}</span>
+                  <svg *ngIf="!showNewCompanyForm" class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                  <svg *ngIf="showNewCompanyForm" class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                  </svg>
                 </button>
               </div>
 
               <div *ngIf="!showNewCompanyForm" class="relative">
                 <!-- Company Search Input -->
-                <div class="flex items-center">
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
                   <input
                     type="text"
                     id="company_search"
@@ -60,7 +88,8 @@
                     (ngModelChange)="onCompanySearchChange($event)"
                     [ngModelOptions]="{standalone: true}"
                     placeholder="Search for a company..."
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 bg-white"
+                    [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': quotationForm.get('companyId')?.errors?.['required'] && quotationForm.get('companyId')?.touched}"
                     autocomplete="off"
                     [attr.disabled]="companyId ? true : null"
                   >
@@ -68,7 +97,7 @@
                     type="button"
                     (click)="clearCompanySearch()"
                     *ngIf="(companySearchTerm || selectedCompany) && !companyId"
-                    class="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
@@ -77,8 +106,12 @@
                 </div>
 
                 <!-- Company Search Results -->
-                <div *ngIf="showCompanySearchResults" class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto max-h-60">
-                  <div *ngIf="isSearchingCompany" class="px-4 py-2 text-sm text-gray-500">
+                <div *ngIf="showCompanySearchResults" class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto max-h-60 border border-gray-200">
+                  <div *ngIf="isSearchingCompany" class="px-4 py-2 text-sm text-gray-500 flex items-center">
+                    <svg class="animate-spin h-4 w-4 mr-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                     Searching...
                   </div>
                   <div *ngIf="!isSearchingCompany && companySearchResults.length === 0" class="px-4 py-2 text-sm text-gray-500">
@@ -87,11 +120,16 @@
                   <ul *ngIf="!isSearchingCompany && companySearchResults.length > 0" class="divide-y divide-gray-200">
                     <li *ngFor="let company of companySearchResults"
                         (click)="selectCompany(company)"
-                        class="px-4 py-2 cursor-pointer hover:bg-gray-100">
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-50 transition-colors duration-150">
                       <div class="flex items-center">
+                        <div class="flex-shrink-0 bg-blue-100 rounded-full p-2">
+                          <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                          </svg>
+                        </div>
                         <div class="ml-3">
                           <p class="text-sm font-medium text-gray-900">{{ company.name }}</p>
-                          <p *ngIf="company.industry" class="text-sm text-gray-500">{{ company.industry }}</p>
+                          <p *ngIf="company.industry" class="text-xs text-gray-500">{{ company.industry }}</p>
                         </div>
                       </div>
                     </li>
@@ -100,40 +138,67 @@
               </div>
 
               <!-- New Company Form -->
-              <div *ngIf="showNewCompanyForm" class="mt-2 space-y-3">
-                <form [formGroup]="companyForm">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700">Company Name*</label>
+              <div *ngIf="showNewCompanyForm" class="mt-2 space-y-3 bg-blue-50 p-3 rounded-md border border-blue-100 slide-in">
+                <div class="text-sm text-blue-800 mb-2 flex items-center">
+                  <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Create a new company
+                </div>
+                <form [formGroup]="companyForm" class="space-y-3">
+                  <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700 required-field">Company Name</label>
                     <input type="text" formControlName="name"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                          [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': companyForm.get('name')?.errors?.['required'] && companyForm.get('name')?.touched}"
+                          placeholder="Enter company name">
                     <div *ngIf="companyForm.get('name')?.errors?.['required'] && companyForm.get('name')?.touched"
-                        class="text-red-500 text-xs mt-1">
+                        class="text-red-500 text-xs mt-1 flex items-center">
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                      </svg>
                       Company name is required
                     </div>
                   </div>
-                  <div>
+                  <div class="form-group">
                     <label class="block text-sm font-medium text-gray-700">Industry</label>
                     <input type="text" formControlName="industry"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                          placeholder="e.g. Technology, Healthcare, etc.">
                   </div>
-                  <div>
+                  <div class="form-group">
                     <label class="block text-sm font-medium text-gray-700">Website</label>
-                    <input type="text" formControlName="website"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <div class="relative">
+                      <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                        </svg>
+                      </div>
+                      <input type="text" formControlName="website"
+                            class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                            placeholder="https://example.com">
+                    </div>
                   </div>
                 </form>
-                <div class="flex justify-end space-x-2">
-                  <button type="button" (click)="toggleNewCompanyForm()" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                <div class="flex justify-end space-x-2 pt-2">
+                  <button type="button" (click)="toggleNewCompanyForm()"
+                          class="px-3 py-1.5 text-sm bg-white text-gray-700 rounded-md hover:bg-gray-100 border border-gray-300 transition-all duration-200 flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                     Cancel
                   </button>
                   <button type="button" (click)="createCompany()" [disabled]="companyForm.invalid || isCreatingCompany"
-                          class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+                          class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-all duration-200 flex items-center">
                     <span *ngIf="isCreatingCompany" class="inline-block mr-1">
                       <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                     </span>
+                    <svg *ngIf="!isCreatingCompany" class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
                     Create Company
                   </button>
                 </div>
@@ -142,68 +207,131 @@
               <!-- Hidden company ID field -->
               <input type="hidden" formControlName="companyId">
               <div *ngIf="quotationForm.get('companyId')?.errors?.['required'] && quotationForm.get('companyId')?.touched"
-                  class="text-red-500 text-xs mt-1">
-                Company is required
+                  class="text-red-500 text-xs mt-1 slide-in">
+                <span class="flex items-center">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                  </svg>
+                  Please select or create a company
+                </span>
               </div>
             </div>
 
             <!-- Contact -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Contact (Optional)</label>
-              <select formControlName="contactId"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option value="">None</option>
-                <option *ngFor="let contact of contacts" [value]="contact.id">{{ contact.first_name }} {{ contact.last_name }}</option>
-              </select>
+            <div class="form-group">
+              <label class="block text-sm font-medium text-gray-700">Contact</label>
+              <div class="relative">
+                <select formControlName="contactId"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 bg-white">
+                  <option value="">None</option>
+                  <option *ngFor="let contact of contacts" [value]="contact.id">{{ contact.first_name }} {{ contact.last_name }}</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+                <div class="absolute bottom-2 right-10 text-xs text-gray-400">
+                  Optional
+                </div>
+              </div>
+              <div *ngIf="contacts.length === 0 && quotationForm.get('companyId')?.value" class="text-xs text-gray-500 mt-1 italic">
+                No contacts found for this company
+              </div>
             </div>
           </div>
 
-          <div class="space-y-4 md:col-span-1">
+          <div class="space-y-3 md:col-span-1">
             <!-- Right Column -->
             <!-- Status -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Status*</label>
-              <select formControlName="status"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
-              </select>
+            <div class="form-group">
+              <label class="block text-sm font-medium text-gray-700 required-field">Status</label>
+              <div class="relative">
+                <select formControlName="status"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 bg-white"
+                        [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': quotationForm.get('status')?.errors?.['required'] && quotationForm.get('status')?.touched}">
+                  <option *ngFor="let status of statuses" [value]="status" class="capitalize">{{ status }}</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
               <div *ngIf="quotationForm.get('status')?.errors?.['required'] && quotationForm.get('status')?.touched"
-                  class="text-red-500 text-xs mt-1">
-                Status is required
+                  class="text-red-500 text-xs mt-1 slide-in">
+                <span class="flex items-center">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                  </svg>
+                  Status is required
+                </span>
               </div>
             </div>
 
             <!-- Stage -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Stage*</label>
-              <select formControlName="stage"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                <option *ngFor="let stage of stages" [value]="stage">{{ stage }}</option>
-              </select>
+            <div class="form-group">
+              <label class="block text-sm font-medium text-gray-700 required-field">Stage</label>
+              <div class="relative">
+                <select formControlName="stage"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 bg-white"
+                        [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': quotationForm.get('stage')?.errors?.['required'] && quotationForm.get('stage')?.touched}">
+                  <option *ngFor="let stage of stages" [value]="stage">{{ stage }}</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
               <div *ngIf="quotationForm.get('stage')?.errors?.['required'] && quotationForm.get('stage')?.touched"
-                  class="text-red-500 text-xs mt-1">
-                Stage is required
+                  class="text-red-500 text-xs mt-1 slide-in">
+                <span class="flex items-center">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                  </svg>
+                  Stage is required
+                </span>
               </div>
             </div>
 
             <!-- Probability -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Probability (%)</label>
-              <input type="number" formControlName="probability" min="0" max="100"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <div class="form-group">
+              <div class="flex justify-between items-center">
+                <label class="block text-sm font-medium text-gray-700">Probability (%)</label>
+                <span class="text-sm font-medium text-blue-600">{{ quotationForm.get('probability')?.value || 0 }}%</span>
+              </div>
+              <div class="relative mt-2">
+                <input type="range" formControlName="probability" min="0" max="100" step="5"
+                      class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+              </div>
               <div class="mt-1 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
                 <div class="h-full bg-blue-600 probability-bar" [style.width.%]="quotationForm.get('probability')?.value"></div>
               </div>
             </div>
 
             <!-- Expected Close Date -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Valid Until*</label>
-              <input type="date" formControlName="expectedCloseDate"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <div class="form-group">
+              <label class="block text-sm font-medium text-gray-700 required-field">Valid Until</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <input type="date" formControlName="expectedCloseDate"
+                      class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 bg-white"
+                      [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': quotationForm.get('expectedCloseDate')?.errors?.['required'] && quotationForm.get('expectedCloseDate')?.touched}">
+
+              </div>
               <div *ngIf="quotationForm.get('expectedCloseDate')?.errors?.['required'] && quotationForm.get('expectedCloseDate')?.touched"
-                  class="text-red-500 text-xs mt-1">
-                Valid until date is required
+                  class="text-red-500 text-xs mt-1 slide-in">
+                <span class="flex items-center">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                  </svg>
+                  Valid until date is required
+                </span>
               </div>
             </div>
           </div>
@@ -211,11 +339,11 @@
       </div>
 
       <!-- Products Section -->
-      <div class="paper-section mt-6">
+      <div class="paper-section">
         <div class="flex justify-between items-center mb-3">
           <h3 class="text-lg font-medium text-gray-900">Products</h3>
           <button type="button" (click)="openProductSelector()"
-                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
             <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
@@ -224,14 +352,16 @@
         </div>
 
         <!-- Products List -->
-        <div *ngIf="productsArray.length > 0" class="bg-white shadow overflow-hidden rounded-md product-selector-container">
+        <div *ngIf="productsArray.length > 0" class="bg-white shadow overflow-hidden rounded-md product-selector-container border border-gray-200">
           <ul class="divide-y divide-gray-200" formArrayName="products">
             <li *ngFor="let productForm of productsArray.controls; let i = index" [formGroupName]="i" class="px-4 py-3 product-item">
               <div class="flex justify-between items-center">
                 <div class="flex-1">
                   <div class="flex items-center">
                     <span class="font-medium text-gray-900">{{ productForm.get('productName')?.value }}</span>
-                    <span class="ml-2 text-sm text-gray-500">x{{ productForm.get('quantity')?.value }}</span>
+                    <span class="ml-2 text-sm font-medium bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                      x{{ productForm.get('quantity')?.value }}
+                    </span>
                   </div>
                   <div class="mt-1 flex items-center text-sm text-gray-500">
                     <span>{{ productForm.get('price')?.value | currency:'GBP':'symbol' }} each</span>
@@ -241,7 +371,8 @@
                 </div>
                 <div class="flex items-center">
                   <div class="font-medium text-gray-900 mr-4">{{ productForm.get('total')?.value | currency:'GBP':'symbol' }}</div>
-                  <button type="button" (click)="removeProduct(i)" class="text-red-600 hover:text-red-800">
+                  <button type="button" (click)="removeProduct(i)"
+                          class="text-gray-400 hover:text-red-600 transition-colors duration-200 p-1 rounded-full hover:bg-red-50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                     </svg>
@@ -252,33 +383,47 @@
           </ul>
         </div>
 
-        <div *ngIf="productsArray.length === 0" class="text-gray-500 text-center py-4 border border-dashed border-gray-300 rounded-md">
-          No products added yet. Click "Add Product" to add products to this quotation.
+        <div *ngIf="productsArray.length === 0" class="text-gray-500 text-center py-8 border border-dashed border-gray-300 rounded-md bg-gray-50">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+          </svg>
+          <p class="mt-2 text-sm">No products added yet</p>
+          <p class="text-xs text-gray-400">Click "Add Product" to add products to this quotation</p>
         </div>
 
         <!-- Total Amount -->
-        <div class="mt-4 text-right">
-          <div class="text-sm text-gray-500">Total Amount</div>
-          <div class="text-xl font-bold">{{ quotationForm.get('amount')?.value | currency:'GBP':'symbol' }}</div>
+        <div class="mt-6 flex justify-end">
+          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-right">
+            <div class="text-sm text-gray-500">Total Amount</div>
+            <div class="text-2xl font-bold text-blue-600">{{ quotationForm.get('amount')?.value | currency:'GBP':'symbol' }}</div>
+          </div>
         </div>
       </div>
 
       <!-- Notes Section -->
       <div class="paper-section">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information test</h3>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Notes (Optional)</label>
-          <textarea formControlName="notes" rows="4"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+        <h3 class="text-lg font-medium text-gray-900 mb-3">Additional Information</h3>
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700">Notes</label>
+          <div class="relative">
+            <textarea formControlName="notes" rows="4"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+              placeholder="Enter any additional notes or information about this quotation..."></textarea>
+            <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+              Optional
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Form Actions -->
-      <div class="flex justify-end space-x-3">
-        <button type="button" (click)="onCancel()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+      <div class="flex justify-end space-x-3 sticky bottom-0 bg-white p-3 border-t border-gray-200 rounded-b-lg">
+        <button type="button" (click)="onCancel()"
+                class="px-4 py-2 bg-white text-gray-700 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 border border-gray-300 transition-all duration-200 flex items-center">
           Cancel
         </button>
-        <button type="submit" [disabled]="quotationForm.invalid || isSaving" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50">
+        <button type="submit" [disabled]="quotationForm.invalid || isSaving"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-200 flex items-center">
           <span *ngIf="isSaving" class="inline-block mr-2">
             <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -293,38 +438,38 @@
 <!-- Product Selector Modal -->
 <div *ngIf="showProductSelector" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[200] modal-enter">
   <!-- Even higher z-index to ensure it appears above the main form -->
-  <div class="relative mx-auto p-0 w-full max-w-md rounded-lg form-container" style="margin-top: 10vh; margin-bottom: 5vh; max-height: 80vh; overflow-y: auto;">
+  <div class="relative mx-auto w-full max-w-md rounded-lg form-container" style="margin-top: 10vh; margin-bottom: 5vh; max-height: 80vh; overflow-y: auto;">
     <!-- Paper corner fold effect -->
     <div class="paper-corner"></div>
     <!-- Close Button -->
-    <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 z-10" (click)="closeProductSelector()">
+    <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 z-10 transition-all duration-200 hover:scale-110" (click)="closeProductSelector()" title="Close product selector">
       <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
 
     <div class="paper-header">
-      <h2 class="text-lg font-semibold">Add Product</h2>
+      <h2 class="text-lg font-semibold text-gray-900">Add Product</h2>
     </div>
 
     <!-- Product Selection -->
-    <div class="p-4 space-y-4">
+    <div class="p-3 space-y-3">
       <div class="paper-section compact-section">
         <h3 class="text-sm font-medium text-gray-900 mb-2">Select Product</h3>
 
         <!-- Search Box -->
         <div class="mb-4">
           <div class="relative">
-            <input type="text" [(ngModel)]="productSearchQuery" (ngModelChange)="filterProducts()"
-                   placeholder="Search products..."
-                   class="pl-10 pr-4 py-2 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+              <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
               </svg>
             </div>
+            <input type="text" [(ngModel)]="productSearchQuery" (ngModelChange)="filterProducts()"
+                   placeholder="Search products..."
+                   class="pl-7 pr-9 py-1.5 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200">
             <button *ngIf="productSearchQuery" (click)="productSearchQuery = ''; filterProducts()"
-                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-200">
               <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
               </svg>
@@ -333,32 +478,43 @@
         </div>
 
         <!-- Product List -->
-        <div class="product-selector-container">
+        <div class="product-selector-container border border-gray-200 rounded-md">
           <ul class="divide-y divide-gray-200">
             <li *ngFor="let product of filteredProducts"
                 (click)="selectProduct(product)"
-                class="p-2 hover:bg-gray-50 cursor-pointer transition-colors duration-150 ease-in-out product-selector-item"
+                class="p-3 hover:bg-blue-50 cursor-pointer transition-colors duration-150 ease-in-out product-selector-item"
                 [class.bg-blue-50]="selectedProduct?.id === product.id">
               <div class="flex justify-between items-center">
                 <div class="truncate pr-2">
                   <div class="font-medium text-gray-900 text-sm truncate">{{ product.name }}</div>
-                  <div class="text-xs text-gray-500 truncate">{{ product.sku }}</div>
+                  <div class="text-xs text-gray-500 truncate flex items-center">
+                    <span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-xs mr-1">{{ product.sku }}</span>
+                  </div>
                 </div>
-                <div class="text-xs font-medium text-gray-900 whitespace-nowrap">{{ product.price | currency:'GBP':'symbol' }}</div>
+                <div class="text-sm font-medium text-blue-600 whitespace-nowrap">{{ product.price | currency:'GBP':'symbol' }}</div>
               </div>
             </li>
           </ul>
-          <div *ngIf="isLoadingProducts" class="p-2 text-center text-gray-500">
-            <svg class="animate-spin h-5 w-5 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <div *ngIf="isLoadingProducts" class="p-4 text-center text-gray-500">
+            <svg class="animate-spin h-6 w-6 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <div class="mt-1 text-xs">Loading products...</div>
+            <div class="mt-2 text-sm">Loading products...</div>
           </div>
-          <div *ngIf="!isLoadingProducts && filteredProducts.length === 0 && !productSearchQuery" class="p-2 text-center text-gray-500 text-xs">No products available</div>
-          <div *ngIf="!isLoadingProducts && filteredProducts.length === 0 && productSearchQuery" class="p-2 text-center text-gray-500 text-xs">
-            No products found matching "{{ productSearchQuery }}"
-            <button (click)="toggleCreateProductForm()" class="mt-2 inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500">
+          <div *ngIf="!isLoadingProducts && filteredProducts.length === 0 && !productSearchQuery" class="p-4 text-center">
+            <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+            <div class="mt-2 text-sm text-gray-500">No products available</div>
+          </div>
+          <div *ngIf="!isLoadingProducts && filteredProducts.length === 0 && productSearchQuery" class="p-4 text-center">
+            <div class="text-sm text-gray-500 mb-2">No products found matching "{{ productSearchQuery }}"</div>
+            <button (click)="toggleCreateProductForm()"
+                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
               Create New Product
             </button>
           </div>
@@ -366,38 +522,67 @@
       </div>
 
       <!-- Create Product Form -->
-      <div *ngIf="showCreateProductForm" class="paper-section compact-section space-y-3 mt-3">
-        <h3 class="text-sm font-medium text-gray-900 mb-2">Create New Product</h3>
+      <div *ngIf="showCreateProductForm" class="paper-section compact-section space-y-3 mt-3 bg-blue-50 border border-blue-100 slide-in">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-sm font-medium text-blue-800">Create New Product</h3>
+          <button type="button" (click)="toggleCreateProductForm()" class="text-blue-500 hover:text-blue-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
         <div class="space-y-3">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Product Name*</label>
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 required-field">Product Name</label>
             <input type="text" [(ngModel)]="newProductName"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                  placeholder="Enter product name">
+            <div *ngIf="!newProductName.trim()" class="text-red-500 text-xs mt-1 hidden">
+              Product name is required
+            </div>
           </div>
-          <div>
+          <div class="form-group">
             <label class="block text-sm font-medium text-gray-700">SKU</label>
-            <input type="text" [(ngModel)]="newProductSku"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <div class="relative">
+              <input type="text" [(ngModel)]="newProductSku"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    placeholder="Enter product SKU">
+              <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+                Optional
+              </div>
+            </div>
             <p class="text-xs text-gray-500 mt-1">Leave blank to auto-generate</p>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Price (£)*</label>
-            <input type="number" [(ngModel)]="newProductPrice" min="0" step="0.01"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 required-field">Price (£)</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                <span class="text-gray-500 text-sm">£</span>
+              </div>
+              <input type="number" [(ngModel)]="newProductPrice" min="0" step="0.01"
+                    class="pl-6 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                    placeholder="0.00">
+            </div>
           </div>
           <div class="flex justify-end space-x-3 pt-4">
             <button type="button" (click)="toggleCreateProductForm()"
-                    class="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 btn-secondary">
+                    class="px-3 py-1.5 bg-white text-gray-700 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 border border-gray-300 transition-all duration-200 flex items-center text-sm">
+              <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
               Cancel
             </button>
             <button type="button" (click)="createProduct()" [disabled]="!newProductName.trim()"
-                    class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 btn-primary">
+                    class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-200 flex items-center text-sm">
               <span *ngIf="isLoadingProducts" class="inline-block mr-1">
                 <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </span>
+              <svg *ngIf="!isLoadingProducts" class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
               Create Product
             </button>
           </div>
@@ -405,43 +590,81 @@
       </div>
 
       <!-- Product Details Form -->
-      <div *ngIf="selectedProduct && !showCreateProductForm" class="paper-section compact-section space-y-3 mt-3">
-        <h3 class="text-sm font-medium text-gray-900 mb-2">Product Details</h3>
+      <div *ngIf="selectedProduct && !showCreateProductForm" class="paper-section compact-section space-y-3 mt-3 border border-blue-100 slide-in">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-sm font-medium text-gray-900">Product Details</h3>
+          <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+            {{ selectedProduct.name }}
+          </div>
+        </div>
         <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Quantity</label>
-            <input type="number" [(ngModel)]="selectedProductQuantity" min="1"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 required-field">Quantity</label>
+            <div class="relative">
+              <input type="number" [(ngModel)]="selectedProductQuantity" min="1"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200">
+              <div class="absolute inset-y-0 right-0 flex items-center">
+                <button type="button" (click)="selectedProductQuantity = selectedProductQuantity > 1 ? selectedProductQuantity - 1 : 1"
+                        class="h-full px-2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                  </svg>
+                </button>
+                <button type="button" (click)="selectedProductQuantity = selectedProductQuantity + 1"
+                        class="h-full px-2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Price (£)</label>
-            <input type="number" [(ngModel)]="selectedProductPrice" min="0" step="0.01"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 required-field">Price (£)</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                <span class="text-gray-500 text-sm">£</span>
+              </div>
+              <input type="number" [(ngModel)]="selectedProductPrice" min="0" step="0.01"
+                    class="pl-6 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200">
+            </div>
           </div>
         </div>
 
-        <div>
+        <div class="form-group">
           <label class="block text-sm font-medium text-gray-700">Notes</label>
-          <textarea [(ngModel)]="selectedProductNotes" rows="2"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+          <div class="relative">
+            <textarea [(ngModel)]="selectedProductNotes" rows="2"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                      placeholder="Add any special notes about this product..."></textarea>
+            <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+              Optional
+            </div>
+          </div>
         </div>
 
-        <div class="bg-gray-50 p-3 rounded-md">
+        <div class="bg-blue-50 p-4 rounded-md border border-blue-100">
           <div class="flex justify-between items-center">
             <span class="text-sm font-medium text-gray-700">Total:</span>
-            <span class="text-lg font-bold text-gray-900">{{ selectedProductQuantity * selectedProductPrice | currency:'GBP':'symbol' }}</span>
+            <span class="text-lg font-bold text-blue-600">{{ selectedProductQuantity * selectedProductPrice | currency:'GBP':'symbol' }}</span>
           </div>
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex justify-end space-x-3 mt-4 border-t pt-3">
+      <div class="flex justify-end space-x-3 mt-3 border-t pt-3 sticky bottom-0 bg-white shadow-md rounded-b-lg">
         <button type="button" (click)="closeProductSelector()"
-                class="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 btn-secondary text-sm">
+                class="px-3 py-1.5 bg-white text-gray-700 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 border border-gray-300 transition-all duration-200 flex items-center text-sm">
+          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
           Cancel
         </button>
         <button type="button" (click)="addSelectedProduct()" [disabled]="!selectedProduct"
-                class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 btn-primary text-sm">
+                class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-200 flex items-center text-sm">
+          <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
           Add Product
         </button>
       </div>
