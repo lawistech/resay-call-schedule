@@ -1,8 +1,11 @@
 <!-- src/app/features/companies/company-detail/company-active-quotations/company-active-quotations.component.html -->
 <div class="mb-6">
   <div class="flex justify-between items-center mb-4">
-    <h3 class="text-lg font-semibold text-gray-900">Active Quotations</h3>
-    <button (click)="createQuotation()" class="btn-primary flex items-center">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900">Active Quotations</h3>
+      <p class="text-sm text-gray-500 mt-1">Manage and track all quotations for this company</p>
+    </div>
+    <button (click)="createQuotation()" class="btn-primary flex items-center transition-all hover:shadow-md">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
@@ -12,68 +15,124 @@
 
   <!-- Filter Tabs -->
   <div class="mb-4">
-    <div class="flex flex-wrap gap-2">
-      <button
-        (click)="setFilter('all')"
-        class="px-3 py-1 rounded-full text-sm font-medium focus:outline-none transition-colors"
-        [ngClass]="activeStatuses.size === 4 ? 'bg-gray-200 text-gray-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-      >
-        All
-      </button>
-      <button
-        (click)="setFilter('draft')"
-        class="px-3 py-1 rounded-full text-sm font-medium focus:outline-none transition-colors"
-        [ngClass]="isStatusActive('draft') ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-      >
-        Draft
-      </button>
-      <button
-        (click)="setFilter('sent')"
-        class="px-3 py-1 rounded-full text-sm font-medium focus:outline-none transition-colors"
-        [ngClass]="isStatusActive('sent') ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-      >
-        Sent
-      </button>
-      <button
-        (click)="setFilter('accepted')"
-        class="px-3 py-1 rounded-full text-sm font-medium focus:outline-none transition-colors"
-        [ngClass]="isStatusActive('accepted') ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-      >
-        Accepted
-      </button>
-      <button
-        (click)="setFilter('rejected')"
-        class="px-3 py-1 rounded-full text-sm font-medium focus:outline-none transition-colors"
-        [ngClass]="isStatusActive('rejected') ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-      >
-        Rejected
-      </button>
-      <button
-        (click)="setFilter('expired')"
-        class="px-3 py-1 rounded-full text-sm font-medium focus:outline-none transition-colors"
-        [ngClass]="isStatusActive('expired') ? 'bg-gray-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-      >
-        Expired
-      </button>
+    <div class="border-b border-gray-200">
+      <nav class="flex -mb-px space-x-6">
+        <button
+          (click)="setFilter('all')"
+          class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
+          [ngClass]="activeStatuses.size === 5 ? 'border-stone-800 text-stone-800' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          All
+        </button>
+        <button
+          (click)="setFilter('draft')"
+          class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
+          [ngClass]="isStatusActive('draft') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+               [ngClass]="isStatusActive('draft') ? 'text-blue-500' : 'text-gray-400'">
+            <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+          Draft
+        </button>
+        <button
+          (click)="setFilter('sent')"
+          class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
+          [ngClass]="isStatusActive('sent') ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+               [ngClass]="isStatusActive('sent') ? 'text-yellow-500' : 'text-gray-400'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          Sent
+        </button>
+        <button
+          (click)="setFilter('accepted')"
+          class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
+          [ngClass]="isStatusActive('accepted') ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+               [ngClass]="isStatusActive('accepted') ? 'text-green-500' : 'text-gray-400'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Accepted
+        </button>
+        <button
+          (click)="setFilter('rejected')"
+          class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
+          [ngClass]="isStatusActive('rejected') ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+               [ngClass]="isStatusActive('rejected') ? 'text-red-500' : 'text-gray-400'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Rejected
+        </button>
+        <button
+          (click)="setFilter('expired')"
+          class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
+          [ngClass]="isStatusActive('expired') ? 'border-gray-500 text-gray-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+               [ngClass]="isStatusActive('expired') ? 'text-gray-500' : 'text-gray-400'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Expired
+        </button>
+      </nav>
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="bg-gray-50 rounded-lg p-8 flex justify-center">
-    <svg class="animate-spin h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
+  <!-- Loading State - Skeleton -->
+  <div *ngIf="isLoading" class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="animate-pulse">
+      <div class="bg-gray-100 h-12 w-full"></div>
+      <div class="divide-y divide-gray-200">
+        <div class="py-4 px-6 flex space-x-4">
+          <div class="flex-1 space-y-3">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          <div class="w-24">
+            <div class="h-4 bg-gray-200 rounded"></div>
+          </div>
+          <div class="w-24">
+            <div class="h-4 bg-gray-200 rounded"></div>
+          </div>
+          <div class="w-24">
+            <div class="h-4 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+        <div class="py-4 px-6 flex space-x-4">
+          <div class="flex-1 space-y-3">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          <div class="w-24">
+            <div class="h-4 bg-gray-200 rounded"></div>
+          </div>
+          <div class="w-24">
+            <div class="h-4 bg-gray-200 rounded"></div>
+          </div>
+          <div class="w-24">
+            <div class="h-4 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- No Quotations -->
-  <div *ngIf="!isLoading && filteredQuotations.length === 0" class="bg-gray-50 rounded-lg p-8 text-center">
+  <div *ngIf="!isLoading && filteredQuotations.length === 0" class="bg-white rounded-lg shadow-sm p-8 text-center border border-gray-100">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
     <h3 class="text-lg font-medium text-gray-900 mb-2">No quotations found</h3>
-    <p class="text-gray-500 mb-4">Create a quotation to track potential sales</p>
-    <button (click)="createQuotation()" class="btn-primary">
+    <p class="text-gray-500 mb-4">Create a quotation to track potential sales and manage client proposals</p>
+    <button (click)="createQuotation()" class="btn-primary transition-all hover:shadow-md">
       Create Quotation
     </button>
   </div>
@@ -88,36 +147,66 @@
           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Contact</th>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        <tr *ngFor="let quotation of filteredQuotations" class="hover:bg-gray-50 cursor-pointer" (click)="viewQuotation(quotation.id)">
-          <td class="px-6 py-4 whitespace-nowrap">
+        <tr *ngFor="let quotation of filteredQuotations" class="hover:bg-gray-50 group">
+          <td class="px-6 py-4 cursor-pointer" (click)="viewQuotation(quotation.id)">
             <div class="text-sm font-medium text-gray-900">{{ quotation.title }}</div>
             <div *ngIf="quotation.description" class="text-xs text-gray-500 mt-1 truncate max-w-xs" title="{{ quotation.description }}">
               {{ quotation.description }}
             </div>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
+          <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewQuotation(quotation.id)">
             <div class="text-sm text-gray-500">{{ formatDateTime(quotation.createdAt) }}</div>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">{{ formatCurrency(quotation.total) }}</div>
+          <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewQuotation(quotation.id)">
+            <div class="text-sm font-medium text-gray-900">{{ formatCurrency(quotation.total) }}</div>
+            <!-- Value indicator bar -->
+            <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+              <div class="bg-blue-600 h-1.5 rounded-full" [style.width]="(quotation.total / 10000 * 100) + '%'"></div>
+            </div>
           </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="flex items-center space-x-2">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" [ngClass]="getStatusColor(quotation.status)">
+          <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewQuotation(quotation.id)">
+            <div class="flex items-center">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize" [ngClass]="getStatusColor(quotation.status)">
+                <svg *ngIf="quotation.status === 'draft'" class="h-3.5 w-3.5 mr-1.5 text-blue-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
+                <svg *ngIf="quotation.status === 'sent'" class="h-3.5 w-3.5 mr-1.5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                </svg>
+                <svg *ngIf="quotation.status === 'accepted'" class="h-3.5 w-3.5 mr-1.5 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <svg *ngIf="quotation.status === 'rejected'" class="h-3.5 w-3.5 mr-1.5 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <svg *ngIf="quotation.status === 'expired'" class="h-3.5 w-3.5 mr-1.5 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                </svg>
                 {{ quotation.status }}
               </span>
-              <button (click)="openStatusChangeModal(quotation, $event)" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewQuotation(quotation.id)">
+            <div class="text-sm text-gray-500">{{ quotation.updatedAt ? formatDateTime(quotation.updatedAt) : 'N/A' }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right">
+            <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button (click)="viewQuotation(quotation.id)" class="text-gray-500 hover:text-blue-600 focus:outline-none p-1" title="View Details">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+              <button (click)="openStatusChangeModal(quotation, $event)" class="text-gray-500 hover:text-yellow-600 focus:outline-none p-1" title="Change Status">
+                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
                 </svg>
               </button>
             </div>
-          </td>
-          <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-500">{{ quotation.updatedAt ? formatDateTime(quotation.updatedAt) : 'N/A' }}</div>
           </td>
         </tr>
       </tbody>
@@ -127,16 +216,16 @@
 
 <!-- Status Change Modal -->
 <div *ngIf="showStatusModal && selectedQuotation" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-  <div class="relative mx-auto p-6 border w-full max-w-sm shadow-lg rounded-lg bg-white" (click)="$event.stopPropagation()">
+  <div class="relative mx-auto p-6 border w-full max-w-md shadow-lg rounded-lg bg-white" (click)="$event.stopPropagation()">
     <!-- Close Button -->
-    <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" (click)="closeStatusModal()">
-      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1" (click)="closeStatusModal()">
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
 
     <!-- Modal Header -->
-    <div class="mb-4 border-b pb-3">
+    <div class="mb-5 border-b pb-4">
       <h3 class="text-lg leading-6 font-semibold text-gray-900">Update Quotation Status</h3>
       <p class="text-sm text-gray-500 mt-1">{{ selectedQuotation.title }}</p>
     </div>
@@ -147,54 +236,81 @@
         *ngFor="let status of statusOptions"
         (click)="updateQuotationStatus(status)"
         [disabled]="isUpdatingStatus || selectedQuotation.status === status"
-        class="w-full flex items-center justify-between p-3 rounded-md border transition-colors"
+        class="w-full flex items-center justify-between p-4 rounded-md border transition-all"
         [ngClass]="{
-          'bg-gray-100 border-gray-300': selectedQuotation.status !== status,
-          'bg-blue-50 border-blue-300': selectedQuotation.status === status,
-          'opacity-50 cursor-not-allowed': isUpdatingStatus || selectedQuotation.status === status,
-          'hover:bg-gray-50': selectedQuotation.status !== status && !isUpdatingStatus
+          'bg-white border-gray-200 shadow-sm hover:shadow': selectedQuotation.status !== status && !isUpdatingStatus,
+          'bg-blue-50 border-blue-200 shadow-md': selectedQuotation.status === status,
+          'opacity-60 cursor-not-allowed': isUpdatingStatus || selectedQuotation.status === status
         }">
         <div class="flex items-center">
-          <span class="inline-flex items-center justify-center w-8 h-8 rounded-full mr-3"
-                [ngClass]="{
-                  'bg-blue-100 text-blue-800': status === 'draft',
-                  'bg-yellow-100 text-yellow-800': status === 'sent',
-                  'bg-green-100 text-green-800': status === 'accepted',
-                  'bg-red-100 text-red-800': status === 'rejected',
-                  'bg-gray-100 text-gray-800': status === 'expired'
-                }">
-            <svg *ngIf="status === 'draft'" class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
-            </svg>
-            <svg *ngIf="status === 'sent'" class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
-            </svg>
-            <svg *ngIf="status === 'accepted'" class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <svg *ngIf="status === 'rejected'" class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-            </svg>
-            <svg *ngIf="status === 'expired'" class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-            </svg>
-          </span>
-          <span class="font-medium">{{ status }}</span>
+          <div class="flex-shrink-0 mr-3">
+            <div class="relative">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                   [ngClass]="{
+                     'bg-blue-100': status === 'draft',
+                     'bg-yellow-100': status === 'sent',
+                     'bg-green-100': status === 'accepted',
+                     'bg-red-100': status === 'rejected',
+                     'bg-gray-100': status === 'expired'
+                   }">
+                <svg *ngIf="status === 'draft'" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     [ngClass]="status === 'draft' ? 'text-blue-600' : 'text-gray-400'">
+                  <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                <svg *ngIf="status === 'sent'" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     [ngClass]="status === 'sent' ? 'text-yellow-600' : 'text-gray-400'">
+                  <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <svg *ngIf="status === 'accepted'" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     [ngClass]="status === 'accepted' ? 'text-green-600' : 'text-gray-400'">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg *ngIf="status === 'rejected'" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     [ngClass]="status === 'rejected' ? 'text-red-600' : 'text-gray-400'">
+                  <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg *ngIf="status === 'expired'" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     [ngClass]="status === 'expired' ? 'text-gray-600' : 'text-gray-400'">
+                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div *ngIf="selectedQuotation.status === status" class="absolute -top-1 -right-1 bg-blue-500 rounded-full w-5 h-5 flex items-center justify-center">
+                <svg class="h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div>
+            <span class="font-medium text-gray-900 capitalize">{{ status }}</span>
+            <p class="text-xs text-gray-500 mt-0.5">
+              {{ getStatusDescription(status) }}
+            </p>
+          </div>
         </div>
-        <span *ngIf="selectedQuotation.status === status" class="text-blue-600">
-          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-          </svg>
-        </span>
+        <!-- Removed duplicate checkmark -->
+      </button>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-6 flex justify-end space-x-3">
+      <button
+        (click)="closeStatusModal()"
+        class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        [disabled]="isUpdatingStatus">
+        Cancel
       </button>
     </div>
 
     <!-- Loading Indicator -->
-    <div *ngIf="isUpdatingStatus" class="mt-4 flex justify-center">
-      <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
+    <div *ngIf="isUpdatingStatus" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+      <div class="flex flex-col items-center">
+        <svg class="animate-spin h-8 w-8 text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-gray-500">Updating status...</p>
+      </div>
     </div>
   </div>
 </div>

@@ -1,8 +1,11 @@
 <!-- src/app/features/companies/company-detail/company-opportunities/company-opportunities.component.html -->
 <div>
   <div class="flex justify-between items-center mb-6">
-    <h3 class="text-lg font-semibold text-gray-900">Products & Quotations</h3>
-    <button (click)="createQuotation()" class="btn-primary flex items-center">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900">Products & Quotations</h3>
+      <p class="text-sm text-gray-500 mt-1">Manage sales opportunities and track client interactions</p>
+    </div>
+    <button (click)="createQuotation()" class="btn-primary flex items-center transition-all hover:shadow-md">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
@@ -12,24 +15,63 @@
 
   <!-- Active Quotations Section -->
   <div class="mb-8">
-    <h4 class="text-md font-medium text-gray-700 mb-4">Active Quotations</h4>
+    <div class="flex justify-between items-center mb-4">
+      <h4 class="text-md font-medium text-gray-700">Active Quotations</h4>
+      <a href="javascript:void(0)" class="text-sm text-blue-600 hover:text-blue-800 flex items-center" (click)="createQuotation()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        New Quotation
+      </a>
+    </div>
 
-    <!-- Loading State -->
-    <div *ngIf="isLoadingQuotations" class="flex justify-center items-center py-12">
-      <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
+    <!-- Loading State - Skeleton -->
+    <div *ngIf="isLoadingQuotations" class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="animate-pulse">
+        <div class="bg-gray-100 h-12 w-full"></div>
+        <div class="divide-y divide-gray-200">
+          <div class="py-4 px-6 flex space-x-4">
+            <div class="flex-1 space-y-3">
+              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+          <div class="py-4 px-6 flex space-x-4">
+            <div class="flex-1 space-y-3">
+              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- No Quotations -->
-    <div *ngIf="!isLoadingQuotations && activeQuotations.length === 0" class="bg-gray-50 rounded-lg p-8 text-center">
+    <div *ngIf="!isLoadingQuotations && activeQuotations.length === 0" class="bg-white rounded-lg shadow-sm p-8 text-center border border-gray-100">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
       <h3 class="text-lg font-medium text-gray-900 mb-2">No active quotations</h3>
-      <p class="text-gray-500 mb-4">Create a quotation to track potential sales</p>
-      <button (click)="createQuotation()" class="btn-primary">
+      <p class="text-gray-500 mb-4">Create a quotation to track potential sales and manage client proposals</p>
+      <button (click)="createQuotation()" class="btn-primary transition-all hover:shadow-md">
         Create Quotation
       </button>
     </div>
@@ -44,29 +86,61 @@
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Contact</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let quotation of activeQuotations" class="hover:bg-gray-50 cursor-pointer" (click)="viewQuotation(quotation.id)">
-            <td class="px-6 py-4 whitespace-nowrap">
+          <tr *ngFor="let quotation of activeQuotations" class="hover:bg-gray-50 group">
+            <td class="px-6 py-4 cursor-pointer" (click)="viewQuotation(quotation.id)">
               <div class="text-sm font-medium text-gray-900">{{ quotation.title }}</div>
               <div *ngIf="quotation.description" class="text-xs text-gray-500 mt-1 truncate max-w-xs" title="{{ quotation.description }}">
                 {{ quotation.description }}
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewQuotation(quotation.id)">
               <div class="text-sm text-gray-500">{{ formatDateTime(quotation.createdAt) }}</div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ formatCurrency(quotation.total) }}</div>
+            <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewQuotation(quotation.id)">
+              <div class="text-sm font-medium text-gray-900">{{ formatCurrency(quotation.total) }}</div>
+              <!-- Value indicator bar -->
+              <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+                <div class="bg-blue-600 h-1.5 rounded-full" [style.width]="(quotation.total / 10000 * 100) + '%'"></div>
+              </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="getStatusColor(quotation.status)">
-                {{ quotation.status }}
-              </span>
+            <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewQuotation(quotation.id)">
+              <div class="flex items-center">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize" [ngClass]="getStatusColor(quotation.status)">
+                  <svg *ngIf="quotation.status === 'draft'" class="h-3.5 w-3.5 mr-1.5 text-blue-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>
+                  <svg *ngIf="quotation.status === 'sent'" class="h-3.5 w-3.5 mr-1.5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                  </svg>
+                  <svg *ngIf="quotation.status === 'accepted'" class="h-3.5 w-3.5 mr-1.5 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  <svg *ngIf="quotation.status === 'rejected'" class="h-3.5 w-3.5 mr-1.5 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                  <svg *ngIf="quotation.status === 'expired'" class="h-3.5 w-3.5 mr-1.5 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                  </svg>
+                  {{ quotation.status }}
+                </span>
+              </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewQuotation(quotation.id)">
               <div class="text-sm text-gray-500">{{ quotation.updatedAt ? formatDateTime(quotation.updatedAt) : 'N/A' }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+              <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="viewQuotation(quotation.id)" class="text-gray-500 hover:text-blue-600 focus:outline-none p-1" title="View Details">
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -74,84 +148,171 @@
     </div>
   </div>
 
-  <!-- Quotations Section -->
+  <!-- Opportunities Section -->
   <div class="mb-8">
-    <h4 class="text-md font-medium text-gray-700 mb-4">Quotations</h4>
+    <div class="flex justify-between items-center mb-4">
+      <h4 class="text-md font-medium text-gray-700">Sales Opportunities</h4>
+      <a href="javascript:void(0)" class="text-sm text-blue-600 hover:text-blue-800 flex items-center" (click)="createOpportunity()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        New Opportunity
+      </a>
+    </div>
 
     <!-- Filter Tabs -->
     <div class="mb-4">
       <div class="border-b border-gray-200">
-        <nav class="flex -mb-px">
+        <nav class="flex -mb-px space-x-6">
           <button
             (click)="setFilter('all')"
-            class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+            class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
             [ngClass]="filterStatus === 'all' ? 'border-stone-800 text-stone-800' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
             All
           </button>
           <button
             (click)="setFilter('New')"
-            class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+            class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
             [ngClass]="isStatusActive('New') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                 [ngClass]="isStatusActive('New') ? 'text-blue-500' : 'text-gray-400'">
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+              <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+            </svg>
             New
           </button>
           <button
             (click)="setFilter('In Progress')"
-            class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+            class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
             [ngClass]="isStatusActive('In Progress') ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                 [ngClass]="isStatusActive('In Progress') ? 'text-amber-500' : 'text-gray-400'">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             In Progress
           </button>
           <button
             (click)="setFilter('Won')"
-            class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+            class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
             [ngClass]="isStatusActive('Won') ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                 [ngClass]="isStatusActive('Won') ? 'text-green-500' : 'text-gray-400'">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             Won
           </button>
           <button
             (click)="setFilter('Lost')"
-            class="py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none"
+            class="py-2 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors flex items-center"
             [ngClass]="isStatusActive('Lost') ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                 [ngClass]="isStatusActive('Lost') ? 'text-red-500' : 'text-gray-400'">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             Lost
           </button>
         </nav>
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex justify-center items-center py-12">
-      <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
+    <!-- Loading State - Skeleton -->
+    <div *ngIf="isLoading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+        <div class="flex justify-between items-start mb-4">
+          <div class="h-5 bg-gray-200 rounded w-1/2"></div>
+          <div class="h-5 bg-gray-200 rounded w-16"></div>
+        </div>
+        <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <div class="h-3 bg-gray-200 rounded w-1/3 mb-1"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          <div>
+            <div class="h-3 bg-gray-200 rounded w-1/3 mb-1"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          <div>
+            <div class="h-3 bg-gray-200 rounded w-1/3 mb-1"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          <div>
+            <div class="h-3 bg-gray-200 rounded w-1/3 mb-1"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+        <div class="flex justify-between items-start mb-4">
+          <div class="h-5 bg-gray-200 rounded w-1/2"></div>
+          <div class="h-5 bg-gray-200 rounded w-16"></div>
+        </div>
+        <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <div class="h-3 bg-gray-200 rounded w-1/3 mb-1"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          <div>
+            <div class="h-3 bg-gray-200 rounded w-1/3 mb-1"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          <div>
+            <div class="h-3 bg-gray-200 rounded w-1/3 mb-1"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          <div>
+            <div class="h-3 bg-gray-200 rounded w-1/3 mb-1"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- No Opportunities -->
-    <div *ngIf="!isLoading && filterOpportunities().length === 0" class="bg-gray-50 rounded-lg p-8 text-center">
+    <div *ngIf="!isLoading && filterOpportunities().length === 0" class="bg-white rounded-lg shadow-sm p-8 text-center border border-gray-100">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
       </svg>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">No quotations found</h3>
-      <p class="text-gray-500 mb-4">Create a quotation to track potential deals</p>
-      <button (click)="createQuotation()" class="btn-primary">
-        Add Quotation
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No opportunities found</h3>
+      <p class="text-gray-500 mb-4">Create an opportunity to track potential deals and sales progress</p>
+      <button (click)="createOpportunity()" class="btn-primary transition-all hover:shadow-md">
+        Create Opportunity
       </button>
     </div>
 
     <!-- Opportunities List -->
     <div *ngIf="!isLoading && filterOpportunities().length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div *ngFor="let opportunity of filterOpportunities()"
-           class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
-        <div class="flex justify-between items-start mb-2">
-          <h5 class="text-md font-semibold text-gray-900 cursor-pointer" (click)="viewOpportunity(opportunity.id)">{{ opportunity.title }}</h5>
+           class="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition-all border border-gray-100">
+        <div class="flex justify-between items-start mb-3">
+          <h5 class="text-md font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors" (click)="viewOpportunity(opportunity.id)">{{ opportunity.title }}</h5>
           <div class="flex items-center space-x-2">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" [ngClass]="getStatusColor(opportunity.status)">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize" [ngClass]="getStatusColor(opportunity.status)">
+              <svg *ngIf="opportunity.status === 'New'" class="h-3.5 w-3.5 mr-1.5 text-blue-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+              </svg>
+              <svg *ngIf="opportunity.status === 'In Progress'" class="h-3.5 w-3.5 mr-1.5 text-amber-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+              </svg>
+              <svg *ngIf="opportunity.status === 'Won'" class="h-3.5 w-3.5 mr-1.5 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <svg *ngIf="opportunity.status === 'Lost'" class="h-3.5 w-3.5 mr-1.5 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
               {{ opportunity.status }}
             </span>
-            <button (click)="openStatusChangeModal(opportunity)" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+            <button (click)="openStatusChangeModal(opportunity)" class="text-gray-400 hover:text-gray-700 focus:outline-none p-1 rounded-full hover:bg-gray-100">
               <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
@@ -159,31 +320,44 @@
           </div>
         </div>
 
-        <p *ngIf="opportunity.description" class="text-sm text-gray-600 mb-3 line-clamp-2">{{ opportunity.description }}</p>
+        <p *ngIf="opportunity.description" class="text-sm text-gray-600 mb-4 line-clamp-2">{{ opportunity.description }}</p>
 
-        <div class="grid grid-cols-2 gap-2 mb-3">
+        <div class="grid grid-cols-2 gap-3 mb-4">
           <div>
-            <p class="text-xs text-gray-500">Value</p>
-            <p class="text-sm font-medium">{{ formatCurrency(opportunity.value) }}</p>
+            <p class="text-xs text-gray-500 mb-1">Value</p>
+            <p class="text-sm font-medium text-gray-900">{{ formatCurrency(opportunity.value) }}</p>
+            <!-- Value indicator bar -->
+            <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+              <div class="bg-blue-600 h-1.5 rounded-full" [style.width]="(opportunity.value / 10000 * 100) + '%'"></div>
+            </div>
           </div>
           <div>
-            <p class="text-xs text-gray-500">Probability</p>
-            <p class="text-sm font-medium">{{ opportunity.probability || 0 }}%</p>
+            <p class="text-xs text-gray-500 mb-1">Probability</p>
+            <p class="text-sm font-medium text-gray-900">{{ opportunity.probability || 0 }}%</p>
+            <!-- Probability indicator bar -->
+            <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+              <div class="bg-green-600 h-1.5 rounded-full" [style.width]="(opportunity.probability || 0) + '%'"></div>
+            </div>
           </div>
           <div>
-            <p class="text-xs text-gray-500">Expected Close</p>
-            <p class="text-sm font-medium">{{ formatDate(opportunity.expectedCloseDate) }}</p>
+            <p class="text-xs text-gray-500 mb-1">Expected Close</p>
+            <p class="text-sm font-medium text-gray-900">{{ formatDate(opportunity.expectedCloseDate) }}</p>
           </div>
           <div>
-            <p class="text-xs text-gray-500">Stage</p>
-            <p class="text-sm font-medium">{{ opportunity.stage || 'N/A' }}</p>
+            <p class="text-xs text-gray-500 mb-1">Stage</p>
+            <p class="text-sm font-medium text-gray-900">{{ opportunity.stage || 'N/A' }}</p>
           </div>
         </div>
 
-        <div class="flex justify-end mt-2" *ngIf="opportunity.status !== 'Won' && opportunity.status !== 'Lost'">
+        <div class="flex justify-end mt-3 pt-3 border-t border-gray-100" *ngIf="opportunity.status !== 'Won' && opportunity.status !== 'Lost'">
           <button (click)="createOrderFromOpportunity(opportunity)"
-                  class="px-3 py-1 bg-green-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400">
-            Confirm & Create Order
+                  class="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition-all hover:shadow">
+            <span class="flex items-center">
+              <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Confirm & Create Order
+            </span>
           </button>
         </div>
       </div>
@@ -192,23 +366,57 @@
 
   <!-- Order History Section -->
   <div class="mb-8">
-    <h4 class="text-md font-medium text-gray-700 mb-4">Order History</h4>
+    <div class="flex justify-between items-center mb-4">
+      <h4 class="text-md font-medium text-gray-700">Order History</h4>
+      <span class="text-sm text-gray-500">{{ orderHistory.length }} orders</span>
+    </div>
 
-    <!-- Loading State -->
-    <div *ngIf="isLoadingOrders" class="flex justify-center items-center py-12">
-      <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
+    <!-- Loading State - Skeleton -->
+    <div *ngIf="isLoadingOrders" class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="animate-pulse">
+        <div class="bg-gray-100 h-12 w-full"></div>
+        <div class="divide-y divide-gray-200">
+          <div class="py-4 px-6 flex space-x-4">
+            <div class="flex-1 space-y-3">
+              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+          <div class="py-4 px-6 flex space-x-4">
+            <div class="flex-1 space-y-3">
+              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+            <div class="w-24">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- No Orders -->
-    <div *ngIf="!isLoadingOrders && orderHistory.length === 0" class="bg-gray-50 rounded-lg p-8 text-center">
+    <div *ngIf="!isLoadingOrders && orderHistory.length === 0" class="bg-white rounded-lg shadow-sm p-8 text-center border border-gray-100">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
       </svg>
       <h3 class="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
-      <p class="text-gray-500 mb-4">Orders will appear here once created</p>
+      <p class="text-gray-500 mb-4">Orders will appear here once created from opportunities</p>
     </div>
 
     <!-- Orders List (will be shown when there are orders) -->
@@ -221,35 +429,64 @@
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Contact</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let order of orderHistory" class="hover:bg-gray-50 cursor-pointer" (click)="viewOrderDetails(order)">
-            <td class="px-6 py-4 whitespace-nowrap">
+          <tr *ngFor="let order of orderHistory" class="hover:bg-gray-50 group">
+            <td class="px-6 py-4 cursor-pointer" (click)="viewOrderDetails(order)">
               <div class="text-sm font-medium text-gray-900">{{ order.title }}</div>
               <div *ngIf="order.successNotes" class="text-xs text-gray-500 mt-1 truncate max-w-xs" title="{{ order.successNotes }}">
                 {{ order.successNotes }}
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewOrderDetails(order)">
               <div class="text-sm text-gray-500">{{ formatDateTime(order.orderDate) }}</div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ formatCurrency(order.total) }}</div>
+            <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewOrderDetails(order)">
+              <div class="text-sm font-medium text-gray-900">{{ formatCurrency(order.total) }}</div>
+              <!-- Value indicator bar -->
+              <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1.5">
+                <div class="bg-green-600 h-1.5 rounded-full" [style.width]="(order.total / 10000 * 100) + '%'"></div>
+              </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                    [ngClass]="{
-                      'bg-yellow-100 text-yellow-800': order.status === 'pending',
-                      'bg-blue-100 text-blue-800': order.status === 'processing',
-                      'bg-green-100 text-green-800': order.status === 'completed',
-                      'bg-red-100 text-red-800': order.status === 'cancelled'
-                    }">
-                {{ order.status }}
-              </span>
+            <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewOrderDetails(order)">
+              <div class="flex items-center">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize"
+                      [ngClass]="{
+                        'bg-yellow-100 text-yellow-800 border-yellow-200': order.status === 'pending',
+                        'bg-blue-100 text-blue-800 border-blue-200': order.status === 'processing',
+                        'bg-green-100 text-green-800 border-green-200': order.status === 'completed',
+                        'bg-red-100 text-red-800 border-red-200': order.status === 'cancelled'
+                      }">
+                  <svg *ngIf="order.status === 'pending'" class="h-3.5 w-3.5 mr-1.5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                  </svg>
+                  <svg *ngIf="order.status === 'processing'" class="h-3.5 w-3.5 mr-1.5 text-blue-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                  </svg>
+                  <svg *ngIf="order.status === 'completed'" class="h-3.5 w-3.5 mr-1.5 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  <svg *ngIf="order.status === 'cancelled'" class="h-3.5 w-3.5 mr-1.5 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                  {{ order.status }}
+                </span>
+              </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-6 py-4 whitespace-nowrap cursor-pointer" (click)="viewOrderDetails(order)">
               <div class="text-sm text-gray-500">{{ formatDateTime(order.lastContactDate) }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right">
+              <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="viewOrderDetails(order)" class="text-gray-500 hover:text-blue-600 focus:outline-none p-1" title="View Details">
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -259,56 +496,63 @@
 
   <!-- Product Interest Section -->
   <div>
-    <h4 class="text-md font-medium text-gray-700 mb-4">Product Interest</h4>
+    <div class="flex justify-between items-center mb-4">
+      <h4 class="text-md font-medium text-gray-700">Product Interest</h4>
+      <span class="text-sm text-gray-500">{{ productInterests.length }} products</span>
+    </div>
 
     <!-- No Product Interest -->
-    <div *ngIf="productInterests.length === 0" class="bg-gray-50 rounded-lg p-8 text-center">
+    <div *ngIf="productInterests.length === 0" class="bg-white rounded-lg shadow-sm p-8 text-center border border-gray-100">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
       </svg>
       <h3 class="text-lg font-medium text-gray-900 mb-2">No product interest recorded</h3>
-      <p class="text-gray-500">Product interest will be tracked automatically</p>
+      <p class="text-gray-500 mb-4">Product interest will be tracked automatically as the client interacts with your catalog</p>
     </div>
 
     <!-- Product Interest List -->
-    <div *ngIf="productInterests.length > 0" class="bg-white rounded-lg shadow-sm overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Viewed</th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr *ngFor="let interest of productInterests" class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-900">{{ getProductName(interest.productId) }}</div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-500">{{ formatDate(interest.lastViewed) }}</div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="text-sm text-gray-500">{{ interest.notes || 'No notes' }}</div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div *ngIf="productInterests.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div *ngFor="let interest of productInterests" class="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-all border border-gray-100">
+        <div class="flex items-start mb-3">
+          <div class="bg-blue-100 text-blue-800 p-2 rounded-lg mr-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+          </div>
+          <div>
+            <h5 class="text-md font-semibold text-gray-900">{{ getProductName(interest.productId) }}</h5>
+            <p class="text-xs text-gray-500 mt-1">Last viewed: {{ formatDate(interest.lastViewed) }}</p>
+          </div>
+        </div>
+
+        <div class="ml-11">
+          <p class="text-sm text-gray-600 mb-2">{{ interest.notes || 'No additional notes' }}</p>
+
+          <div class="flex justify-end mt-3">
+            <button class="text-sm text-blue-600 hover:text-blue-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              View Product Details
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Status Change Modal -->
   <div *ngIf="showStatusModal && selectedOpportunity" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-    <div class="relative mx-auto p-6 border w-full max-w-sm shadow-lg rounded-lg bg-white" (click)="$event.stopPropagation()">
+    <div class="relative mx-auto p-6 border w-full max-w-md shadow-lg rounded-lg bg-white" (click)="$event.stopPropagation()">
       <!-- Close Button -->
-      <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700" (click)="closeStatusModal()">
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-full p-1" (click)="closeStatusModal()">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
 
       <!-- Modal Header -->
-      <div class="mb-4 border-b pb-3">
+      <div class="mb-5 border-b pb-4">
         <h3 class="text-lg leading-6 font-semibold text-gray-900">Update Opportunity Status</h3>
         <p class="text-sm text-gray-500 mt-1">{{ selectedOpportunity.title }}</p>
       </div>
@@ -319,28 +563,77 @@
           *ngFor="let status of statusOptions"
           (click)="updateOpportunityStatus(status)"
           [disabled]="isUpdatingStatus || selectedOpportunity.status === status"
-          class="w-full flex items-center justify-between p-3 rounded-md border"
+          class="w-full flex items-center justify-between p-4 rounded-md border transition-all"
           [ngClass]="{
-            'bg-gray-100 border-gray-300': selectedOpportunity.status !== status,
-            'bg-blue-50 border-blue-300': selectedOpportunity.status === status,
-            'opacity-50 cursor-not-allowed': isUpdatingStatus || selectedOpportunity.status === status,
-            'hover:bg-gray-50': selectedOpportunity.status !== status && !isUpdatingStatus
+            'bg-white border-gray-200 shadow-sm hover:shadow': selectedOpportunity.status !== status && !isUpdatingStatus,
+            'bg-blue-50 border-blue-200 shadow-md': selectedOpportunity.status === status,
+            'opacity-60 cursor-not-allowed': isUpdatingStatus || selectedOpportunity.status === status
           }">
-          <span class="font-medium">{{ status }}</span>
-          <span *ngIf="selectedOpportunity.status === status" class="text-blue-600">
-            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-          </span>
+          <div class="flex items-center">
+            <div class="flex-shrink-0 mr-3">
+              <div class="relative">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                     [ngClass]="{
+                       'bg-blue-100': status === 'New',
+                       'bg-amber-100': status === 'In Progress',
+                       'bg-green-100': status === 'Won',
+                       'bg-red-100': status === 'Lost'
+                     }">
+                  <svg *ngIf="status === 'New'" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       [ngClass]="status === 'New' ? 'text-blue-600' : 'text-gray-400'">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                  </svg>
+                  <svg *ngIf="status === 'In Progress'" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       [ngClass]="status === 'In Progress' ? 'text-amber-600' : 'text-gray-400'">
+                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <svg *ngIf="status === 'Won'" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       [ngClass]="status === 'Won' ? 'text-green-600' : 'text-gray-400'">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <svg *ngIf="status === 'Lost'" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       [ngClass]="status === 'Lost' ? 'text-red-600' : 'text-gray-400'">
+                    <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div *ngIf="selectedOpportunity.status === status" class="absolute -top-1 -right-1 bg-blue-500 rounded-full w-5 h-5 flex items-center justify-center">
+                  <svg class="h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div>
+              <span class="font-medium text-gray-900">{{ status }}</span>
+              <p class="text-xs text-gray-500 mt-0.5">
+                {{ getOpportunityStatusDescription(status) }}
+              </p>
+            </div>
+          </div>
+          <!-- Removed duplicate checkmark -->
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-6 flex justify-end space-x-3">
+        <button
+          (click)="closeStatusModal()"
+          class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          [disabled]="isUpdatingStatus">
+          Cancel
         </button>
       </div>
 
       <!-- Loading Indicator -->
-      <div *ngIf="isUpdatingStatus" class="mt-4 flex justify-center">
-        <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+      <div *ngIf="isUpdatingStatus" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+        <div class="flex flex-col items-center">
+          <svg class="animate-spin h-8 w-8 text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p class="text-sm text-gray-500">Updating status...</p>
+        </div>
       </div>
     </div>
   </div>
@@ -380,13 +673,25 @@
       <div>
         <p class="text-xs text-gray-500">Status</p>
         <p class="text-sm font-medium">
-          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+          <span class="px-2.5 py-1 inline-flex items-center text-xs leading-5 font-semibold rounded-full"
                 [ngClass]="{
                   'bg-yellow-100 text-yellow-800': selectedOrderForDetails.status === 'pending',
                   'bg-blue-100 text-blue-800': selectedOrderForDetails.status === 'processing',
                   'bg-green-100 text-green-800': selectedOrderForDetails.status === 'completed',
                   'bg-red-100 text-red-800': selectedOrderForDetails.status === 'cancelled'
                 }">
+            <svg *ngIf="selectedOrderForDetails.status === 'pending'" class="h-3.5 w-3.5 mr-1.5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+            </svg>
+            <svg *ngIf="selectedOrderForDetails.status === 'processing'" class="h-3.5 w-3.5 mr-1.5 text-blue-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+            </svg>
+            <svg *ngIf="selectedOrderForDetails.status === 'completed'" class="h-3.5 w-3.5 mr-1.5 text-green-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <svg *ngIf="selectedOrderForDetails.status === 'cancelled'" class="h-3.5 w-3.5 mr-1.5 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
             {{ selectedOrderForDetails.status }}
           </span>
         </p>

@@ -211,6 +211,21 @@ export class CompanyOpportunitiesComponent implements OnInit {
     }
   }
 
+  getOpportunityStatusDescription(status: string): string {
+    switch (status) {
+      case 'New':
+        return 'Opportunity has been identified but not yet actively pursued';
+      case 'In Progress':
+        return 'Actively working with the client on this opportunity';
+      case 'Won':
+        return 'Client has accepted the proposal and confirmed the order';
+      case 'Lost':
+        return 'Client has declined the proposal or opportunity is no longer viable';
+      default:
+        return '';
+    }
+  }
+
   // Format date for display with time
   formatDateTime(date: string | Date | undefined): string {
     if (!date) return 'N/A';

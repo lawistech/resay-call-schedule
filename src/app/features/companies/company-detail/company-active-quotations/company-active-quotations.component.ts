@@ -142,6 +142,23 @@ export class CompanyActiveQuotationsComponent implements OnInit {
     }
   }
 
+  getStatusDescription(status: string): string {
+    switch (status) {
+      case 'draft':
+        return 'Quotation is being prepared and not yet sent to client';
+      case 'sent':
+        return 'Quotation has been sent to client and awaiting response';
+      case 'accepted':
+        return 'Client has accepted the quotation';
+      case 'rejected':
+        return 'Client has declined the quotation';
+      case 'expired':
+        return 'Quotation validity period has ended';
+      default:
+        return '';
+    }
+  }
+
   createQuotation(): void {
     // Navigate to quotation form with company pre-selected
     this.router.navigate(['/quotations/new'], {
