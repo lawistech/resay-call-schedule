@@ -315,6 +315,17 @@
   </div>
 </div>
 
+<!-- Confirmation Dialog for Accepted Status -->
+<app-confirmation-dialog
+  [isOpen]="showConfirmationDialog"
+  title="Confirm Status Change"
+  message="Changing status to 'Accepted' will count as a sale and update the Total Orders Value. This action cannot be easily reversed. Are you sure you want to proceed?"
+  confirmButtonText="Yes, Accept Quotation"
+  cancelButtonText="Cancel"
+  confirmButtonClass="bg-green-600 hover:bg-green-700"
+  (confirmed)="handleConfirmation($event)">
+</app-confirmation-dialog>
+
 <!-- Quotation Details Modal -->
 <app-quotation-details-modal
   *ngIf="showDetailsModal"

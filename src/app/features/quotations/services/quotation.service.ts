@@ -78,7 +78,7 @@ export class QuotationService {
   }
 
   getQuotationById(id: string): Observable<Quotation> {
-    console.log('Fetching quotation by ID:', id);
+    // Reduced logging to prevent console clutter
     return from(this.supabaseService.supabaseClient
       .from('quotations')
       .select(`
@@ -95,18 +95,13 @@ export class QuotationService {
       map(response => {
         if (response.error) throw response.error;
 
-        console.log('Raw quotation data from database:', response.data);
-
         // Check if items are included in the response
         if (!response.data.items || !Array.isArray(response.data.items)) {
           console.warn('No items array found in quotation response');
-        } else {
-          console.log(`Found ${response.data.items.length} items in quotation`);
         }
 
         // Format the data to match our Quotation model
         const formattedQuotation = this.formatQuotationFromDatabase(response.data, true);
-        console.log('Formatted quotation:', formattedQuotation);
         return formattedQuotation;
       }),
       catchError(error => {
@@ -183,76 +178,92 @@ export class QuotationService {
       return throwError(() => new Error('User must be logged in to update quotations'));
     }
 
-    // Use the status directly since we're now using the same values as the database
-    let dbStatus = quotation.status || 'draft'; // Default to draft
-
-    // Convert camelCase to snake_case for database
-    const dbQuotation: any = {
-      company_id: quotation.companyId,
-      contact_id: quotation.contactId || null,
-      title: quotation.title,
-      status: dbStatus,
-      total: quotation.total,
-      vat_rate: quotation.vatRate || 20, // Default to 20% if not provided
-      notes: quotation.notes || null
-    };
-
-    // Add the new fields
-    if (quotation.description !== undefined) dbQuotation.description = quotation.description;
-    if (quotation.stage !== undefined) dbQuotation.stage = quotation.stage;
-    if (quotation.probability !== undefined) dbQuotation.probability = quotation.probability;
-
-    // Only add valid_until if it's a non-empty string
-    if (quotation.validUntil && quotation.validUntil.trim() !== '') {
-      dbQuotation.valid_until = quotation.validUntil;
-    }
-
-    // Store items to update after quotation is updated
-    const items = quotation.items || [];
-
-    return from(this.supabaseService.supabaseClient
-      .from('quotations')
-      .update(dbQuotation)
-      .eq('id', id)
-      .select()
-    ).pipe(
-      map(response => {
-        if (response.error) throw response.error;
-
-        const updatedQuotation = this.formatQuotationFromDatabase(response.data[0]);
-
-        // If there are items, update them for the quotation
-        if (items.length > 0) {
-          // First delete existing items
-          this.deleteQuotationItems(id).then(() => {
-            // Then add the new items
-            this.addQuotationItems(id, items);
-          });
+    // First check if the quotation is already in 'accepted' status
+    return this.getQuotationById(id).pipe(
+      switchMap(existingQuotation => {
+        // If the quotation is already accepted, prevent updates unless explicitly allowed
+        if (existingQuotation.status === 'accepted' && quotation.status !== 'accepted') {
+          return throwError(() => new Error('Cannot update an accepted quotation. Accepted quotations count as sales.'));
         }
 
-        // If the quotation status is changed to 'accepted', create an order
-        if (dbStatus === 'accepted') {
-          // Get the full quotation with items to create the order
-          this.getQuotationById(id).subscribe(fullQuotation => {
-            this.orderService.createOrderFromQuotation(fullQuotation)
-              .subscribe({
-                next: (order) => {
-                  this.notificationService.success('Order created from accepted quotation');
+        // Use the status directly since we're now using the same values as the database
+        let dbStatus = quotation.status || 'draft'; // Default to draft
+
+        // Convert camelCase to snake_case for database
+        const dbQuotation: any = {
+          company_id: quotation.companyId,
+          contact_id: quotation.contactId || null,
+          title: quotation.title,
+          status: dbStatus,
+          total: quotation.total,
+          vat_rate: quotation.vatRate || 20, // Default to 20% if not provided
+          notes: quotation.notes || null
+        };
+
+        // Add the new fields
+        if (quotation.description !== undefined) dbQuotation.description = quotation.description;
+        if (quotation.stage !== undefined) dbQuotation.stage = quotation.stage;
+        if (quotation.probability !== undefined) dbQuotation.probability = quotation.probability;
+
+        // Only add valid_until if it's a non-empty string
+        if (quotation.validUntil && quotation.validUntil.trim() !== '') {
+          dbQuotation.valid_until = quotation.validUntil;
+        }
+
+        // Store items to update after quotation is updated
+        const items = quotation.items || [];
+
+        return from(this.supabaseService.supabaseClient
+          .from('quotations')
+          .update(dbQuotation)
+          .eq('id', id)
+          .select()
+        ).pipe(
+          map(response => {
+            if (response.error) throw response.error;
+
+            const updatedQuotation = this.formatQuotationFromDatabase(response.data[0]);
+
+            // If there are items, update them for the quotation
+            if (items.length > 0) {
+              // First delete existing items
+              this.deleteQuotationItems(id).then(() => {
+                // Then add the new items
+                this.addQuotationItems(id, items);
+              });
+            }
+
+            // If the quotation status is changed to 'accepted', create an order
+            if (dbStatus === 'accepted') {
+              // Get the full quotation with items to create the order
+              this.getQuotationById(id).subscribe({
+                next: (fullQuotation) => {
+                  this.orderService.createOrderFromQuotation(fullQuotation)
+                    .subscribe({
+                      next: (order) => {
+                        this.notificationService.success('Order created from accepted quotation');
+                      },
+                      error: (error) => {
+                        console.error('Error creating order from quotation:', error);
+                        this.notificationService.error('Failed to create order from quotation');
+                      }
+                    });
                 },
                 error: (error) => {
-                  console.error('Error creating order from quotation:', error);
-                  this.notificationService.error('Failed to create order from quotation');
+                  console.error('Error fetching full quotation for order creation:', error);
+                  // Don't show an error to the user here, as the quotation was already updated successfully
                 }
               });
-          });
-        }
+            }
 
-        this.notificationService.success('Quotation updated successfully');
-        return updatedQuotation;
-      }),
-      catchError(error => {
-        this.notificationService.error(`Failed to update quotation: ${error.message}`);
-        return throwError(() => error);
+            this.notificationService.success('Quotation updated successfully');
+            return updatedQuotation;
+          }),
+          catchError(error => {
+            this.notificationService.error(`Failed to update quotation: ${error.message}`);
+            return throwError(() => error);
+          })
+        );
       })
     );
   }
@@ -341,14 +352,10 @@ export class QuotationService {
 
     // Add items if included in the response
     if (includeItems && data.items && Array.isArray(data.items)) {
-      console.log(`Processing ${data.items.length} items for quotation ${data.id}`);
-
       quotation.items = data.items.map((item: any) => {
         // Check if product data is available
         if (!item.product) {
           console.warn(`No product data for item ${item.id} in quotation ${data.id}`);
-        } else {
-          console.log(`Found product data for item ${item.id}: ${item.product.name}`);
         }
 
         return {
@@ -379,14 +386,9 @@ export class QuotationService {
           updatedAt: item.updated_at
         };
       });
-
-      console.log(`Processed ${quotation.items?.length || 0} items for quotation model`);
-    } else {
-      console.warn(`Cannot process items for quotation ${data.id}:`, {
-        includeItems,
-        hasItems: !!data.items,
-        isArray: Array.isArray(data.items)
-      });
+    } else if (includeItems) {
+      // Only log a warning if items were expected but not found
+      console.warn(`No items found for quotation ${data.id}`);
     }
 
     return quotation;

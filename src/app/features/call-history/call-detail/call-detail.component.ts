@@ -160,7 +160,6 @@ export class CallDetailComponent implements OnInit {
 
       // Notify the company refresh service if this is a scheduled call
       if (this.call && this.call.contact && this.call.contact.company_id) {
-        console.log('Call detail notifying company refresh service for company ID:', this.call.contact.company_id);
         this.companyRefreshService.notifyCallScheduled(this.call.contact.company_id);
       }
 
@@ -190,7 +189,6 @@ export class CallDetailComponent implements OnInit {
 
       // Notify the company refresh service if this is a scheduled call
       if (status === 'scheduled' && this.call && this.call.contact && this.call.contact.company_id) {
-        console.log('Call detail notifying company refresh service for company ID:', this.call.contact.company_id);
         this.companyRefreshService.notifyCallScheduled(this.call.contact.company_id);
       }
 

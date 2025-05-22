@@ -35,12 +35,10 @@ export class CompanyDetailComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    console.log('CompanyDetailComponent initialized');
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.companyId = id;
-        console.log('Company ID set in CompanyDetailComponent:', this.companyId);
         this.loadCompany(id);
 
         // Check if there's an active call that needs to be displayed
@@ -49,12 +47,11 @@ export class CompanyDetailComponent implements OnInit, OnDestroy {
         if (activeCall && this.callStateService.shouldNavigateToCompanyDetails()) {
           // Check if the call is related to this company
           if (activeCall.contact?.company_id === this.companyId) {
-            console.log('Found active call for this company, setting scheduled-calls tab active');
             this.setActiveTab('scheduled-calls');
           }
         }
       } else {
-        console.error('No company ID found in route params');
+        this.notificationService.error('No company ID found');
         this.router.navigate(['/companies']);
       }
     });
@@ -117,7 +114,6 @@ export class CompanyDetailComponent implements OnInit, OnDestroy {
   }
 
   setActiveTab(tab: 'overview' | 'people' | 'communication' | 'opportunities' | 'scheduled-calls'): void {
-    console.log('Setting active tab:', tab);
     this.activeTab = tab;
 
     // Update URL without navigation

@@ -402,6 +402,9 @@ export class CompanyOpportunitiesComponent implements OnInit {
   }
 
   viewQuotation(id: string): void {
+    // Show loading indicator
+    this.notificationService.info('Loading quotation details...');
+
     // Get the full quotation details and show in modal
     this.quotationService.getQuotationById(id).subscribe({
       next: (quotation) => {
@@ -410,9 +413,13 @@ export class CompanyOpportunitiesComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading quotation details:', error);
-        this.notificationService.error('Failed to load quotation details');
-        // Fallback to navigation if we can't load the details
-        this.router.navigate(['/quotations', id]);
+        this.notificationService.error('Failed to load quotation details. Please try again.');
+
+        // Don't automatically navigate away - let the user decide what to do
+        // Instead, show a more helpful error message
+        setTimeout(() => {
+          this.notificationService.info('You can try refreshing the page or viewing the quotation in a new tab.');
+        }, 1000);
       }
     });
   }

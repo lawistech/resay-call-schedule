@@ -165,6 +165,14 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.quotationService.getQuotationById(id).subscribe({
       next: (quotation) => {
+        // Check if quotation is accepted - if so, redirect to view page with warning
+        if (quotation.status === 'accepted') {
+          this.notificationService.warning('This quotation has been accepted and cannot be modified. Accepted quotations count as sales.');
+          this.isLoading = false;
+          this.router.navigate(['/quotations', id]);
+          return;
+        }
+
         this.patchFormWithQuotation(quotation);
         this.isLoading = false;
       },

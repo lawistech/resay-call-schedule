@@ -7,11 +7,12 @@ import { Quotation, QuotationItem } from '../../../core/models/quotation.model';
 import { QuotationService } from '../services/quotation.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { QuotationPdfService } from '../../../core/services/quotation-pdf.service';
+import { SharedModule } from '../../../shared/shared.module';
 
 @Component({
   selector: 'app-quotation-details-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SharedModule],
   templateUrl: './quotation-details-modal.component.html',
   styleUrls: ['./quotation-details-modal.component.scss']
 })
@@ -30,6 +31,10 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
 
   // Dropdown toggles
   showStatusDropdown = false;
+
+  // Confirmation dialog
+  showConfirmationDialog = false;
+  pendingStatusChange: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | null = null;
 
   // Document click handler
   @HostListener('document:click')
@@ -51,27 +56,37 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
 
   ngOnChanges(changes: SimpleChanges): void {
     // This method is called when input properties change
-    if (changes['quotation'] && changes['quotation'].currentValue) {
+    if (changes['quotation']) {
+      // Reset flags when quotation changes
+      this.hasTriedFetchingItems = false;
+      this.isLoadingItems = false;
+
       const quotation = changes['quotation'].currentValue;
       console.log('Quotation changed in details modal:', quotation);
 
       // If we have a quotation but no items, try to fetch the full quotation
       if (quotation && (!quotation.items || quotation.items.length === 0)) {
         console.log('Quotation has no items, fetching full details');
+        this.isLoadingItems = true;
+        this.hasTriedFetchingItems = true;
         this.fetchFullQuotationDetails(quotation.id);
       }
     }
   }
 
   fetchFullQuotationDetails(quotationId: string): void {
+    this.isLoadingItems = true;
+
     this.quotationService.getQuotationById(quotationId).subscribe({
       next: (fullQuotation) => {
         console.log('Fetched full quotation with items:', fullQuotation);
         this.quotation = fullQuotation;
+        this.isLoadingItems = false;
       },
       error: (error) => {
         console.error('Error fetching full quotation details:', error);
         this.notificationService.error('Failed to load quotation products');
+        this.isLoadingItems = false;
       }
     });
   }
@@ -95,14 +110,19 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
     this.selectedProduct = null;
   }
 
+  // Loading state for quotation details
+  isLoadingItems = false;
+  hasTriedFetchingItems = false;
+
   // Helper methods for template
   hasItems(): boolean {
     const hasItemsResult = !!this.quotation?.items && Array.isArray(this.quotation.items) && this.quotation.items.length > 0;
-    console.log('hasItems check result:', hasItemsResult, 'items:', this.quotation?.items);
 
-    // If we have a quotation but no items, try to fetch the full quotation
-    if (this.quotation && (!this.quotation.items || this.quotation.items.length === 0)) {
-      console.log('hasItems: Quotation has no items, triggering fetch');
+    // Only try to fetch items once to prevent infinite loops
+    if (this.quotation && (!this.quotation.items || this.quotation.items.length === 0) && !this.isLoadingItems && !this.hasTriedFetchingItems) {
+      console.log('hasItems: Quotation has no items, triggering fetch once');
+      this.isLoadingItems = true;
+      this.hasTriedFetchingItems = true;
       this.fetchFullQuotationDetails(this.quotation.id);
     }
 
@@ -110,9 +130,8 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
   }
 
   noItems(): boolean {
-    const result = !this.hasItems();
-    console.log('noItems check result:', result);
-    return result;
+    // Only return true if we've already tried fetching items or if there's no quotation
+    return !this.hasItems() && (this.hasTriedFetchingItems || !this.quotation);
   }
 
   hasTags(product: QuotationItem): boolean {
@@ -121,6 +140,13 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
 
   toggleStatusDropdown(event: Event) {
     event.stopPropagation();
+
+    // Prevent opening dropdown if quotation is accepted
+    if (this.quotation?.status === 'accepted') {
+      this.notificationService.warning('This quotation has been accepted and cannot be modified. Accepted quotations count as sales.');
+      return;
+    }
+
     this.showStatusDropdown = !this.showStatusDropdown;
   }
 
@@ -129,6 +155,38 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
     this.showStatusDropdown = false;
 
     if (!this.quotation || this.quotation.status === status) {
+      return;
+    }
+
+    // If current status is 'accepted', prevent changes and show notification
+    if (this.quotation.status === 'accepted') {
+      this.notificationService.warning('This quotation has been accepted and cannot be modified. Accepted quotations count as sales.');
+      return;
+    }
+
+    // If status is being changed to 'accepted', show confirmation dialog
+    if (status === 'accepted') {
+      this.pendingStatusChange = status;
+      this.showConfirmationDialog = true;
+      return;
+    }
+
+    // For other statuses, proceed with the update
+    this.processStatusUpdate(status);
+  }
+
+  handleConfirmation(confirmed: boolean): void {
+    this.showConfirmationDialog = false;
+
+    if (confirmed && this.pendingStatusChange) {
+      this.processStatusUpdate(this.pendingStatusChange);
+    }
+
+    this.pendingStatusChange = null;
+  }
+
+  processStatusUpdate(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'): void {
+    if (!this.quotation) {
       return;
     }
 
@@ -155,10 +213,18 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
   }
 
   editQuotation() {
-    if (this.quotation) {
-      this.router.navigate(['/quotations', this.quotation.id, 'edit']);
-      this.close();
+    if (!this.quotation) {
+      return;
     }
+
+    // Prevent editing accepted quotations
+    if (this.quotation.status === 'accepted') {
+      this.notificationService.warning('This quotation has been accepted and cannot be modified. Accepted quotations count as sales.');
+      return;
+    }
+
+    this.router.navigate(['/quotations', this.quotation.id, 'edit']);
+    this.close();
   }
 
   /**

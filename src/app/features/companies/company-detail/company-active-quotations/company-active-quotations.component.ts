@@ -7,6 +7,7 @@ import { Quotation } from '../../../../core/models/quotation.model';
 import { MockQuotationService } from './mock-quotation.service';
 import { catchError, of } from 'rxjs';
 import { QuotationDetailsModalComponent } from '../../../quotations/quotation-details-modal/quotation-details-modal.component';
+import { ConfirmationDialogComponent } from '../../../../shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-company-active-quotations',
@@ -29,6 +30,10 @@ export class CompanyActiveQuotationsComponent implements OnInit {
 
   // Details modal
   showDetailsModal = false;
+
+  // Confirmation dialog
+  showConfirmationDialog = false;
+  pendingStatusChange: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | null = null;
 
   constructor(
     private quotationService: QuotationService,
@@ -167,6 +172,9 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   }
 
   viewQuotation(quotationId: string): void {
+    // Show loading indicator
+    this.notificationService.info('Loading quotation details...');
+
     // Get the full quotation details
     this.quotationService.getQuotationById(quotationId).subscribe({
       next: (quotation) => {
@@ -175,9 +183,13 @@ export class CompanyActiveQuotationsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading quotation details:', error);
-        this.notificationService.error('Failed to load quotation details');
-        // Fallback to navigation if we can't load the details
-        this.router.navigate(['/quotations', quotationId]);
+        this.notificationService.error('Failed to load quotation details. Please try again.');
+
+        // Don't automatically navigate away - let the user decide what to do
+        // Instead, show a more helpful error message
+        setTimeout(() => {
+          this.notificationService.info('You can try refreshing the page or viewing the quotation in a new tab.');
+        }, 1000);
       }
     });
   }
@@ -208,6 +220,30 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   }
 
   updateQuotationStatus(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'): void {
+    if (!this.selectedQuotation || this.isUpdatingStatus) return;
+
+    // If status is being changed to 'accepted', show confirmation dialog
+    if (status === 'accepted') {
+      this.pendingStatusChange = status;
+      this.showConfirmationDialog = true;
+      return;
+    }
+
+    // For other statuses, proceed with the update
+    this.processStatusUpdate(status);
+  }
+
+  handleConfirmation(confirmed: boolean): void {
+    this.showConfirmationDialog = false;
+
+    if (confirmed && this.pendingStatusChange) {
+      this.processStatusUpdate(this.pendingStatusChange);
+    }
+
+    this.pendingStatusChange = null;
+  }
+
+  processStatusUpdate(status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'): void {
     if (!this.selectedQuotation || this.isUpdatingStatus) return;
 
     this.isUpdatingStatus = true;
