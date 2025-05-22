@@ -95,14 +95,17 @@ export class OrderService {
     }
 
     // Create order from quotation data
+    // Use totalWithVat if available, otherwise use total
+    const orderTotal = quotation.totalWithVat || quotation.total || 0;
+
     const order: Partial<Order> = {
       companyId: quotation.companyId,
       contactId: quotation.contactId,
       title: quotation.title,
       status: 'pending',
-      total: quotation.total || 0,
+      total: orderTotal,
       notes: quotation.notes,
-      successNotes: successNotes || 'Created from accepted quotation',
+      successNotes: successNotes || `Created from accepted quotation (includes ${quotation.vatRate || 20}% VAT)`,
       orderDate: new Date().toISOString(),
       lastContactDate: new Date().toISOString()
     };
@@ -125,7 +128,7 @@ export class OrderService {
 
         // If quotation has items, add them as order items
         if (quotation.items && quotation.items.length > 0) {
-          this.addOrderItemsFromQuotation(createdOrder.id, quotation.items);
+          this.addOrderItemsFromQuotation(createdOrder.id, quotation.items, quotation.vatRate || 20);
         } else {
           // If no items, create a default order item
           const defaultItem = {
@@ -291,17 +294,23 @@ export class OrderService {
       });
   }
 
-  private addOrderItemsFromQuotation(orderId: string, items: QuotationItem[]): void {
-    const orderItems = items.map(item => ({
-      order_id: orderId,
-      product_id: item.productId,
-      product_name: item.product?.name || 'Unknown Product',
-      quantity: item.quantity,
-      price: item.price,
-      total: item.total,
-      notes: item.notes || 'Created from quotation item',
-      created_at: new Date().toISOString()
-    }));
+  private addOrderItemsFromQuotation(orderId: string, items: QuotationItem[], vatRate: number = 20): void {
+    const orderItems = items.map(item => {
+      // Calculate price and total with VAT included
+      const priceWithVat = item.price * (1 + (vatRate / 100));
+      const totalWithVat = item.total * (1 + (vatRate / 100));
+
+      return {
+        order_id: orderId,
+        product_id: item.productId,
+        product_name: item.product?.name || 'Unknown Product',
+        quantity: item.quantity,
+        price: priceWithVat,
+        total: totalWithVat,
+        notes: item.notes || `Created from quotation item (includes ${vatRate}% VAT)`,
+        created_at: new Date().toISOString()
+      };
+    });
 
     this.supabaseService.supabaseClient
       .from('order_items')

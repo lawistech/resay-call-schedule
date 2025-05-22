@@ -11,6 +11,9 @@ export interface Quotation {
   stage?: 'Prospecting' | 'Discovery' | 'Proposal' | 'Negotiation' | 'Closed-Won';
   probability?: number;
   total: number;
+  vatRate?: number;
+  vatAmount?: number;
+  totalWithVat?: number;
   validUntil?: string;
   notes?: string;
   createdAt?: string;

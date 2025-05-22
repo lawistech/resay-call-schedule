@@ -39,6 +39,9 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
   isEditMode = false;
   companyId: string | null = null;
 
+  // VAT related properties
+  defaultVatRate = 20; // Default VAT rate (20%)
+
   // Company search properties
   companySearchTerm: string = '';
   companySearchResults: any[] = [];
@@ -92,6 +95,9 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       probability: [0, [Validators.min(0), Validators.max(100)]],
       expectedCloseDate: [new Date().toISOString().split('T')[0], Validators.required],
       amount: [0, [Validators.required, Validators.min(0)]],
+      vatRate: [this.defaultVatRate, [Validators.required, Validators.min(0), Validators.max(100)]],
+      vatAmount: [0],
+      totalWithVat: [0],
       notes: [''],
       products: this.fb.array([])
     });
@@ -121,6 +127,11 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       this.quotationForm.patchValue({ companyId: this.preselectedCompanyId });
       this.loadContacts(this.preselectedCompanyId);
     }
+
+    // Listen for VAT rate changes to recalculate totals
+    this.quotationForm.get('vatRate')?.valueChanges.subscribe(value => {
+      this.updateTotalAmount();
+    });
 
     // If we have an existing quotation, populate the form
     if (this.quotation) {
@@ -321,7 +332,15 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       return sum + (control.get('total')?.value || 0);
     }, 0);
 
-    this.quotationForm.patchValue({ amount: total });
+    const vatRate = this.quotationForm.get('vatRate')?.value || this.defaultVatRate;
+    const vatAmount = total * (vatRate / 100);
+    const totalWithVat = total + vatAmount;
+
+    this.quotationForm.patchValue({
+      amount: total,
+      vatAmount: vatAmount,
+      totalWithVat: totalWithVat
+    });
   }
 
   // Search for companies
@@ -479,6 +498,9 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       probability: quotation.probability || 0,
       expectedCloseDate: quotation.validUntil ? new Date(quotation.validUntil).toISOString().split('T')[0] : '',
       amount: quotation.total,
+      vatRate: quotation.vatRate || this.defaultVatRate,
+      vatAmount: quotation.vatAmount || (quotation.total * (quotation.vatRate || this.defaultVatRate) / 100),
+      totalWithVat: quotation.totalWithVat || (quotation.total + (quotation.total * (quotation.vatRate || this.defaultVatRate) / 100)),
       notes: quotation.notes || ''
     });
 
@@ -519,6 +541,9 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       stage: formValues.stage,
       probability: formValues.probability,
       total: formValues.amount || 0,
+      vatRate: formValues.vatRate || this.defaultVatRate,
+      vatAmount: formValues.vatAmount || 0,
+      totalWithVat: formValues.totalWithVat || 0,
       notes: formValues.notes
     };
 

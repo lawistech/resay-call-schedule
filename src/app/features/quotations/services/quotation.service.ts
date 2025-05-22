@@ -134,6 +134,7 @@ export class QuotationService {
       title: quotation.title,
       status: dbStatus,
       total: quotation.total || 0,
+      vat_rate: quotation.vatRate || 20, // Default to 20% if not provided
       notes: quotation.notes || null
     };
 
@@ -192,6 +193,7 @@ export class QuotationService {
       title: quotation.title,
       status: dbStatus,
       total: quotation.total,
+      vat_rate: quotation.vatRate || 20, // Default to 20% if not provided
       notes: quotation.notes || null
     };
 
@@ -314,6 +316,9 @@ export class QuotationService {
       title: data.title,
       status: status,
       total: data.total,
+      vatRate: data.vat_rate || 20, // Default to 20% if not provided
+      vatAmount: data.vat_amount || (data.total * (data.vat_rate || 20) / 100),
+      totalWithVat: data.total_with_vat || (data.total + (data.total * (data.vat_rate || 20) / 100)),
       validUntil: data.valid_until,
       notes: data.notes,
       createdAt: data.created_at,
