@@ -2,3 +2,16 @@
 .btn-primary {
   @apply bg-stone-800 hover:bg-stone-700 text-white font-medium py-2 px-4 rounded-md transition-colors;
 }
+
+.modal-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

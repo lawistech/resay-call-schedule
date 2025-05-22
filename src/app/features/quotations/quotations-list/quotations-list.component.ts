@@ -81,7 +81,17 @@ export class QuotationsListComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading quotation details:', error);
-        this.notificationService.error('Failed to load quotation details');
+
+        // Provide more specific error message based on the error
+        if (error.message && error.message.includes('not found')) {
+          this.notificationService.error(`Quotation not found. The quotation may have been deleted.`);
+        } else if (error.code === 'PGRST116') {
+          // This is the Supabase error code for "JSON object requested, multiple (or no) rows returned"
+          this.notificationService.error(`Failed to load quotation: The quotation could not be found.`);
+        } else {
+          this.notificationService.error(`Failed to load quotation details: ${error.message || 'Unknown error'}`);
+        }
+
         this.isLoading = false;
         this.loadQuotations();
       }
@@ -100,6 +110,17 @@ export class QuotationsListComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error refreshing quotation details:', error);
+
+        // Provide more specific error message based on the error
+        if (error.message && error.message.includes('not found')) {
+          this.notificationService.error(`Quotation not found. The quotation may have been deleted.`);
+        } else if (error.code === 'PGRST116') {
+          // This is the Supabase error code for "JSON object requested, multiple (or no) rows returned"
+          this.notificationService.error(`Failed to load quotation: The quotation could not be found.`);
+        } else {
+          this.notificationService.error(`Failed to refresh quotation details: ${error.message || 'Unknown error'}`);
+        }
+
         this.isLoading = false;
         this.loadQuotations();
       }

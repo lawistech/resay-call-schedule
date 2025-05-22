@@ -1,2 +1,15 @@
 // src/app/features/companies/company-detail/company-active-quotations/company-active-quotations.component.scss
 // Component-specific styles can be added here
+
+.modal-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

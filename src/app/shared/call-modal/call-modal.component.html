@@ -20,13 +20,27 @@
           </div>
           <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
             <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-              {{ isEditing ? 'Edit Call' : 'Schedule Call' }} with {{ contact?.first_name }} {{ contact?.last_name }}
+              {{ isEditing ? 'Edit Call' : 'Schedule Call' }}
+              <span *ngIf="contact?.first_name || contact?.last_name">with {{ contact?.first_name }} {{ contact?.last_name }}</span>
+              <span *ngIf="!contact?.first_name && !contact?.last_name && contact?.lead_source === 'sumup'">for SumUp Lead</span>
             </h3>
-            <div *ngIf="contact" class="mt-2">
+            <div *ngIf="contact && (contact.company?.name || contact.phone || contact.email)" class="mt-2">
               <div class="text-sm text-gray-500">
-                <p>{{ contact.company?.name }}</p>
+                <p *ngIf="contact.company?.name">{{ contact.company?.name }}</p>
                 <p *ngIf="contact?.phone">Phone: {{ contact.phone }}</p>
                 <p *ngIf="contact?.email">Email: {{ contact.email }}</p>
+              </div>
+            </div>
+
+            <!-- Contact selection if no contact ID is provided -->
+            <div *ngIf="contact && !contact.id" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p class="text-sm text-yellow-800">
+                Please select a contact for this call or create a new one.
+              </p>
+              <div class="mt-2">
+                <a routerLink="/contacts" class="text-sm text-primary hover:underline" (click)="close()">
+                  Go to Contacts
+                </a>
               </div>
             </div>
             <div class="mt-4">
@@ -80,6 +94,7 @@
                       <option value="resay">Resay</option>
                       <option value="barcodesforbusiness">Barcodes For Business</option>
                       <option value="androidepos">Android EPOS</option>
+                      <option value="sumup">SumUp</option>
                     </select>
                   </div>
                   <div>

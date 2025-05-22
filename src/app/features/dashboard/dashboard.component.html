@@ -84,16 +84,61 @@
 
     <!-- Schedule Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Today's Scheduled Calls -->
-      <app-todays-scheduled-calls
-        [calls]="scheduledCalls"
-        [maxCalls]="5"
-        (viewCallDetails)="viewCallDetails($event)"
-        (initiateCall)="initiateCall($event)"
-        (rescheduleCall)="openRescheduleModal($event)"
-        (completeCall)="markCallAsCompleted($event)"
-        class="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition">
-      </app-todays-scheduled-calls>
+      <!-- Calls Section with Tabs -->
+      <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition">
+        <!-- Tabs -->
+        <div class="flex border-b border-stone-200">
+          <button
+            (click)="switchCallTab('all')"
+            [ngClass]="{'bg-stone-100 border-b-2 border-primary font-medium': activeCallTab === 'all', 'hover:bg-stone-50': activeCallTab !== 'all'}"
+            class="flex-1 py-3 px-4 text-sm text-stone-700 transition">
+            Today's Calls
+          </button>
+          <button
+            (click)="switchCallTab('sumup')"
+            [ngClass]="{'bg-stone-100 border-b-2 border-primary font-medium': activeCallTab === 'sumup', 'hover:bg-stone-50': activeCallTab !== 'sumup'}"
+            class="flex-1 py-3 px-4 text-sm text-stone-700 transition relative">
+            <span>SumUp Calls</span>
+            <button
+              (click)="createCallWithLeadSource('sumup'); $event.stopPropagation()"
+              class="ml-2 inline-flex items-center justify-center w-5 h-5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-full text-xs transition-colors"
+              title="Add SumUp Call">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </button>
+          </button>
+        </div>
+
+        <!-- Content based on active tab -->
+        <div class="p-6">
+          <!-- All Calls Tab -->
+          <div *ngIf="activeCallTab === 'all'">
+            <app-todays-scheduled-calls
+              [calls]="scheduledCalls"
+              [maxCalls]="5"
+              (viewCallDetails)="viewCallDetails($event)"
+              (initiateCall)="initiateCall($event)"
+              (rescheduleCall)="openRescheduleModal($event)"
+              (completeCall)="markCallAsCompleted($event)">
+            </app-todays-scheduled-calls>
+          </div>
+
+          <!-- SumUp Calls Tab -->
+          <div *ngIf="activeCallTab === 'sumup'">
+            <app-lead-source-calls
+              [calls]="scheduledCalls"
+              [leadSource]="'sumup'"
+              [title]="'SumUp Calls'"
+              [maxCalls]="5"
+              (viewCallDetails)="viewCallDetails($event)"
+              (initiateCall)="initiateCall($event)"
+              (rescheduleCall)="openRescheduleModal($event)"
+              (completeCall)="markCallAsCompleted($event)">
+            </app-lead-source-calls>
+          </div>
+        </div>
+      </div>
 
       <!-- Schedule Overview -->
       <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition">
@@ -288,24 +333,66 @@
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Today's Scheduled Calls - Larger Column -->
+      <!-- Calls Section with Tabs - Larger Column -->
       <div class="lg:col-span-2">
-        <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition h-full">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-800">Today's Scheduled Calls</h2>
-            <a routerLink="/schedule" class="text-sm text-primary hover:text-primary-dark transition underline decoration-dashed underline-offset-4">
-              View All
-            </a>
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition h-full">
+          <!-- Tabs -->
+          <div class="flex border-b border-stone-200">
+            <button
+              (click)="switchCallTab('all')"
+              [ngClass]="{'bg-stone-100 border-b-2 border-primary font-medium': activeCallTab === 'all', 'hover:bg-stone-50': activeCallTab !== 'all'}"
+              class="flex-1 py-3 px-4 text-sm text-stone-700 transition">
+              Today's Calls
+            </button>
+            <button
+              (click)="switchCallTab('sumup')"
+              [ngClass]="{'bg-stone-100 border-b-2 border-primary font-medium': activeCallTab === 'sumup', 'hover:bg-stone-50': activeCallTab !== 'sumup'}"
+              class="flex-1 py-3 px-4 text-sm text-stone-700 transition relative">
+              <span>SumUp Calls</span>
+              <button
+                (click)="createCallWithLeadSource('sumup'); $event.stopPropagation()"
+                class="ml-2 inline-flex items-center justify-center w-5 h-5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-full text-xs transition-colors"
+                title="Add SumUp Call">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </button>
+            </button>
+            <div class="flex-1 flex justify-end items-center pr-4">
+              <a routerLink="/schedule" class="text-sm text-primary hover:text-primary-dark transition underline decoration-dashed underline-offset-4">
+                View All
+              </a>
+            </div>
           </div>
 
-          <app-todays-scheduled-calls
-            [calls]="scheduledCalls"
-            [maxCalls]="8"
-            (viewCallDetails)="viewCallDetails($event)"
-            (initiateCall)="initiateCall($event)"
-            (rescheduleCall)="openRescheduleModal($event)"
-            (completeCall)="markCallAsCompleted($event)">
-          </app-todays-scheduled-calls>
+          <!-- Content based on active tab -->
+          <div class="p-6">
+            <!-- All Calls Tab -->
+            <div *ngIf="activeCallTab === 'all'">
+              <app-todays-scheduled-calls
+                [calls]="scheduledCalls"
+                [maxCalls]="8"
+                (viewCallDetails)="viewCallDetails($event)"
+                (initiateCall)="initiateCall($event)"
+                (rescheduleCall)="openRescheduleModal($event)"
+                (completeCall)="markCallAsCompleted($event)">
+              </app-todays-scheduled-calls>
+            </div>
+
+            <!-- SumUp Calls Tab -->
+            <div *ngIf="activeCallTab === 'sumup'">
+              <app-lead-source-calls
+                [calls]="scheduledCalls"
+                [leadSource]="'sumup'"
+                [title]="'SumUp Calls'"
+                [maxCalls]="8"
+                (viewCallDetails)="viewCallDetails($event)"
+                (initiateCall)="initiateCall($event)"
+                (rescheduleCall)="openRescheduleModal($event)"
+                (completeCall)="markCallAsCompleted($event)">
+              </app-lead-source-calls>
+            </div>
+          </div>
         </div>
       </div>
   </div>

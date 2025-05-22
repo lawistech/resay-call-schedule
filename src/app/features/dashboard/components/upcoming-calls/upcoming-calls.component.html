@@ -11,6 +11,25 @@
       <div class="mr-3 text-center min-w-[50px]">
         <div class="text-primary font-bold">{{ formatTime(call.scheduled_at) }}</div>
         <div class="text-xs text-gray-500">{{ formatDate(call.scheduled_at) }}</div>
+        <div class="text-xs text-stone-500 mt-1" *ngIf="call.lead_source">
+          <span [ngClass]="{
+            'px-1.5 py-0.5 text-xs rounded-full': true,
+            'bg-green-100 text-green-800': call.lead_source === 'resay',
+            'bg-blue-100 text-blue-800': call.lead_source === 'barcodesforbusiness',
+            'bg-purple-100 text-purple-800': call.lead_source === 'androidepos',
+            'bg-yellow-100 text-yellow-800': call.lead_source === 'sumup',
+            'bg-gray-100 text-gray-800': call.lead_source !== 'resay' &&
+                                         call.lead_source !== 'barcodesforbusiness' &&
+                                         call.lead_source !== 'androidepos' &&
+                                         call.lead_source !== 'sumup'
+          }">
+            {{ call.lead_source === 'resay' ? 'Resay' :
+               call.lead_source === 'barcodesforbusiness' ? 'BCB' :
+               call.lead_source === 'androidepos' ? 'AE' :
+               call.lead_source === 'sumup' ? 'SumUp' :
+               call.lead_source }}
+          </span>
+        </div>
       </div>
 
       <div class="flex-1">

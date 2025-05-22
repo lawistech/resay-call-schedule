@@ -102,6 +102,12 @@ export class CallModalComponent implements OnInit {
       return;
     }
 
+    // Check if we have a valid contact ID
+    if (this.contact && !this.contact.id) {
+      this.notificationService.warning('Please select a contact before scheduling a call');
+      return;
+    }
+
     this.isLoading = true;
 
     try {

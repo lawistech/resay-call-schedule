@@ -17,12 +17,6 @@
   <div class="mb-8">
     <div class="flex justify-between items-center mb-4">
       <h4 class="text-md font-medium text-gray-700">Active Quotations</h4>
-      <a href="javascript:void(0)" class="text-sm text-blue-600 hover:text-blue-800 flex items-center" (click)="createQuotation()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-        New Quotation
-      </a>
     </div>
 
     <!-- Loading State - Skeleton -->
@@ -771,3 +765,15 @@
   (closeEvent)="closeQuotationDetailsModal()"
   (statusChanged)="handleQuotationStatusChange($event)">
 </app-quotation-details-modal>
+
+<!-- Quotation Form Modal -->
+<div *ngIf="showQuotationFormModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[200] modal-enter">
+  <div class="relative mx-auto w-full max-w-4xl" style="margin-top: 5vh; margin-bottom: 5vh; max-height: 90vh; overflow-y-auto;">
+    <app-quotation-form
+      [preselectedCompanyId]="companyId"
+      [isSaving]="false"
+      (close)="closeQuotationFormModal()"
+      (formSubmitted)="handleQuotationFormSubmitted($any($event))">
+    </app-quotation-form>
+  </div>
+</div>

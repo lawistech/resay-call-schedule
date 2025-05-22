@@ -39,6 +39,9 @@ export class DashboardComponent implements OnInit {
   // Dashboard view mode (classic or new)
   dashboardView: 'classic' | 'new' = 'classic'; // Set classic as default
 
+  // Call tabs
+  activeCallTab: 'all' | 'sumup' = 'all'; // Default to all calls
+
   // Quotations data
   activeQuotations: Quotation[] = [];
 
@@ -407,6 +410,42 @@ export class DashboardComponent implements OnInit {
     this.dashboardView = this.dashboardView === 'classic' ? 'new' : 'classic';
     // Save preference to localStorage
     localStorage.setItem('dashboardView', this.dashboardView);
+  }
+
+  /**
+   * Switch between call tabs (all calls or specific lead source)
+   */
+  switchCallTab(tab: 'all' | 'sumup'): void {
+    this.activeCallTab = tab;
+  }
+
+  /**
+   * Create a new call with a specific lead source
+   * @param leadSource The lead source to pre-select in the call modal
+   */
+  createCallWithLeadSource(leadSource: string): void {
+    // Create a temporary contact to open the call modal
+    // In a real implementation, you might want to show a contact selector first
+    const tempContact: Contact = {
+      id: '', // This will be filled in by the user selecting a contact
+      first_name: '',
+      last_name: '',
+      lead_source: leadSource
+    };
+
+    this.selectedContact = tempContact;
+    this.showCallModal = true;
+  }
+
+  /**
+   * Get calls filtered by the active tab
+   */
+  getFilteredCalls(): Call[] {
+    if (this.activeCallTab === 'all') {
+      return this.scheduledCalls;
+    } else {
+      return this.scheduledCalls.filter(call => call.lead_source === 'sumup');
+    }
   }
 
   /**

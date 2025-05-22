@@ -334,3 +334,16 @@
   (closeEvent)="closeDetailsModal()"
   (statusChanged)="handleStatusChange($event)">
 </app-quotation-details-modal>
+
+<!-- Quotation Form Modal -->
+<div *ngIf="showQuotationFormModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[200] modal-enter">
+  <div class="relative mx-auto w-full max-w-4xl" style="margin-top: 5vh; margin-bottom: 5vh; max-height: 90vh; overflow-y: auto;">
+    <app-quotation-form
+      [preselectedCompanyId]="companyId"
+      [preselectedCompany]="selectedCompany"
+      [isSaving]="false"
+      (close)="closeQuotationFormModal()"
+      (formSubmitted)="handleQuotationFormSubmitted($any($event))">
+    </app-quotation-form>
+  </div>
+</div>

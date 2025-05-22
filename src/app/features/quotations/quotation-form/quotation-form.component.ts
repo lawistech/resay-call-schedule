@@ -28,6 +28,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
   @Input() quotation: Quotation | null = null;
   @Input() isSaving: boolean = false;
   @Input() preselectedCompanyId: string | null = null;
+  @Input() preselectedCompany: any = null;
   @Output() close = new EventEmitter<void>();
   @Output() formSubmitted = new EventEmitter<Partial<Quotation>>();
 
@@ -126,6 +127,15 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       this.companyId = this.preselectedCompanyId;
       this.quotationForm.patchValue({ companyId: this.preselectedCompanyId });
       this.loadContacts(this.preselectedCompanyId);
+
+      // If we also have the preselected company object, set it as the selected company
+      if (this.preselectedCompany) {
+        this.selectedCompany = this.preselectedCompany;
+        console.log('Using preselected company:', this.preselectedCompany.name);
+      } else {
+        // If we only have the ID but not the company object, load the company details
+        this.loadCompanyDetails(this.preselectedCompanyId);
+      }
     }
 
     // Listen for VAT rate changes to recalculate totals
@@ -136,6 +146,10 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
     // If we have an existing quotation, populate the form
     if (this.quotation) {
       this.patchFormWithQuotation(this.quotation);
+    } else if (this.preselectedCompanyId) {
+      // If we have a preselected company ID (from modal), we're in create mode
+      // No need to check route params in this case
+      console.log('Using preselected company ID, skipping route param check');
     } else {
       // Check if we're in edit mode from route params
       this.route.paramMap.subscribe(params => {
@@ -163,8 +177,12 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
 
   loadQuotation(id: string): void {
     this.isLoading = true;
+    console.log('QuotationFormComponent: Loading quotation with ID:', id);
+
     this.quotationService.getQuotationById(id).subscribe({
       next: (quotation) => {
+        console.log('QuotationFormComponent: Successfully loaded quotation:', quotation);
+
         // Check if quotation is accepted - if so, redirect to view page with warning
         if (quotation.status === 'accepted') {
           this.notificationService.warning('This quotation has been accepted and cannot be modified. Accepted quotations count as sales.');
@@ -177,7 +195,18 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       },
       error: (error) => {
-        this.notificationService.error('Failed to load quotation');
+        console.error('QuotationFormComponent: Error loading quotation:', error);
+
+        // Provide more specific error message based on the error
+        if (error.message && error.message.includes('not found')) {
+          this.notificationService.error(`Quotation not found. The quotation may have been deleted.`);
+        } else if (error.code === 'PGRST116') {
+          // This is the Supabase error code for "JSON object requested, multiple (or no) rows returned"
+          this.notificationService.error(`Failed to load quotation: The quotation could not be found.`);
+        } else {
+          this.notificationService.error(`Failed to load quotation: ${error.message || 'Unknown error'}`);
+        }
+
         this.isLoading = false;
         this.router.navigate(['/quotations']);
       }
@@ -484,6 +513,26 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       )
       .subscribe(contacts => {
         this.contacts = contacts;
+      });
+
+    this.subscriptions.push(subscription);
+  }
+
+  // Load selected company details
+  loadCompanyDetails(companyId: string): void {
+    const subscription = this.companyService.getCompanyById(companyId)
+      .pipe(
+        catchError(error => {
+          console.error('Error loading company details:', error);
+          this.notificationService.error('Failed to load company details');
+          return of(null);
+        })
+      )
+      .subscribe(company => {
+        if (company) {
+          this.selectedCompany = company;
+          console.log('Loaded company details:', company.name);
+        }
       });
 
     this.subscriptions.push(subscription);

@@ -78,7 +78,9 @@ export class QuotationService {
   }
 
   getQuotationById(id: string): Observable<Quotation> {
-    // Reduced logging to prevent console clutter
+    console.log('QuotationService: Fetching quotation with ID:', id);
+
+    // Use .eq() with .select() but NOT .single() to avoid the "multiple rows" error
     return from(this.supabaseService.supabaseClient
       .from('quotations')
       .select(`
@@ -90,18 +92,31 @@ export class QuotationService {
         )
       `)
       .eq('id', id)
-      .single()
     ).pipe(
       map(response => {
-        if (response.error) throw response.error;
+        if (response.error) {
+          console.error('QuotationService: Error in database response:', response.error);
+          throw response.error;
+        }
+
+        // Check if we got any data back
+        if (!response.data || response.data.length === 0) {
+          console.error('QuotationService: No quotation found with ID:', id);
+          throw new Error(`Quotation with ID ${id} not found`);
+        }
+
+        // Since we're querying by primary key, we should only get one result
+        // Take the first result to be safe
+        const quotationData = response.data[0];
+        console.log('QuotationService: Found quotation:', quotationData);
 
         // Check if items are included in the response
-        if (!response.data.items || !Array.isArray(response.data.items)) {
-          console.warn('No items array found in quotation response');
+        if (!quotationData.items || !Array.isArray(quotationData.items)) {
+          console.warn('QuotationService: No items array found in quotation response');
         }
 
         // Format the data to match our Quotation model
-        const formattedQuotation = this.formatQuotationFromDatabase(response.data, true);
+        const formattedQuotation = this.formatQuotationFromDatabase(quotationData, true);
         return formattedQuotation;
       }),
       catchError(error => {

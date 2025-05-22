@@ -14,6 +14,7 @@ import { OrderService } from '../../../orders/order.service';
 import { Order } from '../../../../core/models/order.model';
 import { OpportunitySuccessModalComponent } from '../../../opportunities/opportunity-success-modal/opportunity-success-modal.component';
 import { QuotationDetailsModalComponent } from '../../../quotations/quotation-details-modal/quotation-details-modal.component';
+import { QuotationFormComponent } from '../../../quotations/quotation-form/quotation-form.component';
 
 @Component({
   selector: 'app-company-opportunities',
@@ -382,6 +383,10 @@ export class CompanyOpportunitiesComponent implements OnInit {
   selectedQuotation: Quotation | null = null;
   showQuotationDetailsModal = false;
 
+  // Quotation form modal
+  showQuotationFormModal = false;
+  selectedCompany: any = null;
+
   // View order details
   viewOrderDetails(order: Order): void {
     this.selectedOrderForDetails = order;
@@ -395,9 +400,21 @@ export class CompanyOpportunitiesComponent implements OnInit {
   }
 
   createQuotation(): void {
-    // Navigate to quotation form with company pre-selected
-    this.router.navigate(['/quotations/new'], {
-      queryParams: { company_id: this.companyId }
+    // Load company details first to pre-fill the form
+    this.companyService.getCompanyById(this.companyId).subscribe({
+      next: (company) => {
+        this.selectedCompany = company;
+        this.showQuotationFormModal = true;
+      },
+      error: (error) => {
+        console.error('Error loading company details:', error);
+        this.notificationService.error('Failed to load company details');
+
+        // Fallback to navigation if modal approach fails
+        this.router.navigate(['/quotations/new'], {
+          queryParams: { company_id: this.companyId }
+        });
+      }
     });
   }
 
@@ -427,6 +444,28 @@ export class CompanyOpportunitiesComponent implements OnInit {
   closeQuotationDetailsModal(): void {
     this.showQuotationDetailsModal = false;
     this.selectedQuotation = null;
+  }
+
+  closeQuotationFormModal(): void {
+    this.showQuotationFormModal = false;
+    this.selectedCompany = null;
+  }
+
+  handleQuotationFormSubmitted(formData: Partial<Quotation>): void {
+    // Create the quotation
+    this.quotationService.createQuotation(formData).subscribe({
+      next: (createdQuotation) => {
+        this.notificationService.success('Quotation created successfully');
+        this.closeQuotationFormModal();
+
+        // Reload quotations to include the new one
+        this.loadQuotations();
+      },
+      error: (error) => {
+        console.error('Error creating quotation:', error);
+        this.notificationService.error('Failed to create quotation');
+      }
+    });
   }
 
   handleQuotationStatusChange(updatedQuotation: Quotation): void {

@@ -1,0 +1,13 @@
+// src/app/features/quotations/quotation-modal/quotation-modal.component.scss
+.modal-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

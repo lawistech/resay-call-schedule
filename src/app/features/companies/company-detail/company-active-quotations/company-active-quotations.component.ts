@@ -7,6 +7,8 @@ import { Quotation } from '../../../../core/models/quotation.model';
 import { MockQuotationService } from './mock-quotation.service';
 import { catchError, of } from 'rxjs';
 import { QuotationDetailsModalComponent } from '../../../quotations/quotation-details-modal/quotation-details-modal.component';
+import { QuotationFormComponent } from '../../../quotations/quotation-form/quotation-form.component';
+import { CompanyService } from '../../services/company.service';
 import { ConfirmationDialogComponent } from '../../../../shared/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -35,11 +37,16 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   showConfirmationDialog = false;
   pendingStatusChange: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | null = null;
 
+  // Quotation form modal
+  showQuotationFormModal = false;
+  selectedCompany: any = null;
+
   constructor(
     private quotationService: QuotationService,
     private mockQuotationService: MockQuotationService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit(): void {
@@ -165,9 +172,21 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   }
 
   createQuotation(): void {
-    // Navigate to quotation form with company pre-selected
-    this.router.navigate(['/quotations/new'], {
-      queryParams: { company_id: this.companyId }
+    // Load company details first to pre-fill the form
+    this.companyService.getCompanyById(this.companyId).subscribe({
+      next: (company) => {
+        this.selectedCompany = company;
+        this.showQuotationFormModal = true;
+      },
+      error: (error) => {
+        console.error('Error loading company details:', error);
+        this.notificationService.error('Failed to load company details');
+
+        // Fallback to navigation if modal approach fails
+        this.router.navigate(['/quotations/new'], {
+          queryParams: { company_id: this.companyId }
+        });
+      }
     });
   }
 
@@ -197,6 +216,28 @@ export class CompanyActiveQuotationsComponent implements OnInit {
   closeDetailsModal(): void {
     this.showDetailsModal = false;
     this.selectedQuotation = null;
+  }
+
+  closeQuotationFormModal(): void {
+    this.showQuotationFormModal = false;
+    this.selectedCompany = null;
+  }
+
+  handleQuotationFormSubmitted(formData: Partial<Quotation>): void {
+    // Create the quotation
+    this.quotationService.createQuotation(formData).subscribe({
+      next: (createdQuotation) => {
+        this.notificationService.success('Quotation created successfully');
+        this.closeQuotationFormModal();
+
+        // Reload quotations to include the new one
+        this.loadQuotations();
+      },
+      error: (error) => {
+        console.error('Error creating quotation:', error);
+        this.notificationService.error('Failed to create quotation');
+      }
+    });
   }
 
   handleStatusChange(updatedQuotation: Quotation): void {

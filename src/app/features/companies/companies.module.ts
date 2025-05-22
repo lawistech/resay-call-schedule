@@ -18,6 +18,7 @@ import { CompanyScheduledCallsComponent } from './company-detail/company-schedul
 import { OpportunitySuccessModalComponent } from '../opportunities/opportunity-success-modal/opportunity-success-modal.component';
 import { QuotationService } from '../quotations/services/quotation.service';
 import { QuotationDetailsModalComponent } from '../quotations/quotation-details-modal/quotation-details-modal.component';
+import { QuotationFormComponent } from '../quotations/quotation-form/quotation-form.component';
 
 const routes: Routes = [
   { path: '', component: CompaniesListComponent },
@@ -45,7 +46,8 @@ const routes: Routes = [
     HttpClientModule,
     RouterModule.forChild(routes),
     OpportunitySuccessModalComponent,
-    QuotationDetailsModalComponent
+    QuotationDetailsModalComponent,
+    QuotationFormComponent
   ],
   providers: [
     CompanyService,
