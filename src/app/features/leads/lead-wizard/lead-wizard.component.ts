@@ -124,10 +124,9 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
 
     // Contact creation form
     this.contactForm = this.fb.group({
-      first_name: ['', [Validators.required]],
-      last_name: ['', [Validators.required]],
-      email: ['', [Validators.email]],
-      phone: [''],
+      full_name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email, this.customEmailValidator]],
+      phone: ['', [Validators.required, this.phoneValidator]],
       job_title: [''],
       notes: ['']
     });
@@ -277,8 +276,20 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
     }
 
     this.isCreatingContact = true;
+
+    // Split full name into first and last name
+    const fullName = this.contactForm.get('full_name')?.value || '';
+    const nameParts = fullName.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
     const contactData = {
-      ...this.contactForm.value,
+      first_name: firstName,
+      last_name: lastName,
+      email: this.contactForm.get('email')?.value,
+      phone: this.contactForm.get('phone')?.value,
+      job_title: this.contactForm.get('job_title')?.value,
+      notes: this.contactForm.get('notes')?.value,
       company_id: this.selectedCompany.id,
       lead_source: this.companyForm.get('source')?.value
     };
@@ -349,11 +360,90 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
   getFieldError(form: FormGroup, fieldName: string): string {
     const field = form.get(fieldName);
     if (field?.errors) {
-      if (field.errors['required']) return `${fieldName} is required`;
-      if (field.errors['email']) return 'Please enter a valid email';
-      if (field.errors['minlength']) return `${fieldName} must be at least ${field.errors['minlength'].requiredLength} characters`;
+      if (field.errors['required']) return `${this.getFieldDisplayName(fieldName)} is required`;
+      if (field.errors['email']) return 'Please enter a valid email address';
+      if (field.errors['customEmail']) return 'Email format is invalid';
+      if (field.errors['phone']) return 'Please enter a valid phone number';
+      if (field.errors['minlength']) return `${this.getFieldDisplayName(fieldName)} must be at least ${field.errors['minlength'].requiredLength} characters`;
     }
     return '';
+  }
+
+  private getFieldDisplayName(fieldName: string): string {
+    const displayNames: { [key: string]: string } = {
+      'full_name': 'Full name',
+      'email': 'Email',
+      'phone': 'Phone number',
+      'job_title': 'Job title',
+      'searchTerm': 'Company name',
+      'name': 'Company name',
+      'source': 'Source'
+    };
+    return displayNames[fieldName] || fieldName;
+  }
+
+  // Custom validators
+  customEmailValidator(control: any) {
+    if (!control.value) return null;
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const valid = emailRegex.test(control.value);
+
+    if (!valid) {
+      return { customEmail: true };
+    }
+
+    // Additional checks for common email issues
+    if (control.value.includes('..') ||
+        control.value.startsWith('.') ||
+        control.value.endsWith('.') ||
+        control.value.includes('@.') ||
+        control.value.includes('.@')) {
+      return { customEmail: true };
+    }
+
+    return null;
+  }
+
+  phoneValidator(control: any) {
+    if (!control.value) return null;
+
+    // Remove all non-digit characters for validation
+    const phoneNumber = control.value.replace(/\D/g, '');
+
+    // Check if it's a valid length (between 10-15 digits)
+    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
+      return { phone: true };
+    }
+
+    // Additional validation for common phone formats
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    const cleanNumber = control.value.replace(/[\s\-\(\)\.]/g, '');
+
+    if (!phoneRegex.test(cleanNumber)) {
+      return { phone: true };
+    }
+
+    return null;
+  }
+
+  // Phone number formatting
+  formatPhoneNumber(event: any): void {
+    let value = event.target.value.replace(/\D/g, '');
+
+    if (value.length >= 10) {
+      // Format as (XXX) XXX-XXXX
+      value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+    } else if (value.length >= 6) {
+      // Format as (XXX) XXX-
+      value = value.replace(/(\d{3})(\d{3})/, '($1) $2-');
+    } else if (value.length >= 3) {
+      // Format as (XXX)
+      value = value.replace(/(\d{3})/, '($1) ');
+    }
+
+    // Update the form control value
+    this.contactForm.get('phone')?.setValue(value, { emitEvent: false });
   }
 
   // State management methods
