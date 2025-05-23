@@ -21,22 +21,22 @@ import { NotificationService } from '../../../core/services/notification.service
 export class LeadFormDialogComponent implements OnInit {
   @Input() lead: Lead | null = null;
   @Output() dialogClose = new EventEmitter<any>();
-  
+
   leadForm!: FormGroup;
   isSubmitting = false;
   companies: {id: string, name: string}[] = [];
   users: {id: string, email: string, full_name: string}[] = [];
-  
+
   statusOptions = [
     'New',
     'Contacted',
-    'Qualified', 
+    'Qualified',
     'Proposal',
     'Negotiation',
     'Won',
     'Lost'
   ];
-  
+
   sourceOptions = [
     'Website',
     'Referral',
@@ -44,6 +44,10 @@ export class LeadFormDialogComponent implements OnInit {
     'Cold Call',
     'Social Media',
     'Trade Show',
+    'BCB',
+    'Resay',
+    'AE',
+    'Sumup',
     'Other'
   ];
 
@@ -56,7 +60,7 @@ export class LeadFormDialogComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadDropdownData();
-    
+
     if (this.lead) {
       this.patchFormValues();
     }
@@ -77,7 +81,7 @@ export class LeadFormDialogComponent implements OnInit {
       expected_close_date: ['']
     });
   }
-  
+
   loadDropdownData(): void {
     // Load companies
     this.leadService.getCompanies().subscribe({
@@ -88,7 +92,7 @@ export class LeadFormDialogComponent implements OnInit {
         console.error('Error loading companies:', error);
       }
     });
-    
+
     // Load users
     this.leadService.getUsers().subscribe({
       next: (data) => {
@@ -99,10 +103,10 @@ export class LeadFormDialogComponent implements OnInit {
       }
     });
   }
-  
+
   patchFormValues(): void {
     if (!this.lead) return;
-    
+
     this.leadForm.patchValue({
       name: this.lead.name,
       email: this.lead.email,
@@ -114,11 +118,11 @@ export class LeadFormDialogComponent implements OnInit {
       assigned_to: this.lead.assigned_to || '',
       value: this.lead.value || null,
       probability: this.lead.probability || null,
-      expected_close_date: this.lead.expected_close_date ? 
+      expected_close_date: this.lead.expected_close_date ?
         this.formatDateForInput(new Date(this.lead.expected_close_date)) : ''
     });
   }
-  
+
   formatDateForInput(date: Date): string {
     // Format date as YYYY-MM-DD for input[type="date"]
     return date.toISOString().split('T')[0];
@@ -136,9 +140,9 @@ export class LeadFormDialogComponent implements OnInit {
 
     this.isSubmitting = true;
     const formData = this.prepareFormData();
-    
+
     let saveOperation: Observable<Lead>;
-    
+
     if (this.lead) {
       // Update existing lead
       saveOperation = this.leadService.updateLead(this.lead.id, formData);
@@ -146,7 +150,7 @@ export class LeadFormDialogComponent implements OnInit {
       // Create new lead
       saveOperation = this.leadService.createLead(formData);
     }
-    
+
     saveOperation.subscribe({
       next: (result) => {
         this.isSubmitting = false;
@@ -163,7 +167,7 @@ export class LeadFormDialogComponent implements OnInit {
   // Prepare form data and handle empty values
   prepareFormData(): Partial<Lead> {
     const formValues = this.leadForm.value;
-    
+
     // Handle empty UUID fields by setting them to null instead of empty strings
     const result: Partial<Lead> = {
       ...formValues,
@@ -171,59 +175,59 @@ export class LeadFormDialogComponent implements OnInit {
       company_id: formValues.company_id?.trim() || null,
       assigned_to: formValues.assigned_to?.trim() || null
     };
-    
+
     return result;
   }
 
   close(result?: any): void {
     this.dialogClose.emit(result);
   }
-  
+
   // Get formatted user display name
   getUserDisplayName(userId: string): string {
     const user = this.users.find(u => u.id === userId);
     if (!user) return 'Unknown User';
-    
+
     return user.full_name || user.email;
   }
-  
+
   // Get control error state
   isInvalid(controlName: string): boolean {
     const control = this.leadForm.get(controlName);
     return !!control && control.invalid && control.touched;
   }
-  
+
   // Get control error message
   getErrorMessage(controlName: string): string {
     const control = this.leadForm.get(controlName);
     if (!control) return '';
-    
+
     if (control.errors?.['required']) {
       return 'This field is required';
     }
-    
+
     if (control.errors?.['email']) {
       return 'Please enter a valid email';
     }
-    
+
     if (control.errors?.['min']) {
       return `Value must be at least ${control.errors['min'].min}`;
     }
-    
+
     if (control.errors?.['max']) {
       return `Value must be at most ${control.errors['max'].max}`;
     }
-    
+
     return 'Invalid value';
   }
-  
+
   // Handle probability change when status changes
   onStatusChange(event: Event): void {
     const status = (event.target as HTMLSelectElement).value;
     const probabilityControl = this.leadForm.get('probability');
-    
+
     if (!probabilityControl) return;
-    
+
     // Set probability based on status
     switch (status) {
       case 'New':

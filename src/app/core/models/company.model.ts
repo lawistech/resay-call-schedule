@@ -6,6 +6,7 @@ export interface Company {
   industry?: string;
   address?: string;
   notes?: string;
+  source?: string;
   metrics?: {
     totalOrderValue?: number;
     activeQuotations?: number;

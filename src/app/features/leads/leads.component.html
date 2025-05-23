@@ -3,7 +3,7 @@
   <!-- Header -->
   <div class="mb-6">
     <h1 class="text-3xl font-bold text-stone-800 mb-4">Leads Management</h1>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <!-- Total Leads Card -->
       <div class="bg-white rounded-lg shadow-md p-5 border border-stone-100">
@@ -53,8 +53,8 @@
           </div>
           <div class="w-full bg-stone-100 rounded-full h-1.5 mt-1">
             <div class="bg-green-500 h-1.5 rounded-full" [style.width.%]="
-              totalPipelineValue > 0 
-              ? (weightedPipelineValue / totalPipelineValue) * 100 
+              totalPipelineValue > 0
+              ? (weightedPipelineValue / totalPipelineValue) * 100
               : 0
             "></div>
           </div>
@@ -129,26 +129,40 @@
             {{ source }}
           </option>
         </select>
-        
-        <button 
+
+        <button
           *ngIf="searchTerm || statusFilter || sourceFilter"
-          (click)="clearFilters()" 
+          (click)="clearFilters()"
           class="px-3 py-2 border border-stone-200 rounded-md hover:bg-stone-50 text-sm"
         >
           Clear filters
         </button>
-        
-        <button 
-          (click)="openAddLeadDialog()" 
-          class="px-4 py-2 bg-stone-800 text-white rounded-md hover:bg-stone-700"
-        >
-          <span class="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Add Lead
-          </span>
-        </button>
+
+        <div class="flex space-x-2">
+          <button
+            (click)="openLeadWizard()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            <span class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Create Lead
+            </span>
+          </button>
+
+          <button
+            (click)="openAddLeadDialog()"
+            class="px-4 py-2 bg-stone-600 text-white rounded-md hover:bg-stone-700"
+          >
+            <span class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Quick Add
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -167,20 +181,20 @@
     </div>
     <h3 class="text-lg font-medium text-stone-800 mb-2">No leads found</h3>
     <p class="text-stone-500 mb-6">
-      {{ leads.length === 0 ? 
-        "You haven't added any leads yet. Get started by adding your first lead." : 
+      {{ leads.length === 0 ?
+        "You haven't added any leads yet. Get started by adding your first lead." :
         "No leads match your current filters. Try adjusting your search or clearing the filters." }}
     </p>
-    <button 
+    <button
       *ngIf="leads.length === 0"
-      (click)="openAddLeadDialog()" 
-      class="px-4 py-2 bg-stone-800 text-white rounded-md hover:bg-stone-700"
+      (click)="openLeadWizard()"
+      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
     >
-      Add your first lead
+      Create your first lead
     </button>
-    <button 
+    <button
       *ngIf="leads.length > 0"
-      (click)="clearFilters()" 
+      (click)="clearFilters()"
       class="px-4 py-2 border border-stone-200 rounded-md hover:bg-stone-50"
     >
       Clear filters
@@ -235,16 +249,16 @@
               <div class="text-sm text-stone-500">{{ formatDate(lead.expected_close_date) }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button 
-                (click)="editLead(lead)" 
+              <button
+                (click)="editLead(lead)"
                 class="text-stone-600 hover:text-stone-900 mr-4"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </button>
-              <button 
-                (click)="deleteLead(lead)" 
+              <button
+                (click)="deleteLead(lead)"
                 class="text-red-500 hover:text-red-700"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -259,9 +273,16 @@
   </div>
 </div>
 
+<!-- Lead Wizard -->
+<app-lead-wizard
+  *ngIf="showLeadWizard"
+  (wizardComplete)="handleWizardComplete($event)"
+  (wizardCancel)="closeLeadWizard()">
+</app-lead-wizard>
+
 <!-- Lead form dialog -->
-<app-lead-form-dialog 
-  *ngIf="showDialog" 
+<app-lead-form-dialog
+  *ngIf="showDialog"
   [lead]="selectedLead"
   (dialogClose)="handleDialogClose($event)">
 </app-lead-form-dialog>

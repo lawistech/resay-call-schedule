@@ -9,6 +9,7 @@ import { Lead } from '../../core/models/lead.model';
 import { LeadService } from '../../core/services/lead.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { LeadFormDialogComponent } from './lead-form-dialog/lead-form-dialog.component';
+import { LeadWizardComponent } from './lead-wizard/lead-wizard.component';
 
 @Component({
   selector: 'app-leads',
@@ -18,7 +19,8 @@ import { LeadFormDialogComponent } from './lead-form-dialog/lead-form-dialog.com
     RouterModule,
     FormsModule,
     ReactiveFormsModule,
-    LeadFormDialogComponent
+    LeadFormDialogComponent,
+    LeadWizardComponent
   ],
   templateUrl: './leads.component.html',
   styleUrls: ['./leads.component.scss']
@@ -32,17 +34,18 @@ export class LeadsComponent implements OnInit, OnDestroy {
   sourceFilter: string = '';
   showDialog = false;
   selectedLead: Lead | null = null;
-  
+  showLeadWizard = false;
+
   availableStatuses = [
     'New',
     'Contacted',
-    'Qualified', 
+    'Qualified',
     'Proposal',
     'Negotiation',
     'Won',
     'Lost'
   ];
-  
+
   availableSources = [
     'Website',
     'Referral',
@@ -50,9 +53,13 @@ export class LeadsComponent implements OnInit, OnDestroy {
     'Cold Call',
     'Social Media',
     'Trade Show',
+    'BCB',
+    'Resay',
+    'AE',
+    'Sumup',
     'Other'
   ];
-  
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -92,6 +99,19 @@ export class LeadsComponent implements OnInit, OnDestroy {
     this.showDialog = true;
   }
 
+  openLeadWizard(): void {
+    this.showLeadWizard = true;
+  }
+
+  closeLeadWizard(): void {
+    this.showLeadWizard = false;
+  }
+
+  handleWizardComplete(result: any): void {
+    this.showLeadWizard = false;
+    this.loadLeads(); // Refresh the leads list
+  }
+
   editLead(lead: Lead): void {
     this.selectedLead = lead;
     this.showDialog = true;
@@ -100,7 +120,7 @@ export class LeadsComponent implements OnInit, OnDestroy {
   closeDialog(refreshData: boolean = false): void {
     this.showDialog = false;
     this.selectedLead = null;
-    
+
     if (refreshData) {
       this.loadLeads();
     }
@@ -127,28 +147,28 @@ export class LeadsComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     let filtered = [...this.leads];
-    
+
     // Apply search term
     if (this.searchTerm) {
       const searchLower = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(lead => 
+      filtered = filtered.filter(lead =>
         lead.name.toLowerCase().includes(searchLower) ||
         lead.email.toLowerCase().includes(searchLower) ||
         (lead.company_name && lead.company_name.toLowerCase().includes(searchLower)) ||
         (lead.phone && lead.phone.toLowerCase().includes(searchLower))
       );
     }
-    
+
     // Apply status filter
     if (this.statusFilter) {
       filtered = filtered.filter(lead => lead.status === this.statusFilter);
     }
-    
+
     // Apply source filter
     if (this.sourceFilter) {
       filtered = filtered.filter(lead => lead.lead_source === this.sourceFilter);
     }
-    
+
     this.filteredLeads = filtered;
   }
 
@@ -187,9 +207,9 @@ export class LeadsComponent implements OnInit, OnDestroy {
     }
     this.closeDialog();
   }
-  
+
   // Helper methods to replace template filter functions
-  
+
   // Count active leads
   getActiveLeadsCount(): number {
     return this.leads.filter(l => l.status !== 'Lost').length;
@@ -197,8 +217,8 @@ export class LeadsComponent implements OnInit, OnDestroy {
 
   // Calculate active leads percentage
   getActiveLeadsPercentage(): number {
-    return this.leads.length > 0 
-      ? (this.getActiveLeadsCount() / this.leads.length) * 100 
+    return this.leads.length > 0
+      ? (this.getActiveLeadsCount() / this.leads.length) * 100
       : 0;
   }
 
@@ -219,26 +239,26 @@ export class LeadsComponent implements OnInit, OnDestroy {
 
   // Calculate conversion rate
   getConversionRate(): number {
-    return this.leads.length > 0 
-      ? Math.round((this.getWonLeadsCount() / this.leads.length) * 100) 
+    return this.leads.length > 0
+      ? Math.round((this.getWonLeadsCount() / this.leads.length) * 100)
       : 0;
   }
 
   // Calculate conversion percentage for progress bar
   getWonLostPercentage(): number {
     const totalClosedLeads = this.getWonLeadsCount() + this.getLostLeadsCount();
-    return totalClosedLeads > 0 
-      ? (this.getWonLeadsCount() / totalClosedLeads) * 100 
+    return totalClosedLeads > 0
+      ? (this.getWonLeadsCount() / totalClosedLeads) * 100
       : 0;
   }
-  
+
   // Calculates the value of the leads pipeline
   get totalPipelineValue(): number {
     return this.leads
       .filter(lead => lead.status !== 'Lost')
       .reduce((sum, lead) => sum + (lead.value || 0), 0);
   }
-  
+
   // Calculates the weighted value of the leads pipeline
   get weightedPipelineValue(): number {
     return this.leads
@@ -249,19 +269,19 @@ export class LeadsComponent implements OnInit, OnDestroy {
         return sum + (value * probability / 100);
       }, 0);
   }
-  
+
   // Helper to format date
   formatDate(dateString?: string): string {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString();
   }
-  
+
   // Helper to format currency
   formatCurrency(value?: number): string {
     if (value === undefined || value === null) return 'N/A';
-    return new Intl.NumberFormat('en-GB', { 
-      style: 'currency', 
-      currency: 'GBP' 
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP'
     }).format(value);
   }
 }

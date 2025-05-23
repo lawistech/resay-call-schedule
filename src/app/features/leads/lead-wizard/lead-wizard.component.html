@@ -1,0 +1,356 @@
+<!-- Lead Creation Wizard -->
+<div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 pb-4 border-b">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">Create New Lead</h2>
+        <p class="text-sm text-gray-600 mt-1">Step {{ currentStep }} of {{ totalSteps }}</p>
+      </div>
+      <button (click)="cancel()" class="text-gray-400 hover:text-gray-600 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="mb-8">
+      <div class="flex items-center">
+        <div class="flex items-center text-sm">
+          <div class="flex items-center justify-center w-8 h-8 rounded-full"
+               [ngClass]="currentStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'">
+            1
+          </div>
+          <span class="ml-2 font-medium" [ngClass]="currentStep >= 1 ? 'text-blue-600' : 'text-gray-500'">
+            Company Search
+          </span>
+        </div>
+        <div class="flex-1 h-1 mx-4 bg-gray-200 rounded">
+          <div class="h-1 bg-blue-600 rounded transition-all duration-300"
+               [style.width]="currentStep >= 2 ? '100%' : '0%'"></div>
+        </div>
+        <div class="flex items-center text-sm">
+          <div class="flex items-center justify-center w-8 h-8 rounded-full"
+               [ngClass]="currentStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'">
+            2
+          </div>
+          <span class="ml-2 font-medium" [ngClass]="currentStep >= 2 ? 'text-blue-600' : 'text-gray-500'">
+            Create Contact
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1: Company Search and Creation -->
+    <div *ngIf="currentStep === 1" class="space-y-6">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-blue-900 mb-2">Find or Create Company</h3>
+        <p class="text-sm text-blue-700">
+          First, search for the company to ensure it doesn't already exist. If not found, you can create a new one.
+        </p>
+      </div>
+
+      <!-- Company Search Form -->
+      <form [formGroup]="companySearchForm" class="space-y-4">
+        <div>
+          <label for="searchTerm" class="block text-sm font-medium text-gray-700 mb-2">
+            Search Company <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input
+              type="text"
+              id="searchTerm"
+              formControlName="searchTerm"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter company name to search..."
+              [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(companySearchForm, 'searchTerm')}"
+            >
+            <div *ngIf="isSearchingCompany" class="absolute right-3 top-3">
+              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            </div>
+          </div>
+          <p *ngIf="isFieldInvalid(companySearchForm, 'searchTerm')" class="mt-1 text-sm text-red-600">
+            {{ getFieldError(companySearchForm, 'searchTerm') }}
+          </p>
+        </div>
+      </form>
+
+      <!-- Search Results -->
+      <div *ngIf="showCompanySearchResults && companySearchResults.length > 0" class="space-y-2">
+        <h4 class="text-sm font-medium text-gray-700">Existing Companies Found:</h4>
+        <div class="max-h-48 overflow-y-auto space-y-2">
+          <div *ngFor="let company of companySearchResults"
+               class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+               (click)="selectExistingCompany(company)">
+            <div class="flex justify-between items-center">
+              <div>
+                <h5 class="font-medium text-gray-900">{{ company.name }}</h5>
+                <p *ngIf="company.industry" class="text-sm text-gray-600">{{ company.industry }}</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Company Display -->
+      <div *ngIf="selectedCompany" class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <div>
+            <h4 class="font-medium text-green-900">Selected Company: {{ selectedCompany.name }}</h4>
+            <p *ngIf="selectedCompany.industry" class="text-sm text-green-700">{{ selectedCompany.industry }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Company Form -->
+      <div *ngIf="showNewCompanyForm && !selectedCompany" class="space-y-4">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h4 class="font-medium text-yellow-900 mb-2">Company Not Found</h4>
+          <p class="text-sm text-yellow-700">No existing company found. Please create a new one below.</p>
+        </div>
+
+        <form [formGroup]="companyForm" class="space-y-4">
+          <div>
+            <label for="companyName" class="block text-sm font-medium text-gray-700 mb-1">
+              Company Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="companyName"
+              formControlName="name"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(companyForm, 'name')}"
+            >
+            <p *ngIf="isFieldInvalid(companyForm, 'name')" class="mt-1 text-sm text-red-600">
+              {{ getFieldError(companyForm, 'name') }}
+            </p>
+          </div>
+
+          <div>
+            <label for="source" class="block text-sm font-medium text-gray-700 mb-1">
+              Source <span class="text-red-500">*</span>
+            </label>
+            <select
+              id="source"
+              formControlName="source"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(companyForm, 'source')}"
+            >
+              <option value="">-- Select Source --</option>
+              <option *ngFor="let source of sourceOptions" [value]="source.value">
+                {{ source.label }}
+              </option>
+            </select>
+            <p *ngIf="isFieldInvalid(companyForm, 'source')" class="mt-1 text-sm text-red-600">
+              {{ getFieldError(companyForm, 'source') }}
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+              <input
+                type="text"
+                id="industry"
+                formControlName="industry"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Technology, Retail"
+              >
+            </div>
+
+            <div>
+              <label for="website" class="block text-sm font-medium text-gray-700 mb-1">Website</label>
+              <input
+                type="url"
+                id="website"
+                formControlName="website"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="https://example.com"
+              >
+            </div>
+          </div>
+
+          <div>
+            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+            <textarea
+              id="address"
+              formControlName="address"
+              rows="2"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Company address"
+            ></textarea>
+          </div>
+
+          <div>
+            <label for="companyNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <textarea
+              id="companyNotes"
+              formControlName="notes"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Additional notes about the company"
+            ></textarea>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Step 2: Contact Creation -->
+    <div *ngIf="currentStep === 2" class="space-y-6">
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-green-900 mb-2">Create Contact</h3>
+        <p class="text-sm text-green-700">
+          Now create a contact person for <strong>{{ selectedCompany?.name }}</strong>.
+        </p>
+      </div>
+
+      <form [formGroup]="contactForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">
+              First Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              formControlName="first_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(contactForm, 'first_name')}"
+            >
+            <p *ngIf="isFieldInvalid(contactForm, 'first_name')" class="mt-1 text-sm text-red-600">
+              {{ getFieldError(contactForm, 'first_name') }}
+            </p>
+          </div>
+
+          <div>
+            <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">
+              Last Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              formControlName="last_name"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(contactForm, 'last_name')}"
+            >
+            <p *ngIf="isFieldInvalid(contactForm, 'last_name')" class="mt-1 text-sm text-red-600">
+              {{ getFieldError(contactForm, 'last_name') }}
+            </p>
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(contactForm, 'email')}"
+            >
+            <p *ngIf="isFieldInvalid(contactForm, 'email')" class="mt-1 text-sm text-red-600">
+              {{ getFieldError(contactForm, 'email') }}
+            </p>
+          </div>
+
+          <div>
+            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+          </div>
+
+          <div class="md:col-span-2">
+            <label for="jobTitle" class="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+            <input
+              type="text"
+              id="jobTitle"
+              formControlName="job_title"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="e.g., Manager, Director"
+            >
+          </div>
+        </div>
+
+        <div>
+          <label for="contactNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <textarea
+            id="contactNotes"
+            formControlName="notes"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Additional notes about the contact"
+          ></textarea>
+        </div>
+      </form>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="flex justify-between items-center mt-8 pt-6 border-t">
+      <button
+        *ngIf="currentStep > 1"
+        (click)="previousStep()"
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        Previous
+      </button>
+      <div *ngIf="currentStep === 1" class="flex-1"></div>
+
+      <div class="flex space-x-3">
+        <button
+          (click)="cancel()"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        >
+          Cancel
+        </button>
+
+        <!-- Step 1 Actions -->
+        <div *ngIf="currentStep === 1">
+          <button
+            *ngIf="selectedCompany"
+            (click)="nextStep()"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Next: Create Contact
+          </button>
+          <button
+            *ngIf="showNewCompanyForm && !selectedCompany"
+            (click)="createNewCompany()"
+            [disabled]="isCreatingCompany || companyForm.invalid"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span *ngIf="isCreatingCompany" class="flex items-center">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Creating...
+            </span>
+            <span *ngIf="!isCreatingCompany">Create Company & Continue</span>
+          </button>
+        </div>
+
+        <!-- Step 2 Actions -->
+        <button
+          *ngIf="currentStep === 2"
+          (click)="createContact()"
+          [disabled]="isCreatingContact || contactForm.invalid"
+          class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span *ngIf="isCreatingContact" class="flex items-center">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            Creating...
+          </span>
+          <span *ngIf="!isCreatingContact">Create Contact & Finish</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
