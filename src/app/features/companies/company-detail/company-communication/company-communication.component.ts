@@ -1,17 +1,19 @@
 // src/app/features/companies/company-detail/company-communication/company-communication.component.ts
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CompanyService } from '../../services/company.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { CompanyCommunication } from '../../../../core/models/company.model';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { CompanyRefreshService } from '../../services/company-refresh.service';
 
 @Component({
   selector: 'app-company-communication',
   templateUrl: './company-communication.component.html',
   styleUrls: ['./company-communication.component.scss']
 })
-export class CompanyCommunicationComponent implements OnInit {
+export class CompanyCommunicationComponent implements OnInit, OnDestroy {
   @Input() companyId: string = '';
 
   communications: CompanyCommunication[] = [];
@@ -31,17 +33,36 @@ export class CompanyCommunicationComponent implements OnInit {
   // Make Object available in the template
   Object = Object;
 
+  // Subscription for communication refresh
+  private refreshSubscription: Subscription | null = null;
+
   constructor(
     private companyService: CompanyService,
     private notificationService: NotificationService,
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private companyRefreshService: CompanyRefreshService
   ) {}
 
   ngOnInit(): void {
     this.loadContacts();
     this.loadCommunications();
     this.initForm();
+
+    // Subscribe to communication refresh events
+    this.refreshSubscription = this.companyRefreshService.communicationAdded$.subscribe(companyId => {
+      if (companyId === this.companyId) {
+        console.log('Refreshing communications after note added from contact page');
+        this.loadCommunications();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription when component is destroyed
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
   }
 
   loadContacts(): void {

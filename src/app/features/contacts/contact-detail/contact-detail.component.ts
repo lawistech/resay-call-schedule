@@ -291,6 +291,12 @@ export class ContactDetailComponent implements OnInit {
           this.contactNotes.unshift(savedNote);
           this.notificationService.success('Note added successfully');
           this.cancelAddNote();
+
+          // Notify the company refresh service that a communication was added
+          if (this.contact && this.contact.company_id) {
+            console.log('Contact detail notifying company refresh service for communication added to company ID:', this.contact.company_id);
+            this.companyRefreshService.notifyCommunicationAdded(this.contact.company_id);
+          }
         },
         error: (error) => {
           console.error('Error saving note:', error);
