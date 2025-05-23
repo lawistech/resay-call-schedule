@@ -91,6 +91,13 @@
         </div>
       </a>
 
+
+      <!-- Categories Label - Secondary Items -->
+      <div *ngIf="expanded || tempExpanded" class="mt-15 mb-30 px-4 transition-opacity duration-200"
+           [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}" style="margin-top: 40px; margin-bottom: 40px;">
+        <span class="text-xs font-semibold uppercase tracking-wider text-stone-400">Workspace</span>
+      </div>
+
       <!-- Call Management -->
       <div class="nav-section relative">
         <button (click)="toggleSection('calls')"
@@ -608,11 +615,6 @@
 
 
 
-      <!-- Categories Label - Secondary Items -->
-      <div *ngIf="expanded || tempExpanded" class="mt-8 mb-2 px-4 transition-opacity duration-200"
-           [ngClass]="{'opacity-0': !expanded && !tempExpanded, 'opacity-100': expanded || tempExpanded}">
-        <span class="text-xs font-semibold uppercase tracking-wider text-stone-400">Workspace</span>
-      </div>
 
       <!-- Settings Link -->
       <a routerLink="/settings"
