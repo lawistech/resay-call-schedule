@@ -91,6 +91,28 @@
         </div>
       </a>
 
+      <!-- Contacts -->
+      <a routerLink="/contacts"
+         [class.before:opacity-100]="isRouteActive('/contacts')"
+         [class.bg-stone-100]="isRouteActive('/contacts')"
+         [class.text-stone-800]="isRouteActive('/contacts')"
+         class="nav-item relative flex items-center px-3 py-3 rounded-md text-stone-600 hover:bg-stone-50
+                transition-all duration-150 group before:content-[''] before:absolute before:left-0 before:top-0
+                before:h-full before:w-[3px] before:bg-stone-800 before:opacity-0 before:transition-opacity">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span *ngIf="expanded || tempExpanded" class="ml-3 transition-all duration-200"
+              [ngClass]="{'opacity-0 translate-x-10': !expanded && !tempExpanded, 'opacity-100 translate-x-0': expanded || tempExpanded}">
+          Contacts
+        </span>
+
+        <!-- Tooltip for collapsed state -->
+        <div *ngIf="!expanded && !tempExpanded" class="sidebar-tooltip">
+          Contacts
+        </div>
+      </a>
+
 
       <!-- Categories Label - Secondary Items -->
       <div *ngIf="expanded || tempExpanded" class="mt-15 mb-30 px-4 transition-opacity duration-200"

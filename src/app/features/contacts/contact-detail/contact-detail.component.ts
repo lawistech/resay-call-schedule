@@ -7,7 +7,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { CompanyRefreshService } from '../../../features/companies/services/company-refresh.service';
 import { CompanyService } from '../../companies/services/company.service';
 import { Contact } from '../../../core/models/contact.model';
-import { Company } from '../../../core/models/company.model';
+import { Company, CompanyCommunication } from '../../../core/models/company.model';
 import { Call } from '../../../core/models/call.model';
 
 @Component({
@@ -19,12 +19,19 @@ export class ContactDetailComponent implements OnInit {
   contact: Contact | null = null;
   contactCalls: Call[] = [];
   companies: Company[] = [];
+  contactNotes: CompanyCommunication[] = [];
+  callNotes: Call[] = [];
   isLoading = true;
   showEditModal = false;
   showCallModal = false;
 
+  // Notes functionality
+  showAddNoteForm = false;
+  newNoteText = '';
+  editingNote: CompanyCommunication | null = null;
+
   // Add these new properties
-  activeTab: 'details' | 'opportunity' | 'history' | 'calls' = 'details';
+  activeTab: 'details' | 'opportunity' | 'notes' | 'calls' = 'details';
 
   constructor(
     private route: ActivatedRoute,
@@ -71,6 +78,11 @@ export class ContactDetailComponent implements OnInit {
       }
 
       this.contactCalls = (calls || []).filter(call => call.contact_id === this.contactId);
+
+      // Load contact notes if contact has a company
+      if (this.contact?.company_id) {
+        await this.loadContactNotes();
+      }
 
     } catch (error: any) {
       this.notificationService.error('Failed to load contact: ' + error.message);
@@ -223,5 +235,109 @@ export class ContactDetailComponent implements OnInit {
           this.isLoading = false;
         });
     }
+  }
+
+  // Notes functionality methods
+  async loadContactNotes(): Promise<void> {
+    try {
+      // Load communication notes if contact has a company
+      if (this.contact?.company_id) {
+        this.companyService.getCompanyCommunications(this.contact.company_id).subscribe({
+          next: (communications) => {
+            // Filter for notes related to this contact
+            this.contactNotes = communications.filter(comm =>
+              comm.type === 'note' && comm.contactId === this.contactId
+            );
+          },
+          error: (error) => {
+            console.error('Error loading contact notes:', error);
+            this.notificationService.error('Failed to load contact notes');
+          }
+        });
+      }
+
+      // Load call notes for this contact
+      this.callNotes = this.contactCalls.filter(call =>
+        call.notes && call.notes.trim().length > 0
+      );
+
+    } catch (error: any) {
+      console.error('Error loading contact notes:', error);
+      this.notificationService.error('Failed to load contact notes');
+    }
+  }
+
+  cancelAddNote(): void {
+    this.showAddNoteForm = false;
+    this.newNoteText = '';
+  }
+
+  async saveNewNote(): Promise<void> {
+    if (!this.newNoteText || !this.newNoteText.trim() || !this.contact?.company_id) {
+      return;
+    }
+
+    try {
+      const newNote: Partial<CompanyCommunication> = {
+        companyId: this.contact.company_id,
+        contactId: this.contactId,
+        type: 'note',
+        date: new Date().toISOString(),
+        summary: this.newNoteText.trim()
+      };
+
+      this.companyService.addCompanyCommunication(newNote).subscribe({
+        next: (savedNote) => {
+          this.contactNotes.unshift(savedNote);
+          this.notificationService.success('Note added successfully');
+          this.cancelAddNote();
+        },
+        error: (error) => {
+          console.error('Error saving note:', error);
+          this.notificationService.error('Failed to save note');
+        }
+      });
+    } catch (error: any) {
+      console.error('Error saving note:', error);
+      this.notificationService.error('Failed to save note');
+    }
+  }
+
+  editNote(note: CompanyCommunication): void {
+    this.editingNote = note;
+    this.newNoteText = note.summary;
+    this.showAddNoteForm = true;
+  }
+
+  async deleteNote(note: CompanyCommunication): Promise<void> {
+    const confirmMessage = 'Are you sure you want to delete this note? This action cannot be undone.';
+
+    if (confirm(confirmMessage)) {
+      try {
+        // Note: You'll need to implement deleteCompanyCommunication in the company service
+        // For now, we'll show a placeholder message
+        this.notificationService.info('Delete note functionality to be implemented');
+
+        // When implemented, it should be:
+        // this.companyService.deleteCompanyCommunication(note.id).subscribe({
+        //   next: () => {
+        //     this.contactNotes = this.contactNotes.filter(n => n.id !== note.id);
+        //     this.notificationService.success('Note deleted successfully');
+        //   },
+        //   error: (error) => {
+        //     console.error('Error deleting note:', error);
+        //     this.notificationService.error('Failed to delete note');
+        //   }
+        // });
+      } catch (error: any) {
+        console.error('Error deleting note:', error);
+        this.notificationService.error('Failed to delete note');
+      }
+    }
+  }
+
+  editContactNotes(): void {
+    // Open the edit modal for the contact's built-in notes field
+    this.openEditModal();
   }
 }
