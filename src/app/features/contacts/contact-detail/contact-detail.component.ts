@@ -31,7 +31,7 @@ export class ContactDetailComponent implements OnInit {
   editingNote: CompanyCommunication | null = null;
 
   // Add these new properties
-  activeTab: 'details' | 'opportunity' | 'notes' | 'quotations' | 'calls' = 'details';
+  activeTab: 'details' | 'opportunity' | 'communications' | 'quotations' | 'calls' = 'details';
 
   constructor(
     private route: ActivatedRoute,

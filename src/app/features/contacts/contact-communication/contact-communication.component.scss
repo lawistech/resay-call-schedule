@@ -1,0 +1,92 @@
+// src/app/features/contacts/contact-communication/contact-communication.component.scss
+
+.btn-primary {
+  @apply px-4 py-2 bg-stone-800 text-white rounded-md hover:bg-stone-700 transition-colors;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-white text-stone-700 border border-stone-300 rounded-md hover:bg-stone-50 transition-colors;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Timeline specific styles
+.timeline-item {
+  position: relative;
+  
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 2rem;
+    top: 2.5rem;
+    bottom: -1.5rem;
+    width: 2px;
+    background-color: #e5e7eb;
+  }
+}
+
+// Communication type specific styles
+.communication-card {
+  transition: all 0.2s ease-in-out;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Form styles
+.form-input {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.form-textarea {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none;
+}
+
+// Filter tabs
+.filter-tab {
+  @apply py-2 px-4 text-center border-b-2 font-medium text-sm focus:outline-none transition-colors;
+  
+  &.active {
+    @apply border-stone-800 text-stone-800;
+  }
+  
+  &.inactive {
+    @apply border-transparent text-gray-500;
+    
+    &:hover {
+      @apply text-gray-700 border-gray-300;
+    }
+  }
+}
+
+// Type-specific filter colors
+.filter-tab-email.active {
+  @apply border-blue-500 text-blue-600;
+}
+
+.filter-tab-call.active {
+  @apply border-green-500 text-green-600;
+}
+
+.filter-tab-meeting.active {
+  @apply border-purple-500 text-purple-600;
+}
+
+.filter-tab-note.active {
+  @apply border-amber-500 text-amber-600;
+}
