@@ -1,8 +1,8 @@
 import { Component, OnInit, Output, EventEmitter, HostListener, OnDestroy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Observable, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { Observable, of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, takeUntil } from 'rxjs/operators';
 
 import { Company } from '../../../core/models/company.model';
 import { Contact } from '../../../core/models/contact.model';
@@ -39,6 +39,12 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
   selectedCompany: Company | null = null;
   showNewCompanyForm = false;
   isCreatingCompany = false;
+  searchCompleted = false;
+  showSuggestions = false;
+
+  // Auto-search functionality
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
 
   // Step 2: Contact Creation
   contactForm!: FormGroup;
@@ -85,12 +91,18 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initForms();
-    this.setupCompanySearch();
+    this.setupAutoSearch();
     this.restoreState();
     this.startAutoSave();
+
+    // Ensure no automatic search is triggered
+    this.searchCompleted = false;
+    this.companySearchResults = [];
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.clearAutoSave();
   }
 
@@ -121,50 +133,93 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
     });
   }
 
-  setupCompanySearch(): void {
+  setupAutoSearch(): void {
+    // Set up auto-search on input changes
     this.companySearchForm.get('searchTerm')?.valueChanges
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
-        switchMap(searchTerm => {
-          if (searchTerm && searchTerm.length >= 2) {
-            this.isSearchingCompany = true;
-            return this.companyService.searchCompanies(searchTerm);
-          }
-          return of([]);
-        })
+        takeUntil(this.destroy$)
       )
-      .subscribe({
-        next: (companies) => {
-          this.companySearchResults = companies;
-          this.showCompanySearchResults = companies.length > 0;
-          this.isSearchingCompany = false;
-
-          // If no results found, suggest creating new company
-          if (companies.length === 0 && this.companySearchForm.get('searchTerm')?.value) {
-            this.showNewCompanyForm = true;
-            this.companyForm.patchValue({
-              name: this.companySearchForm.get('searchTerm')?.value
-            });
-          } else {
-            this.showNewCompanyForm = false;
-          }
-        },
-        error: (error) => {
-          console.error('Error searching companies:', error);
-          this.isSearchingCompany = false;
-          this.showCompanySearchResults = false;
+      .subscribe(searchTerm => {
+        if (searchTerm && searchTerm.length >= 2) {
+          this.performSearch(searchTerm);
+        } else {
+          this.clearSearchResults();
         }
       });
   }
 
+  performSearch(searchTerm: string): void {
+    this.isSearchingCompany = true;
+    this.searchCompleted = false;
+    this.showSuggestions = true;
+
+    this.companyService.searchCompanies(searchTerm).subscribe({
+      next: (companies) => {
+        this.companySearchResults = companies;
+        this.isSearchingCompany = false;
+        this.searchCompleted = true;
+
+        if (companies.length === 0) {
+          // No companies found - prepare for new company creation
+          this.companyForm.patchValue({
+            name: searchTerm
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error searching companies:', error);
+        this.isSearchingCompany = false;
+        this.searchCompleted = true;
+        this.companySearchResults = [];
+      }
+    });
+  }
+
+  clearSearchResults(): void {
+    this.companySearchResults = [];
+    this.searchCompleted = false;
+    this.showSuggestions = false;
+    this.selectedCompany = null;
+  }
+
+  hideSuggestions(): void {
+    // Delay hiding to allow for click events
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 200);
+  }
+
+  // Keep the old method for backward compatibility but make it use the new logic
+  searchCompany(): void {
+    const searchTerm = this.companySearchForm.get('searchTerm')?.value;
+    if (searchTerm && searchTerm.length >= 2) {
+      this.performSearch(searchTerm);
+    }
+  }
+
   selectExistingCompany(company: Company): void {
     this.selectedCompany = company;
-    this.showCompanySearchResults = false;
-    this.showNewCompanyForm = false;
     this.companySearchForm.patchValue({
       searchTerm: company.name
     });
+
+    // Hide suggestions
+    this.showSuggestions = false;
+    this.searchCompleted = true;
+
+    // Save state
+    this.saveCurrentState();
+  }
+
+  proceedToAddContact(): void {
+    if (!this.selectedCompany) {
+      this.notificationService.error('No company selected');
+      return;
+    }
+
+    this.nextStep();
   }
 
   createNewCompany(): void {
@@ -180,7 +235,7 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
       next: (company) => {
         this.selectedCompany = company;
         this.isCreatingCompany = false;
-        this.notificationService.success('Company created successfully');
+        this.notificationService.success(`Company "${company.name}" created successfully! Now add a contact.`);
         this.nextStep();
       },
       error: (error) => {
@@ -322,11 +377,11 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
       // Restore step
       this.currentStep = savedState.currentStep;
 
-      // Restore company search
+      // Restore company search term without triggering search
       if (savedState.companySearchTerm) {
         this.companySearchForm.patchValue({
           searchTerm: savedState.companySearchTerm
-        });
+        }, { emitEvent: false }); // Prevent triggering valueChanges
       }
 
       // Restore selected company
@@ -335,14 +390,18 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
       // Restore form states
       this.showNewCompanyForm = savedState.showNewCompanyForm;
 
-      // Restore form data
+      // Restore form data without triggering events
       if (savedState.companyFormData) {
-        this.companyForm.patchValue(savedState.companyFormData);
+        this.companyForm.patchValue(savedState.companyFormData, { emitEvent: false });
       }
 
       if (savedState.contactFormData) {
-        this.contactForm.patchValue(savedState.contactFormData);
+        this.contactForm.patchValue(savedState.contactFormData, { emitEvent: false });
       }
+
+      // Ensure no automatic search is triggered after state restoration
+      this.searchCompleted = false;
+      this.companySearchResults = [];
 
       // Show notification that state was restored
       this.notificationService.info('Your previous lead creation progress has been restored.');

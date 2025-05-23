@@ -76,117 +76,102 @@
     </div>
 
     <!-- Step 1: Company Search and Creation -->
-    <div *ngIf="currentStep === 1" class="space-y-6">
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 class="text-lg font-semibold text-blue-900 mb-2">Find or Create Company</h3>
-        <p class="text-sm text-blue-700">
-          First, search for the company to ensure it doesn't already exist. If not found, you can create a new one.
-        </p>
+    <div *ngIf="currentStep === 1" class="space-y-4">
+      <div class="text-center">
+        <h3 class="text-lg font-medium text-gray-900 mb-1">Search for Company</h3>
+        <p class="text-sm text-gray-600">Start typing to search existing companies</p>
       </div>
 
       <!-- Company Search Form -->
-      <form [formGroup]="companySearchForm" class="space-y-4">
-        <div>
-          <label for="searchTerm" class="block text-sm font-medium text-gray-700 mb-2">
-            Search Company <span class="text-red-500">*</span>
-          </label>
+      <form [formGroup]="companySearchForm">
+        <div class="relative">
           <div class="relative">
             <input
               type="text"
-              id="searchTerm"
               formControlName="searchTerm"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter company name to search..."
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pl-10 pr-10"
+              placeholder="Type company name..."
+              (focus)="showSuggestions = true"
+              (blur)="hideSuggestions()"
               [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(companySearchForm, 'searchTerm')}"
             >
-            <div *ngIf="isSearchingCompany" class="absolute right-3 top-3">
-              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            </div>
+          <div class="absolute left-3 top-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
-          <p *ngIf="isFieldInvalid(companySearchForm, 'searchTerm')" class="mt-1 text-sm text-red-600">
-            {{ getFieldError(companySearchForm, 'searchTerm') }}
-          </p>
+          <div *ngIf="isSearchingCompany" class="absolute right-3 top-3">
+            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+          </div>
         </div>
-      </form>
 
-      <!-- Search Results -->
-      <div *ngIf="showCompanySearchResults && companySearchResults.length > 0" class="space-y-2">
-        <h4 class="text-sm font-medium text-gray-700">Existing Companies Found:</h4>
-        <div class="max-h-48 overflow-y-auto space-y-2">
+        <!-- Search Suggestions Dropdown -->
+        <div *ngIf="showSuggestions && searchCompleted && companySearchResults.length > 0"
+             class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           <div *ngFor="let company of companySearchResults"
-               class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+               class="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                (click)="selectExistingCompany(company)">
-            <div class="flex justify-between items-center">
+            <div class="flex items-center justify-between">
               <div>
                 <h5 class="font-medium text-gray-900">{{ company.name }}</h5>
                 <p *ngIf="company.industry" class="text-sm text-gray-600">{{ company.industry }}</p>
               </div>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
+              <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Found</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Selected Company Display -->
-      <div *ngIf="selectedCompany" class="bg-green-50 border border-green-200 rounded-lg p-4">
-        <div class="flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          <div>
-            <h4 class="font-medium text-green-900">Selected Company: {{ selectedCompany.name }}</h4>
-            <p *ngIf="selectedCompany.industry" class="text-sm text-green-700">{{ selectedCompany.industry }}</p>
+        <!-- No Results Message -->
+        <div *ngIf="showSuggestions && searchCompleted && companySearchResults.length === 0 && companySearchForm.get('searchTerm')?.value?.length >= 2"
+             class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
+          <div class="text-center">
+            <p class="text-sm text-gray-600 mb-2">No companies found for "{{ companySearchForm.get('searchTerm')?.value }}"</p>
+            <p class="text-xs text-blue-600">You can create a new company below</p>
           </div>
         </div>
-      </div>
+        </div>
+      </form>
 
-      <!-- New Company Form -->
-      <div *ngIf="showNewCompanyForm && !selectedCompany" class="space-y-4">
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h4 class="font-medium text-yellow-900 mb-2">Company Not Found</h4>
-          <p class="text-sm text-yellow-700">No existing company found. Please create a new one below.</p>
+
+
+      <!-- Company Creation Form -->
+      <div *ngIf="searchCompleted && companySearchResults.length === 0 && companySearchForm.get('searchTerm')?.value?.length >= 2" class="space-y-4">
+        <div class="text-center py-2">
+          <p class="text-sm text-gray-600">Company not found. Create a new one:</p>
         </div>
 
-        <form [formGroup]="companyForm" class="space-y-4">
-          <div>
-            <label for="companyName" class="block text-sm font-medium text-gray-700 mb-1">
-              Company Name <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="companyName"
-              formControlName="name"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(companyForm, 'name')}"
-            >
-            <p *ngIf="isFieldInvalid(companyForm, 'name')" class="mt-1 text-sm text-red-600">
-              {{ getFieldError(companyForm, 'name') }}
-            </p>
-          </div>
+        <form [formGroup]="companyForm" class="space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label for="companyName" class="block text-sm font-medium text-gray-700 mb-1">
+                Company Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="companyName"
+                formControlName="name"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(companyForm, 'name')}"
+              >
+            </div>
 
-          <div>
-            <label for="source" class="block text-sm font-medium text-gray-700 mb-1">
-              Source <span class="text-red-500">*</span>
-            </label>
-            <select
-              id="source"
-              formControlName="source"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(companyForm, 'source')}"
-            >
-              <option value="">-- Select Source --</option>
-              <option *ngFor="let source of sourceOptions" [value]="source.value">
-                {{ source.label }}
-              </option>
-            </select>
-            <p *ngIf="isFieldInvalid(companyForm, 'source')" class="mt-1 text-sm text-red-600">
-              {{ getFieldError(companyForm, 'source') }}
-            </p>
-          </div>
+            <div>
+              <label for="source" class="block text-sm font-medium text-gray-700 mb-1">
+                Source <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="source"
+                formControlName="source"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': isFieldInvalid(companyForm, 'source')}"
+              >
+                <option value="">-- Select Source --</option>
+                <option *ngFor="let source of sourceOptions" [value]="source.value">
+                  {{ source.label }}
+                </option>
+              </select>
+            </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
               <input
@@ -194,7 +179,7 @@
                 id="industry"
                 formControlName="industry"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="e.g., Technology, Retail"
+                placeholder="e.g., Technology"
               >
             </div>
 
@@ -211,27 +196,37 @@
           </div>
 
           <div>
-            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-            <textarea
-              id="address"
-              formControlName="address"
-              rows="2"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Company address"
-            ></textarea>
-          </div>
-
-          <div>
             <label for="companyNotes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
             <textarea
               id="companyNotes"
               formControlName="notes"
-              rows="3"
+              rows="2"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Additional notes about the company"
+              placeholder="Additional notes"
             ></textarea>
           </div>
         </form>
+      </div>
+
+      <!-- Selected Company Display -->
+      <div *ngIf="selectedCompany" class="bg-green-50 border border-green-200 rounded-lg p-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <div>
+              <h4 class="font-medium text-green-900 text-sm">{{ selectedCompany.name }}</h4>
+              <p *ngIf="selectedCompany.industry" class="text-xs text-green-700">{{ selectedCompany.industry }}</p>
+            </div>
+          </div>
+          <button
+            (click)="proceedToAddContact()"
+            class="px-3 py-1 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+          >
+            Next →
+          </button>
+        </div>
       </div>
     </div>
 
@@ -427,14 +422,7 @@
         <!-- Step 1 Actions -->
         <div *ngIf="currentStep === 1">
           <button
-            *ngIf="selectedCompany"
-            (click)="nextStep()"
-            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Next: Create Contact
-          </button>
-          <button
-            *ngIf="showNewCompanyForm && !selectedCompany"
+            *ngIf="searchCompleted && companySearchResults.length === 0 && !selectedCompany && companySearchForm.get('searchTerm')?.value?.length >= 2"
             (click)="createNewCompany()"
             [disabled]="isCreatingCompany || companyForm.invalid"
             class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -443,7 +431,7 @@
               <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
               Creating...
             </span>
-            <span *ngIf="!isCreatingCompany">Create Company & Continue</span>
+            <span *ngIf="!isCreatingCompany">Create Company</span>
           </button>
         </div>
 
