@@ -1,9 +1,10 @@
 // src/app/features/contacts/contact-quotations/contact-quotations.component.ts
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { QuotationService } from '../../quotations/services/quotation.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Quotation } from '../../../core/models/quotation.model';
+import { Contact } from '../../../core/models/contact.model';
 import { catchError, of } from 'rxjs';
 
 @Component({
@@ -13,7 +14,9 @@ import { catchError, of } from 'rxjs';
 })
 export class ContactQuotationsComponent implements OnInit {
   @Input() contactId: string = '';
-  
+  @Input() contact: Contact | null = null;
+  @Output() createQuotation = new EventEmitter<void>();
+
   quotations: Quotation[] = [];
   filteredQuotations: Quotation[] = [];
   isLoading = false;
@@ -143,5 +146,16 @@ export class ContactQuotationsComponent implements OnInit {
   formatDate(dateString: string): string {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-GB');
+  }
+
+  onCreateQuotation(): void {
+    // Check if contact has a company
+    if (!this.contact?.company_id) {
+      this.notificationService.error('Contact must be associated with a company to create a quotation');
+      return;
+    }
+
+    // Emit the event to the parent component
+    this.createQuotation.emit();
   }
 }

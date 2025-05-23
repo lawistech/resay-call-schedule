@@ -9,6 +9,7 @@ import { ContactImportComponent } from './contact-import/contact-import.componen
 import { ContactQuotationsComponent } from './contact-quotations/contact-quotations.component';
 import { ContactCommunicationComponent } from './contact-communication/contact-communication.component';
 import { QuotationDetailsModalComponent } from '../quotations/quotation-details-modal/quotation-details-modal.component';
+import { QuotationFormComponent } from '../quotations/quotation-form/quotation-form.component';
 import { CompanyService } from '../companies/services/company.service';
 import { CompanyRefreshService } from '../companies/services/company-refresh.service';
 import { SharedModule } from '../../shared/shared.module';
@@ -34,6 +35,7 @@ const routes: Routes = [
     SharedModule,
     ClipboardModule,
     QuotationDetailsModalComponent,
+    QuotationFormComponent,
     RouterModule.forChild(routes)
   ],
   providers: [

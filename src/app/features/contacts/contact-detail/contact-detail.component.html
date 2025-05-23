@@ -7,7 +7,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span>Back</span>
+          <span>Back test</span>
         </button>
 
         <div class="flex space-x-2">
@@ -427,7 +427,11 @@
 
           <!-- Quotations tab -->
           <div *ngIf="activeTab === 'quotations'" class="animate-fadeIn">
-            <app-contact-quotations [contactId]="contactId"></app-contact-quotations>
+            <app-contact-quotations
+              [contactId]="contactId"
+              [contact]="contact"
+              (createQuotation)="createQuotation()">
+            </app-contact-quotations>
           </div>
 
           <!-- Calls tab with visualization -->
@@ -663,3 +667,17 @@
   (closed)="showCallModal = false"
   (saved)="handleCallSaved($event)">
 </app-call-modal>
+
+<!-- Quotation Form Modal -->
+<div *ngIf="showQuotationFormModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-[200] modal-enter">
+  <div class="relative mx-auto w-full max-w-4xl" style="margin-top: 5vh; margin-bottom: 5vh; max-height: 90vh; overflow-y: auto;">
+    <app-quotation-form
+      [preselectedCompanyId]="contact?.company_id || null"
+      [preselectedCompany]="selectedCompany"
+      [preselectedContactId]="contactId"
+      [isSaving]="false"
+      (close)="closeQuotationFormModal()"
+      (formSubmitted)="handleQuotationFormSubmitted($any($event))">
+    </app-quotation-form>
+  </div>
+</div>

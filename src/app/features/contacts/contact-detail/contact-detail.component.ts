@@ -6,9 +6,11 @@ import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CompanyRefreshService } from '../../../features/companies/services/company-refresh.service';
 import { CompanyService } from '../../companies/services/company.service';
+import { QuotationService } from '../../quotations/services/quotation.service';
 import { Contact } from '../../../core/models/contact.model';
 import { Company, CompanyCommunication } from '../../../core/models/company.model';
 import { Call } from '../../../core/models/call.model';
+import { Quotation } from '../../../core/models/quotation.model';
 
 @Component({
   selector: 'app-contact-detail',
@@ -25,6 +27,10 @@ export class ContactDetailComponent implements OnInit {
   showEditModal = false;
   showCallModal = false;
 
+  // Quotation modal properties
+  showQuotationFormModal = false;
+  selectedCompany: Company | null = null;
+
   // Notes functionality
   showAddNoteForm = false;
   newNoteText = '';
@@ -40,7 +46,8 @@ export class ContactDetailComponent implements OnInit {
     private notificationService: NotificationService,
     private clipboard: Clipboard,
     private companyRefreshService: CompanyRefreshService,
-    private companyService: CompanyService
+    private companyService: CompanyService,
+    private quotationService: QuotationService
   ) {}
 
   ngOnInit(): void {
@@ -345,5 +352,55 @@ export class ContactDetailComponent implements OnInit {
   editContactNotes(): void {
     // Open the edit modal for the contact's built-in notes field
     this.openEditModal();
+  }
+
+  // Quotation methods
+  createQuotation(): void {
+    if (!this.contact?.company_id) {
+      this.notificationService.error('Contact must be associated with a company to create a quotation');
+      return;
+    }
+
+    // Load company details first to pre-fill the form
+    this.companyService.getCompanyById(this.contact.company_id).subscribe({
+      next: (company) => {
+        this.selectedCompany = company;
+        this.showQuotationFormModal = true;
+      },
+      error: (error) => {
+        console.error('Error loading company details:', error);
+        this.notificationService.error('Failed to load company details');
+
+        // Fallback to navigation if modal approach fails
+        this.router.navigate(['/quotations/new'], {
+          queryParams: {
+            company_id: this.contact?.company_id,
+            contact_id: this.contactId
+          }
+        });
+      }
+    });
+  }
+
+  closeQuotationFormModal(): void {
+    this.showQuotationFormModal = false;
+    this.selectedCompany = null;
+  }
+
+  handleQuotationFormSubmitted(formData: Partial<Quotation>): void {
+    // Create the quotation
+    this.quotationService.createQuotation(formData).subscribe({
+      next: (createdQuotation) => {
+        this.notificationService.success('Quotation created successfully');
+        this.closeQuotationFormModal();
+
+        // Refresh the quotations tab to show the new quotation
+        // The contact-quotations component will automatically reload when the tab is active
+      },
+      error: (error) => {
+        console.error('Error creating quotation:', error);
+        this.notificationService.error('Failed to create quotation');
+      }
+    });
   }
 }

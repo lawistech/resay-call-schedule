@@ -29,6 +29,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
   @Input() isSaving: boolean = false;
   @Input() preselectedCompanyId: string | null = null;
   @Input() preselectedCompany: any = null;
+  @Input() preselectedContactId: string | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() formSubmitted = new EventEmitter<Partial<Quotation>>();
 
@@ -514,19 +515,34 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       .subscribe(contacts => {
         this.contacts = contacts;
 
-        // Automatically select the primary contact if creating a new quotation
+        // Automatically select contact if creating a new quotation
         if (!this.isEditMode && contacts.length > 0) {
-          // Try to find a primary contact first, otherwise use the first contact
-          const primaryContact = contacts.find(contact =>
-            contact.job_title?.toLowerCase().includes('primary') ||
-            contact.job_title?.toLowerCase().includes('main') ||
-            contact.job_title?.toLowerCase().includes('manager') ||
-            contact.job_title?.toLowerCase().includes('director')
-          ) || contacts[0];
+          let selectedContact = null;
 
-          if (primaryContact) {
-            this.quotationForm.patchValue({ contactId: primaryContact.id });
-            console.log('Auto-selected primary contact:', primaryContact.first_name, primaryContact.last_name);
+          // First priority: preselected contact
+          if (this.preselectedContactId) {
+            selectedContact = contacts.find(contact => contact.id === this.preselectedContactId);
+            if (selectedContact) {
+              console.log('Using preselected contact:', selectedContact.first_name, selectedContact.last_name);
+            }
+          }
+
+          // Second priority: primary contact
+          if (!selectedContact) {
+            selectedContact = contacts.find(contact =>
+              contact.job_title?.toLowerCase().includes('primary') ||
+              contact.job_title?.toLowerCase().includes('main') ||
+              contact.job_title?.toLowerCase().includes('manager') ||
+              contact.job_title?.toLowerCase().includes('director')
+            ) || contacts[0];
+
+            if (selectedContact) {
+              console.log('Auto-selected primary contact:', selectedContact.first_name, selectedContact.last_name);
+            }
+          }
+
+          if (selectedContact) {
+            this.quotationForm.patchValue({ contactId: selectedContact.id });
           }
         }
       });
