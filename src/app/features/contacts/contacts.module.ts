@@ -6,6 +6,8 @@ import { ContactsListComponent } from './contacts-list/contacts-list.component';
 import { ContactDetailComponent } from './contact-detail/contact-detail.component';
 import { ContactFormComponent } from './contact-form/contact-form.component';
 import { ContactImportComponent } from './contact-import/contact-import.component'; // Add this
+import { ContactQuotationsComponent } from './contact-quotations/contact-quotations.component';
+import { QuotationDetailsModalComponent } from '../quotations/quotation-details-modal/quotation-details-modal.component';
 import { SharedModule } from '../../shared/shared.module';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 
@@ -21,11 +23,13 @@ const routes: Routes = [
     ContactDetailComponent,
     ContactFormComponent,
     ContactImportComponent,
+    ContactQuotationsComponent,
   ],
   imports: [
     CommonModule,
     SharedModule,
     ClipboardModule,
+    QuotationDetailsModalComponent,
     RouterModule.forChild(routes)
   ]
 })

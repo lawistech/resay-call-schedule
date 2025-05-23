@@ -77,6 +77,38 @@ export class QuotationService {
     );
   }
 
+  getQuotationsByContact(contactId: string): Observable<Quotation[]> {
+    console.log('QuotationService: Fetching quotations for contact:', contactId);
+    return from(this.supabaseService.supabaseClient
+      .from('quotations')
+      .select(`
+        *,
+        company:companies(id, name),
+        items:quotation_items(
+          *,
+          product:product_catalog(*)
+        )
+      `)
+      .eq('contact_id', contactId)
+      .order('created_at', { ascending: false })
+    ).pipe(
+      map(response => {
+        if (response.error) throw response.error;
+        console.log('QuotationService: Received response for contact quotations:', response.data);
+
+        // Format the data to match our Quotation model
+        const formattedQuotations = response.data.map(q => this.formatQuotationFromDatabase(q, true));
+        console.log('QuotationService: Formatted contact quotations:', formattedQuotations);
+        return formattedQuotations;
+      }),
+      catchError(error => {
+        console.error('QuotationService: Error fetching contact quotations:', error);
+        this.notificationService.error(`Failed to fetch contact quotations: ${error.message}`);
+        return throwError(() => error);
+      })
+    );
+  }
+
   getQuotationById(id: string): Observable<Quotation> {
     console.log('QuotationService: Fetching quotation with ID:', id);
 

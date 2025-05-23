@@ -1,0 +1,56 @@
+/* src/app/features/contacts/contact-quotations/contact-quotations.component.css */
+
+/* Custom styles for contact quotations component */
+.quotation-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.quotation-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Status badge animations */
+.status-badge {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Table row hover effects */
+tbody tr {
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* Action button hover effects */
+button svg {
+  transition: transform 0.15s ease-in-out;
+}
+
+button:hover svg {
+  transform: scale(1.1);
+}
+
+/* Responsive table adjustments */
+@media (max-width: 640px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .table-responsive th,
+  .table-responsive td {
+    padding: 0.5rem;
+  }
+}

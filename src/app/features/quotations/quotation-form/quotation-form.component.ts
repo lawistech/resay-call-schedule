@@ -513,6 +513,22 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       )
       .subscribe(contacts => {
         this.contacts = contacts;
+
+        // Automatically select the primary contact if creating a new quotation
+        if (!this.isEditMode && contacts.length > 0) {
+          // Try to find a primary contact first, otherwise use the first contact
+          const primaryContact = contacts.find(contact =>
+            contact.job_title?.toLowerCase().includes('primary') ||
+            contact.job_title?.toLowerCase().includes('main') ||
+            contact.job_title?.toLowerCase().includes('manager') ||
+            contact.job_title?.toLowerCase().includes('director')
+          ) || contacts[0];
+
+          if (primaryContact) {
+            this.quotationForm.patchValue({ contactId: primaryContact.id });
+            console.log('Auto-selected primary contact:', primaryContact.first_name, primaryContact.last_name);
+          }
+        }
       });
 
     this.subscriptions.push(subscription);
