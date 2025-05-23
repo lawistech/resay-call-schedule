@@ -7,6 +7,7 @@ import { MyTasksComponent } from './features/tasks/my-tasks/my-tasks.component';
 import { TaskCalendarPageComponent } from './features/tasks/task-calendar-page/task-calendar-page.component';
 import { TeamTasksComponent } from './features/tasks/team-tasks/team-tasks.component'; // Importing the new TeamTasksComponent
 import { LeadsComponent } from './features/leads/leads.component';
+import { LeadCreationPageComponent } from './features/leads/lead-creation-page/lead-creation-page.component';
 import { OpportunitiesComponent } from './features/opportunities/opportunities.component';
 import { PipelineKanbanComponent } from './features/opportunities/pipeline-kanban/pipeline-kanban.component';
 import { OpportunityFormPageComponent } from './features/opportunities/opportunity-form-page/opportunity-form-page.component';
@@ -95,6 +96,11 @@ export const routes: Routes = [
     path: 'leads',
     component: LeadsComponent,
     canActivate: [AuthGuard],
+  },
+  {
+    path: 'leads/new',
+    component: LeadCreationPageComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: 'opportunities',

@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, HostListener, OnDestroy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Observable, of } from 'rxjs';
@@ -9,6 +9,7 @@ import { Contact } from '../../../core/models/contact.model';
 import { CompanyService } from '../../companies/services/company.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { LeadWizardStateService, LeadWizardState } from '../../../core/services/lead-wizard-state.service';
 
 @Component({
   selector: 'app-lead-wizard',
@@ -21,12 +22,13 @@ import { NotificationService } from '../../../core/services/notification.service
   templateUrl: './lead-wizard.component.html',
   styleUrls: ['./lead-wizard.component.scss']
 })
-export class LeadWizardComponent implements OnInit {
+export class LeadWizardComponent implements OnInit, OnDestroy {
+  @Input() isStandalonePage = false; // New input to determine if this is a standalone page
   @Output() wizardComplete = new EventEmitter<{company: Company, contact: Contact}>();
   @Output() wizardCancel = new EventEmitter<void>();
 
   currentStep = 1;
-  totalSteps = 2;
+  totalSteps = 3; // Updated to 3 steps
 
   // Step 1: Company Search/Creation
   companySearchForm!: FormGroup;
@@ -42,6 +44,14 @@ export class LeadWizardComponent implements OnInit {
   contactForm!: FormGroup;
   isCreatingContact = false;
 
+  // Step 3: Review
+  createdContact: Contact | null = null;
+  isSubmittingLead = false;
+
+  // State management
+  private autoSaveInterval: any;
+  private readonly AUTO_SAVE_INTERVAL = 5000; // Auto-save every 5 seconds
+
   // Source options
   sourceOptions = [
     { value: 'barcodesforbusiness', label: 'BCB' },
@@ -50,16 +60,38 @@ export class LeadWizardComponent implements OnInit {
     { value: 'sumup', label: 'Sumup' }
   ];
 
+  // Listen for browser visibility changes
+  @HostListener('document:visibilitychange', ['$event'])
+  onVisibilityChange(): void {
+    if (document.hidden) {
+      // Browser is being minimized or tab is being switched
+      this.saveCurrentState();
+    }
+  }
+
+  // Listen for beforeunload event (browser close, refresh, etc.)
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(): void {
+    this.saveCurrentState();
+  }
+
   constructor(
     private fb: FormBuilder,
     private companyService: CompanyService,
     private supabaseService: SupabaseService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    public leadWizardStateService: LeadWizardStateService
   ) {}
 
   ngOnInit(): void {
     this.initForms();
     this.setupCompanySearch();
+    this.restoreState();
+    this.startAutoSave();
+  }
+
+  ngOnDestroy(): void {
+    this.clearAutoSave();
   }
 
   initForms(): void {
@@ -166,6 +198,9 @@ export class LeadWizardComponent implements OnInit {
         return;
       }
       this.currentStep = 2;
+    } else if (this.currentStep === 2) {
+      // Move to review step after contact creation
+      this.currentStep = 3;
     }
   }
 
@@ -199,11 +234,11 @@ export class LeadWizardComponent implements OnInit {
       }
 
       this.isCreatingContact = false;
+      this.createdContact = response.data[0];
       this.notificationService.success('Contact created successfully');
-      this.wizardComplete.emit({
-        company: this.selectedCompany!,
-        contact: response.data[0]
-      });
+
+      // Move to review step
+      this.nextStep();
     }).catch((error: any) => {
       console.error('Error creating contact:', error);
       this.isCreatingContact = false;
@@ -211,8 +246,34 @@ export class LeadWizardComponent implements OnInit {
     });
   }
 
+  completeLead(): void {
+    if (!this.selectedCompany || !this.createdContact) {
+      this.notificationService.error('Missing company or contact information');
+      return;
+    }
+
+    this.isSubmittingLead = true;
+
+    // Clear saved state on successful completion
+    this.clearState();
+
+    // Emit the completion event
+    this.wizardComplete.emit({
+      company: this.selectedCompany,
+      contact: this.createdContact
+    });
+
+    this.isSubmittingLead = false;
+  }
+
   cancel(): void {
+    this.clearState();
     this.wizardCancel.emit();
+  }
+
+  getSourceLabel(value: string): string {
+    const source = this.sourceOptions.find(option => option.value === value);
+    return source ? source.label : value;
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {
@@ -238,5 +299,71 @@ export class LeadWizardComponent implements OnInit {
       if (field.errors['minlength']) return `${fieldName} must be at least ${field.errors['minlength'].requiredLength} characters`;
     }
     return '';
+  }
+
+  // State management methods
+  private saveCurrentState(): void {
+    const state: LeadWizardState = {
+      currentStep: this.currentStep,
+      companySearchTerm: this.companySearchForm?.get('searchTerm')?.value || '',
+      selectedCompany: this.selectedCompany,
+      showNewCompanyForm: this.showNewCompanyForm,
+      companyFormData: this.companyForm?.value || {},
+      contactFormData: this.contactForm?.value || {},
+      timestamp: Date.now()
+    };
+
+    this.leadWizardStateService.saveState(state);
+  }
+
+  private restoreState(): void {
+    const savedState = this.leadWizardStateService.getState();
+    if (savedState) {
+      // Restore step
+      this.currentStep = savedState.currentStep;
+
+      // Restore company search
+      if (savedState.companySearchTerm) {
+        this.companySearchForm.patchValue({
+          searchTerm: savedState.companySearchTerm
+        });
+      }
+
+      // Restore selected company
+      this.selectedCompany = savedState.selectedCompany;
+
+      // Restore form states
+      this.showNewCompanyForm = savedState.showNewCompanyForm;
+
+      // Restore form data
+      if (savedState.companyFormData) {
+        this.companyForm.patchValue(savedState.companyFormData);
+      }
+
+      if (savedState.contactFormData) {
+        this.contactForm.patchValue(savedState.contactFormData);
+      }
+
+      // Show notification that state was restored
+      this.notificationService.info('Your previous lead creation progress has been restored.');
+    }
+  }
+
+  private startAutoSave(): void {
+    this.autoSaveInterval = setInterval(() => {
+      this.saveCurrentState();
+    }, this.AUTO_SAVE_INTERVAL);
+  }
+
+  private clearAutoSave(): void {
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval);
+      this.autoSaveInterval = null;
+    }
+  }
+
+  private clearState(): void {
+    this.clearAutoSave();
+    this.leadWizardStateService.clearState();
   }
 }

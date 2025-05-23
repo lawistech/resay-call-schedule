@@ -1,7 +1,7 @@
 // src/app/features/leads/leads.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -9,7 +9,6 @@ import { Lead } from '../../core/models/lead.model';
 import { LeadService } from '../../core/services/lead.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { LeadFormDialogComponent } from './lead-form-dialog/lead-form-dialog.component';
-import { LeadWizardComponent } from './lead-wizard/lead-wizard.component';
 
 @Component({
   selector: 'app-leads',
@@ -19,8 +18,7 @@ import { LeadWizardComponent } from './lead-wizard/lead-wizard.component';
     RouterModule,
     FormsModule,
     ReactiveFormsModule,
-    LeadFormDialogComponent,
-    LeadWizardComponent
+    LeadFormDialogComponent
   ],
   templateUrl: './leads.component.html',
   styleUrls: ['./leads.component.scss']
@@ -34,7 +32,6 @@ export class LeadsComponent implements OnInit, OnDestroy {
   sourceFilter: string = '';
   showDialog = false;
   selectedLead: Lead | null = null;
-  showLeadWizard = false;
 
   availableStatuses = [
     'New',
@@ -65,19 +62,12 @@ export class LeadsComponent implements OnInit, OnDestroy {
   constructor(
     private leadService: LeadService,
     private notificationService: NotificationService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadLeads();
-
-    // Check for query parameters to auto-open lead creation wizard
-    this.route.queryParams.subscribe(params => {
-      if (params['action'] === 'create') {
-        // Auto-open the lead wizard
-        this.openLeadWizard();
-      }
-    });
   }
 
   ngOnDestroy(): void {
@@ -108,17 +98,8 @@ export class LeadsComponent implements OnInit, OnDestroy {
     this.showDialog = true;
   }
 
-  openLeadWizard(): void {
-    this.showLeadWizard = true;
-  }
-
-  closeLeadWizard(): void {
-    this.showLeadWizard = false;
-  }
-
-  handleWizardComplete(result: any): void {
-    this.showLeadWizard = false;
-    this.loadLeads(); // Refresh the leads list
+  navigateToCreateLead(): void {
+    this.router.navigate(['/leads/new']);
   }
 
   editLead(lead: Lead): void {

@@ -140,7 +140,7 @@
 
         <div class="flex space-x-2">
           <button
-            (click)="openLeadWizard()"
+            (click)="navigateToCreateLead()"
             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             <span class="flex items-center">
@@ -187,7 +187,7 @@
     </p>
     <button
       *ngIf="leads.length === 0"
-      (click)="openLeadWizard()"
+      (click)="navigateToCreateLead()"
       class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
     >
       Create your first lead
@@ -272,13 +272,6 @@
     </div>
   </div>
 </div>
-
-<!-- Lead Wizard -->
-<app-lead-wizard
-  *ngIf="showLeadWizard"
-  (wizardComplete)="handleWizardComplete($event)"
-  (wizardCancel)="closeLeadWizard()">
-</app-lead-wizard>
 
 <!-- Lead form dialog -->
 <app-lead-form-dialog
