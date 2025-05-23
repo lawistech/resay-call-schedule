@@ -53,12 +53,12 @@
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      <a routerLink="/schedule" class="bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-md transition text-center">
+      <button (click)="createCallWithLeadSource('')" class="bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-md transition text-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span class="text-sm font-medium">New Call</span>
-      </a>
+      </button>
 
       <a routerLink="/contacts" class="bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:shadow-md transition text-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,11 +98,14 @@
             (click)="switchCallTab('sumup')"
             [ngClass]="{'bg-stone-100 border-b-2 border-primary font-medium': activeCallTab === 'sumup', 'hover:bg-stone-50': activeCallTab !== 'sumup'}"
             class="flex-1 py-3 px-4 text-sm text-stone-700 transition relative">
-            <span>SumUp Calls</span>
+            <span>SumUp Leads</span>
+            <span *ngIf="sumupLeads.length > 0" class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+              {{ sumupLeads.length }}
+            </span>
             <button
               (click)="createCallWithLeadSource('sumup'); $event.stopPropagation()"
               class="ml-2 inline-flex items-center justify-center w-5 h-5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-full text-xs transition-colors"
-              title="Add SumUp Call">
+              title="Add SumUp Lead">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
@@ -127,14 +130,15 @@
           <!-- SumUp Calls Tab -->
           <div *ngIf="activeCallTab === 'sumup'">
             <app-lead-source-calls
-              [calls]="scheduledCalls"
+              [calls]="sumupLeads"
               [leadSource]="'sumup'"
-              [title]="'SumUp Calls'"
+              [title]="'SumUp Leads'"
               [maxCalls]="5"
               (viewCallDetails)="viewCallDetails($event)"
               (initiateCall)="initiateCall($event)"
               (rescheduleCall)="openRescheduleModal($event)"
-              (completeCall)="markCallAsCompleted($event)">
+              (completeCall)="markCallAsCompleted($event)"
+              (addNote)="addNoteToSumUpLead($event)">
             </app-lead-source-calls>
           </div>
         </div>
@@ -161,12 +165,12 @@
           </div>
         </div>
 
-        <a routerLink="/schedule" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+        <button (click)="createCallWithLeadSource('')" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
           Schedule New Call
-        </a>
+        </button>
       </div>
     </div>
 
@@ -348,11 +352,14 @@
               (click)="switchCallTab('sumup')"
               [ngClass]="{'bg-stone-100 border-b-2 border-primary font-medium': activeCallTab === 'sumup', 'hover:bg-stone-50': activeCallTab !== 'sumup'}"
               class="flex-1 py-3 px-4 text-sm text-stone-700 transition relative">
-              <span>SumUp Calls</span>
+              <span>SumUp Leads</span>
+              <span *ngIf="sumupLeads.length > 0" class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                {{ sumupLeads.length }}
+              </span>
               <button
                 (click)="createCallWithLeadSource('sumup'); $event.stopPropagation()"
                 class="ml-2 inline-flex items-center justify-center w-5 h-5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-full text-xs transition-colors"
-                title="Add SumUp Call">
+                title="Add SumUp Lead">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
@@ -382,14 +389,15 @@
             <!-- SumUp Calls Tab -->
             <div *ngIf="activeCallTab === 'sumup'">
               <app-lead-source-calls
-                [calls]="scheduledCalls"
+                [calls]="sumupLeads"
                 [leadSource]="'sumup'"
-                [title]="'SumUp Calls'"
+                [title]="'SumUp Leads'"
                 [maxCalls]="8"
                 (viewCallDetails)="viewCallDetails($event)"
                 (initiateCall)="initiateCall($event)"
                 (rescheduleCall)="openRescheduleModal($event)"
-                (completeCall)="markCallAsCompleted($event)">
+                (completeCall)="markCallAsCompleted($event)"
+                (addNote)="addNoteToSumUpLead($event)">
               </app-lead-source-calls>
             </div>
           </div>
@@ -412,7 +420,7 @@
     *ngIf="showPostCallModal && selectedCall"
     [isOpen]="showPostCallModal"
     [call]="selectedCall"
-    [initialAction]="'complete'"
+    [initialAction]="postCallInitialAction"
     (closed)="closePostCallModal()"
     (completed)="handleCallCompleted($event)"
     (rescheduled)="handleCallRescheduled($event)"

@@ -59,14 +59,33 @@ export class CallModalComponent implements OnInit {
   }
 
   initForm(): void {
+    // Set default lead source based on contact
+    let defaultLeadSource = this.contact?.lead_source || '';
+
+    // For SumUp leads, ensure the lead source is set
+    if (this.contact && this.contact.lead_source === 'sumup') {
+      defaultLeadSource = 'sumup';
+      console.log('Initializing form for SumUp lead');
+    }
+
+    // Set default values specific to SumUp leads
+    let defaultImportance = 3; // Medium importance by default
+    let defaultReason = '';
+
+    // For SumUp leads, set higher importance and default reason
+    if (defaultLeadSource === 'sumup') {
+      defaultImportance = 4; // Higher importance for SumUp leads
+      defaultReason = 'SumUp Lead Follow-up';
+    }
+
     this.callForm = this.formBuilder.group({
       contact_id: [this.contact?.id || '', Validators.required],
       scheduled_at: [this.minDate, Validators.required],
       method: ['phone', Validators.required],
-      reason: ['', Validators.required],
+      reason: [defaultReason, Validators.required],
       notes: [''],
-      importance: [3], // Medium importance by default
-      lead_source: [this.contact?.lead_source || ''],
+      importance: [defaultImportance],
+      lead_source: [defaultLeadSource],
       follow_up_date: ['']
     });
 
@@ -123,6 +142,23 @@ export class CallModalComponent implements OnInit {
         formValues.contact_id = this.contact.id;
       }
 
+      // Ensure lead_source is set for SumUp leads
+      if (this.contact && this.contact.lead_source === 'sumup') {
+        formValues.lead_source = 'sumup';
+
+        // For SumUp leads, ensure we have a reason if not provided
+        if (!formValues.reason || formValues.reason.trim() === '') {
+          formValues.reason = 'SumUp Lead Follow-up';
+        }
+
+        // For SumUp leads, set a higher importance if not already set
+        if (!formValues.importance || formValues.importance < 3) {
+          formValues.importance = 4;
+        }
+
+        console.log('Saving SumUp lead');
+      }
+
       // Check if this is the first call for the contact
       const isFirstCall = await this.checkIsFirstCall(formValues.contact_id);
       formValues.is_first_call = isFirstCall;
@@ -141,9 +177,16 @@ export class CallModalComponent implements OnInit {
         throw result.error;
       }
 
-      this.notificationService.success(
-        this.isEditing ? 'Call updated successfully' : 'Call scheduled successfully'
-      );
+      // Show appropriate success message based on lead source
+      if (formValues.lead_source === 'sumup') {
+        this.notificationService.success(
+          this.isEditing ? 'SumUp lead updated successfully' : 'SumUp lead added successfully'
+        );
+      } else {
+        this.notificationService.success(
+          this.isEditing ? 'Call updated successfully' : 'Call scheduled successfully'
+        );
+      }
 
       // Check if data exists and has at least one element before accessing it
       if (result.data && Array.isArray(result.data) && result.data.length > 0) {

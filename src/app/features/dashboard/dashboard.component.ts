@@ -35,12 +35,14 @@ export class DashboardComponent implements OnInit {
   syncInProgress = false;
   showPostCallModal = false;
   selectedCall: Call | null = null;
+  postCallInitialAction: 'complete' | 'reschedule' = 'complete';
 
   // Dashboard view mode (classic or new)
   dashboardView: 'classic' | 'new' = 'classic'; // Set classic as default
 
   // Call tabs
   activeCallTab: 'all' | 'sumup' = 'all'; // Default to all calls
+  sumupLeads: Call[] = []; // Array to store SumUp leads specifically
 
   // Quotations data
   activeQuotations: Quotation[] = [];
@@ -123,6 +125,23 @@ export class DashboardComponent implements OnInit {
 
       // Add an 'isOverdue' property to identify overdue calls
       this.scheduledCalls = this.scheduledCalls.map(call => {
+        const callDate = new Date(call.scheduled_at);
+        const now = new Date();
+        call.isOverdue = callDate < now;
+        return call;
+      });
+
+      // Filter SumUp leads from all calls
+      this.sumupLeads = this.calls.filter(call =>
+        call.lead_source === 'sumup' && call.status === 'scheduled'
+      ).sort((a, b) => {
+        // Sort by most recent first for SumUp leads
+        return new Date(b.created_at || b.scheduled_at).getTime() -
+               new Date(a.created_at || a.scheduled_at).getTime();
+      });
+
+      // Add isOverdue property to SumUp leads as well
+      this.sumupLeads = this.sumupLeads.map(call => {
         const callDate = new Date(call.scheduled_at);
         const now = new Date();
         call.isOverdue = callDate < now;
@@ -288,6 +307,8 @@ export class DashboardComponent implements OnInit {
     this.showPostCallModal = false;
     this.selectedCall = null;
     this.callStateService.clearActiveCall();
+    // Reset the initialAction to default
+    this.postCallInitialAction = 'complete';
     console.log('Dashboard: Post-call modal closed. showPostCallModal =', this.showPostCallModal);
   }
 
@@ -348,7 +369,14 @@ export class DashboardComponent implements OnInit {
   }
 
   handleCallSaved(): void {
-    this.loadDashboardData(); // Refresh data
+    // Refresh data
+    this.loadDashboardData();
+
+    // If we're on the SumUp tab, show a success message
+    if (this.activeCallTab === 'sumup' && this.selectedContact?.lead_source === 'sumup') {
+      this.notificationService.success('SumUp lead saved successfully');
+    }
+
     this.closeCallModal();
   }
 
@@ -388,19 +416,13 @@ export class DashboardComponent implements OnInit {
     this.selectedCall = call;
     this.showPostCallModal = true;
 
-    // Set a small timeout to ensure the modal is initialized before setting action
-    setTimeout(() => {
-      // Access the post-call modal component and set the action to 'reschedule'
-      const postCallModalComponents = document.querySelectorAll('app-post-call-modal');
-      if (postCallModalComponents.length > 0) {
-        // This is a bit of a hack since we don't have direct component reference
-        // In a production app, it would be better to use a service or component reference
-        const componentInstance = (postCallModalComponents[0] as any)?.componentInstance;
-        if (componentInstance && componentInstance.selectedAction !== undefined) {
-          componentInstance.selectedAction = 'reschedule';
-        }
-      }
-    }, 100);
+    // Set the initialAction property to 'reschedule'
+    // This will be passed to the post-call-modal component
+    this.postCallInitialAction = 'reschedule';
+
+    console.log('Dashboard: openRescheduleModal called for call:', call);
+    console.log('Dashboard: showPostCallModal =', this.showPostCallModal);
+    console.log('Dashboard: postCallInitialAction =', this.postCallInitialAction);
   }
 
   /**
@@ -425,13 +447,30 @@ export class DashboardComponent implements OnInit {
    */
   createCallWithLeadSource(leadSource: string): void {
     // Create a temporary contact to open the call modal
-    // In a real implementation, you might want to show a contact selector first
     const tempContact: Contact = {
       id: '', // This will be filled in by the user selecting a contact
       first_name: '',
       last_name: '',
       lead_source: leadSource
     };
+
+    // For SumUp leads, set additional default values
+    if (leadSource === 'sumup') {
+      // Show a notification to inform the user
+      this.notificationService.info('Creating a new SumUp lead. Please select a contact and fill in the details.');
+
+      // Switch to the SumUp tab if not already there
+      this.switchCallTab('sumup');
+
+      // Add additional information for SumUp leads
+      tempContact.notes = 'SumUp lead created on ' + new Date().toLocaleDateString();
+    } else if (!leadSource) {
+      // For regular calls (no specific lead source)
+      this.notificationService.info('Creating a new call. Please select a contact and fill in the details.');
+
+      // Switch to the All tab if not already there
+      this.switchCallTab('all');
+    }
 
     this.selectedContact = tempContact;
     this.showCallModal = true;
@@ -444,7 +483,8 @@ export class DashboardComponent implements OnInit {
     if (this.activeCallTab === 'all') {
       return this.scheduledCalls;
     } else {
-      return this.scheduledCalls.filter(call => call.lead_source === 'sumup');
+      // Return the dedicated sumupLeads array instead of filtering scheduledCalls
+      return this.sumupLeads;
     }
   }
 
@@ -654,5 +694,49 @@ export class DashboardComponent implements OnInit {
   formatDate(dateString?: string): string {
     if (!dateString) return 'N/A';
     return format(new Date(dateString), 'dd MMM yyyy');
+  }
+
+  /**
+   * Add or update notes for a SumUp lead
+   * @param data Object containing callId and note
+   */
+  async addNoteToSumUpLead(data: {callId: string, note: string}): Promise<void> {
+    try {
+      // Find the call in the sumupLeads array
+      const callIndex = this.sumupLeads.findIndex(call => call.id === data.callId);
+
+      if (callIndex === -1) {
+        this.notificationService.error('Call not found');
+        return;
+      }
+
+      // Update the call in the database
+      const { error } = await this.supabaseService.updateCall(data.callId, {
+        notes: data.note
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Update the call in the local state
+      this.sumupLeads[callIndex] = {
+        ...this.sumupLeads[callIndex],
+        notes: data.note
+      };
+
+      // Also update in the main calls array if it exists there
+      const mainCallIndex = this.calls.findIndex(call => call.id === data.callId);
+      if (mainCallIndex !== -1) {
+        this.calls[mainCallIndex] = {
+          ...this.calls[mainCallIndex],
+          notes: data.note
+        };
+      }
+
+      this.notificationService.success('Notes updated successfully');
+    } catch (error: any) {
+      this.notificationService.error('Failed to update notes: ' + error.message);
+    }
   }
 }
