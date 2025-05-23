@@ -5,7 +5,9 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { CompanyRefreshService } from '../../../features/companies/services/company-refresh.service';
+import { CompanyService } from '../../companies/services/company.service';
 import { Contact } from '../../../core/models/contact.model';
+import { Company } from '../../../core/models/company.model';
 import { Call } from '../../../core/models/call.model';
 
 @Component({
@@ -16,6 +18,7 @@ export class ContactDetailComponent implements OnInit {
   contactId: string = '';
   contact: Contact | null = null;
   contactCalls: Call[] = [];
+  companies: Company[] = [];
   isLoading = true;
   showEditModal = false;
   showCallModal = false;
@@ -29,13 +32,15 @@ export class ContactDetailComponent implements OnInit {
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
     private clipboard: Clipboard,
-    private companyRefreshService: CompanyRefreshService
+    private companyRefreshService: CompanyRefreshService,
+    private companyService: CompanyService
   ) {}
 
   ngOnInit(): void {
     this.contactId = this.route.snapshot.paramMap.get('id') || '';
     if (this.contactId) {
       this.loadContactData();
+      this.loadCompanies();
     } else {
       this.router.navigate(['/contacts']);
     }
@@ -72,6 +77,21 @@ export class ContactDetailComponent implements OnInit {
       this.router.navigate(['/contacts']);
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  async loadCompanies(): Promise<void> {
+    try {
+      const { data, error } = await this.supabaseService.getCompanies();
+
+      if (error) {
+        throw error;
+      }
+
+      this.companies = data || [];
+    } catch (error: any) {
+      console.error('Failed to load companies:', error);
+      this.notificationService.error('Failed to load companies: ' + error.message);
     }
   }
 
@@ -116,6 +136,14 @@ export class ContactDetailComponent implements OnInit {
 
   openCallModal(): void {
     this.showCallModal = true;
+  }
+
+  // Handle contact saved event
+  handleContactSaved(contact: Contact): void {
+    this.contact = contact;
+    this.loadContactData(); // Reload to get fresh data with company info
+    this.showEditModal = false;
+    this.notificationService.success('Contact updated successfully');
   }
 
   // Handle call saved event
@@ -173,15 +201,26 @@ export class ContactDetailComponent implements OnInit {
   }
 
   deleteContact(): void {
-    if (confirm('Are you sure you want to delete this contact?')) {
+    if (!this.contact) {
+      this.notificationService.error('No contact to delete');
+      return;
+    }
+
+    const contactName = `${this.contact.first_name} ${this.contact.last_name}`;
+    const confirmMessage = `Are you sure you want to delete ${contactName}? This action cannot be undone.`;
+
+    if (confirm(confirmMessage)) {
+      this.isLoading = true;
+
       this.supabaseService.deleteContact(this.contactId)
         .then(({ error }) => {
           if (error) throw error;
-          this.notificationService.success('Contact deleted successfully');
+          this.notificationService.success(`Contact ${contactName} deleted successfully`);
           this.router.navigate(['/contacts']);
         })
         .catch(error => {
           this.notificationService.error('Failed to delete contact: ' + error.message);
+          this.isLoading = false;
         });
     }
   }

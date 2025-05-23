@@ -659,6 +659,17 @@
   </div>
 </div>
 
+<!-- Edit Contact Modal -->
+<app-contact-form
+  *ngIf="showEditModal && contact"
+  [isOpen]="showEditModal"
+  [contact]="contact"
+  [isEditing]="true"
+  [companies]="companies"
+  (closed)="showEditModal = false"
+  (saved)="handleContactSaved($event)">
+</app-contact-form>
+
 <!-- Call Modal -->
 <app-call-modal
   *ngIf="showCallModal && contact"

@@ -1,6 +1,7 @@
 // src/app/features/contacts/contact-form/contact-form.component.ts
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Contact } from '../../../core/models/contact.model';
 import { Company } from '../../../core/models/company.model';
 import { SupabaseService } from '../../../core/services/supabase.service';
@@ -43,17 +44,26 @@ export class ContactFormComponent implements OnInit {
   duplicateContacts: Contact[] = [];
   duplicateWarningMessage = '';
 
+  // Mode detection
+  isModalMode = false;
+
   constructor(
     private formBuilder: FormBuilder,
     private supabaseService: SupabaseService,
     private notificationService: NotificationService,
-    private companyService: CompanyService
+    private companyService: CompanyService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
+    // Detect if we're in modal mode or route mode
+    this.isModalMode = this.router.url.includes('/contacts/add-contact') ? false : true;
+
     this.initContactForm();
     this.initCompanyForm();
     this.setupFormListeners();
+    this.handleRouteParameters();
   }
 
   setupFormListeners(): void {
@@ -113,10 +123,10 @@ export class ContactFormComponent implements OnInit {
     const defaultLeadSource = this.preselectedLeadSource || (this.contact?.lead_source || '');
 
     this.contactForm = this.formBuilder.group({
-      first_name: ['', Validators.required],
-      last_name: ['', Validators.required],
+      first_name: ['', [Validators.required, Validators.minLength(2)]],
+      last_name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.email]],
-      phone: [''],
+      phone: ['', [Validators.pattern(/^[\+]?[0-9\s\-\(\)]{7,15}$/)]],
       company_id: [''],
       notes: [''],
       lead_source: [defaultLeadSource] // Use the determined default lead source
@@ -205,6 +215,37 @@ export class ContactFormComponent implements OnInit {
   close(): void {
     this.isOpen = false;
     this.closed.emit(false);
+  }
+
+  handleRouteParameters(): void {
+    // Check for company_id in query params (for creating from company page)
+    this.route.queryParamMap.subscribe(params => {
+      const companyId = params.get('company_id');
+      if (companyId) {
+        console.log('Contact form: Found company_id in query params:', companyId);
+
+        // Set the company_id in the form
+        this.contactForm.patchValue({ company_id: companyId });
+
+        // Load the company details to show the selected company
+        this.loadCompanyDetails(companyId);
+      }
+    });
+  }
+
+  loadCompanyDetails(companyId: string): void {
+    this.companyService.getCompanyById(companyId).subscribe({
+      next: (company) => {
+        this.selectedCompany = company;
+        this.companySearchTerm = company.name;
+        console.log('Contact form: Loaded company details:', company.name);
+        this.notificationService.info(`Creating contact for: ${company.name}`);
+      },
+      error: (error) => {
+        console.error('Error loading company details:', error);
+        this.notificationService.error('Failed to load company details');
+      }
+    });
   }
 
   // Search for contacts by name
@@ -469,7 +510,8 @@ export class ContactFormComponent implements OnInit {
         this.saved.emit(contactToEmit);
       }
 
-      this.close();
+      // Handle navigation based on context
+      this.handlePostSaveNavigation(formValues);
     } catch (error: any) {
       this.notificationService.error('Failed to save contact: ' + error.message);
     } finally {
@@ -477,8 +519,65 @@ export class ContactFormComponent implements OnInit {
     }
   }
 
+  handlePostSaveNavigation(formValues: any): void {
+    // Check if we're in route mode (not modal mode)
+    const isRouteMode = this.router.url.includes('/contacts/add-contact');
+
+    if (isRouteMode) {
+      // If we have a company_id, navigate back to the company details page
+      if (formValues.company_id) {
+        this.router.navigate(['/companies', formValues.company_id], {
+          queryParams: { tab: 'people' }
+        });
+      } else {
+        // Otherwise, navigate to the contacts list
+        this.router.navigate(['/contacts']);
+      }
+    } else {
+      // In modal mode, just close the modal
+      this.close();
+    }
+  }
+
+  handleCancel(): void {
+    // Check if we're in route mode (not modal mode)
+    const isRouteMode = this.router.url.includes('/contacts/add-contact');
+
+    if (isRouteMode) {
+      // Get the company_id from query params to navigate back
+      this.route.queryParamMap.subscribe(params => {
+        const companyId = params.get('company_id');
+        if (companyId) {
+          this.router.navigate(['/companies', companyId], {
+            queryParams: { tab: 'people' }
+          });
+        } else {
+          this.router.navigate(['/contacts']);
+        }
+      }).unsubscribe(); // Immediately unsubscribe since we only need it once
+    } else {
+      // In modal mode, just close the modal
+      this.close();
+    }
+  }
+
   async saveContact(): Promise<void> {
     if (this.contactForm.invalid) {
+      // Mark all fields as touched to show validation errors
+      Object.keys(this.contactForm.controls).forEach(key => {
+        this.contactForm.get(key)?.markAsTouched();
+      });
+
+      this.notificationService.error('Please fix the validation errors before saving');
+      return;
+    }
+
+    // Validate that at least email or phone is provided
+    const email = this.contactForm.get('email')?.value;
+    const phone = this.contactForm.get('phone')?.value;
+
+    if (!email && !phone) {
+      this.notificationService.error('Please provide at least an email or phone number');
       return;
     }
 

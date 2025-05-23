@@ -11,8 +11,8 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
 
 const routes: Routes = [
   { path: '', component: ContactsListComponent },
-  { path: ':id', component: ContactDetailComponent },
-  { path: 'add-contact', component: ContactFormComponent }
+  { path: 'add-contact', component: ContactFormComponent },
+  { path: ':id', component: ContactDetailComponent }
 ];
 
 @NgModule({
