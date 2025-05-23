@@ -15,6 +15,7 @@ export class LeadSourceCallsComponent implements OnInit {
 
   @Output() viewCallDetails = new EventEmitter<string>();
   @Output() initiateCall = new EventEmitter<Call>();
+  @Output() initiateSumUpCall = new EventEmitter<Call>();
   @Output() rescheduleCall = new EventEmitter<Call>();
   @Output() completeCall = new EventEmitter<string>();
   @Output() addNote = new EventEmitter<{callId: string, note: string}>();
@@ -55,7 +56,13 @@ export class LeadSourceCallsComponent implements OnInit {
   onInitiateCall(call: Call, event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    this.initiateCall.emit(call);
+
+    // For SumUp leads, use the special SumUp call handler
+    if (this.isSumUpLeadSource()) {
+      this.initiateSumUpCall.emit(call);
+    } else {
+      this.initiateCall.emit(call);
+    }
   }
 
   onRescheduleCall(call: Call, event: MouseEvent): void {

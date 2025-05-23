@@ -325,6 +325,27 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  // For initiating SumUp calls - redirects to contact details
+  initiateSumUpCall(call: Call): void {
+    console.log('Dashboard: initiateSumUpCall called with call:', call);
+    this.notificationService.info('Initiating SumUp call...');
+
+    // In a real implementation, this would use a native dialer or VoIP service
+    if (call.contact?.phone) {
+      // Initiate the call
+      window.location.href = `tel:${call.contact.phone}`;
+    } else {
+      this.notificationService.warning('No phone number available for this contact');
+    }
+
+    // For SumUp leads, navigate directly to contact details instead of call history
+    if (call.contact_id) {
+      this.router.navigate(['/contacts', call.contact_id]);
+    } else {
+      this.notificationService.error('Contact information not available');
+    }
+  }
+
   // Add these methods to handle the post-call modal
   closePostCallModal(): void {
     console.log('Dashboard: closePostCallModal called');
@@ -911,7 +932,19 @@ export class DashboardComponent implements OnInit {
     // Close any open dropdowns
     this.activeMoreActionsCallId = null;
 
-    this.viewCallDetails(callId);
+    // If we're in SumUp view, navigate to contact details instead of call history
+    if (this.isSumUpView()) {
+      // Find the call to get the contact_id
+      const call = this.sumupLeads.find(c => c.id === callId);
+      if (call && call.contact_id) {
+        this.router.navigate(['/contacts', call.contact_id]);
+      } else {
+        this.notificationService.error('Contact information not available');
+      }
+    } else {
+      // For other views, use the original behavior (navigate to call history)
+      this.viewCallDetails(callId);
+    }
   }
 
   onInitiateCall(call: Call, event: MouseEvent): void {
@@ -921,7 +954,12 @@ export class DashboardComponent implements OnInit {
     // Close any open dropdowns
     this.activeMoreActionsCallId = null;
 
-    this.initiateCall(call);
+    // For SumUp leads in the SumUp dashboard view, use the special SumUp call handler
+    if (this.isSumUpView() && call.lead_source === 'sumup') {
+      this.initiateSumUpCall(call);
+    } else {
+      this.initiateCall(call);
+    }
   }
 
   onCompleteCall(callId: string, event: MouseEvent): void {

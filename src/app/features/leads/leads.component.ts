@@ -68,6 +68,16 @@ export class LeadsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadLeads();
+
+    // Check for query parameters to auto-redirect to lead creation
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        if (params['action'] === 'create') {
+          // Redirect to lead creation page
+          this.router.navigate(['/leads/new']);
+        }
+      });
   }
 
   ngOnDestroy(): void {
