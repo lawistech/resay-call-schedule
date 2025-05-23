@@ -1,5 +1,6 @@
 // src/app/features/contacts/contacts-list/contacts-list.component.ts
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { Contact } from '../../../core/models/contact.model';
@@ -19,17 +20,17 @@ export class ContactsListComponent implements OnInit {
   searchTerm = '';
   selectedCompanyId = '';
   selectedStatus = '';
-  selectedAssigned = ''; 
+  selectedAssigned = '';
   quoteFilter = '';
   dateFrom = '';
   dateTo = '';
-  
+
   // View mode toggle
   viewMode: 'grid' | 'table' = 'grid';
-  
+
   // Derived data for filters
   uniqueAssignees: string[] = [];
-  
+
   // Modal state
   showContactModal = false;
   selectedContact: Contact | null = null;
@@ -37,45 +38,61 @@ export class ContactsListComponent implements OnInit {
   showCallModal = false;
   contactForCall: Contact | null = null;
   showImportModal = false;
+  preselectedLeadSource = '';
 
   constructor(
     private supabaseService: SupabaseService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.loadData();
+
+    // Check for query parameters to auto-open contact creation modal
+    this.route.queryParams.subscribe(params => {
+      if (params['action'] === 'create') {
+        // Set the preselected lead source if provided
+        if (params['lead_source']) {
+          this.preselectedLeadSource = params['lead_source'];
+          console.log('Creating contact with lead source:', params['lead_source']);
+        }
+
+        // Auto-open the create contact modal
+        this.openCreateContactModal();
+      }
+    });
   }
 
   async loadData(): Promise<void> {
     try {
       this.isLoading = true;
-      
+
       // Load contacts
       const { data: contacts, error: contactsError } = await this.supabaseService.getContacts();
-      
+
       if (contactsError) {
         throw contactsError;
       }
-      
+
       this.contacts = contacts || [];
-      
+
       // Extract unique assignees for filter dropdown
       this.uniqueAssignees = Array.from(new Set(
         this.contacts
           .map(contact => contact.assigned || '') // Add a fallback empty string
           .filter(assigned => assigned.trim().length > 0)
       ));
-      
+
       // Load companies
       const { data: companies, error: companiesError } = await this.supabaseService.getCompanies();
-      
+
       if (companiesError) {
         throw companiesError;
       }
-      
+
       this.companies = companies || [];
-      
+
     } catch (error: any) {
       this.notificationService.error('Failed to load contacts: ' + error.message);
     } finally {
@@ -104,23 +121,23 @@ export class ContactsListComponent implements OnInit {
   get filteredContacts(): Contact[] {
     return this.contacts.filter(contact => {
       // Basic search term filter
-      const searchMatch = this.searchTerm === '' || 
+      const searchMatch = this.searchTerm === '' ||
         `${contact.first_name} ${contact.last_name}`.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         (contact.email && contact.email.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
         (contact.phone && contact.phone.includes(this.searchTerm)) ||
         (contact.opportunity_name && contact.opportunity_name.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
         (contact.quote_no && contact.quote_no.toLowerCase().includes(this.searchTerm.toLowerCase()));
-      
+
       // Company filter
       const companyMatch = this.selectedCompanyId === '' || contact.company_id === this.selectedCompanyId;
-      
+
       // Status filter
-      const statusMatch = this.selectedStatus === '' || 
+      const statusMatch = this.selectedStatus === '' ||
         (this.selectedStatus === 'Dead' ? contact.is_dead : contact.status === this.selectedStatus);
-      
+
       // Assigned filter
       const assignedMatch = this.selectedAssigned === '' || contact.assigned === this.selectedAssigned;
-      
+
       // Quote filter
       let quoteMatch = true;
       if (this.quoteFilter === 'true') {
@@ -130,7 +147,7 @@ export class ContactsListComponent implements OnInit {
       } else if (this.quoteFilter === 'key1') {
         quoteMatch = !!contact.key1_quoted; // KEY1 quoted
       }
-      
+
       // Date filter
       let dateMatch = true;
       if (this.dateFrom) {
@@ -144,7 +161,7 @@ export class ContactsListComponent implements OnInit {
         const receivedDate = contact.date_received ? new Date(contact.date_received) : null;
         dateMatch = receivedDate ? receivedDate <= toDate : false;
       }
-      
+
       return searchMatch && companyMatch && statusMatch && assignedMatch && quoteMatch && dateMatch;
     });
   }
@@ -154,6 +171,7 @@ export class ContactsListComponent implements OnInit {
     this.selectedContact = null;
     this.isEditingContact = false;
     this.showContactModal = true;
+    // Note: preselectedLeadSource is preserved if set by query params
   }
 
   openEditContactModal(contact: Contact): void {
@@ -164,6 +182,7 @@ export class ContactsListComponent implements OnInit {
 
   closeContactModal(): void {
     this.showContactModal = false;
+    this.preselectedLeadSource = ''; // Reset preselected lead source
   }
 
   handleContactSaved(): void {
@@ -191,14 +210,14 @@ export class ContactsListComponent implements OnInit {
     if (!confirm('Are you sure you want to delete this contact?')) {
       return;
     }
-    
+
     try {
       const { error } = await this.supabaseService.deleteContact(contactId);
-      
+
       if (error) {
         throw error;
       }
-      
+
       this.notificationService.success('Contact deleted successfully');
       this.contacts = this.contacts.filter(contact => contact.id !== contactId);
     } catch (error: any) {
@@ -216,7 +235,7 @@ export class ContactsListComponent implements OnInit {
     try {
       // Get visible contacts based on current filters
       const contactsToExport = this.filteredContacts;
-      
+
       // Prepare CSV data
       const headers = [
         'First Name', 'Last Name', 'Email', 'Phone', 'Company', 'Job Title',
@@ -224,7 +243,7 @@ export class ContactsListComponent implements OnInit {
         'Status', 'Times Contacted', 'Date Received', 'Last Chase', 'Chased Date',
         'Assigned', 'KEY1 Quoted', 'Dead', 'Notes'
       ];
-      
+
       const csvRows = [
         headers.join(','),
         ...contactsToExport.map(contact => [
@@ -251,27 +270,27 @@ export class ContactsListComponent implements OnInit {
           this.escapeCsvValue(contact.notes || '')
         ].join(','))
       ];
-      
+
       // Create and download CSV file
       const csvContent = csvRows.join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      
+
       const link = document.createElement('a');
       link.setAttribute('href', url);
       link.setAttribute('download', `contacts_export_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
-      
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       this.notificationService.success('Contacts exported successfully');
     } catch (error: any) {
       this.notificationService.error('Failed to export contacts: ' + error.message);
     }
   }
-  
+
   // Helper method for CSV export
   private escapeCsvValue(value: string): string {
     if (!value) return '';

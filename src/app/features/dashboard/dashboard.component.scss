@@ -37,6 +37,142 @@
   }
 }
 
+// SumUp dashboard styles
+.sumup-dashboard {
+  .stats-card {
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .quick-action {
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  // SumUp specific colors
+  .bg-sumup {
+    background-color: #FEFCE8;
+  }
+
+  .text-sumup {
+    color: #CA8A04;
+  }
+
+  .border-sumup {
+    border-color: #CA8A04;
+  }
+
+  // Enhanced SumUp leads list styling
+  .sumup-lead-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 3px solid transparent;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border-left-color: #F59E0B;
+    }
+
+    // Status-based styling
+    &.status-completed {
+      border-left-color: #10B981;
+      background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);
+    }
+
+    &.status-scheduled {
+      border-left-color: #F59E0B;
+      background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    }
+
+    &.status-overdue {
+      border-left-color: #EF4444;
+      background: linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%);
+      animation: subtle-pulse 2s infinite;
+    }
+
+    // Status indicator animations
+    .status-dot {
+      transition: all 0.3s ease;
+
+      &.pulse {
+        animation: dot-pulse 2s infinite;
+      }
+    }
+
+    // Action buttons enhancement
+    .action-buttons {
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    // Badge styling
+    .status-badge {
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+
+    // Notes section styling
+    .notes-section {
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+  }
+}
+
+// Animations
+@keyframes subtle-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.1), 0 2px 4px -1px rgba(239, 68, 68, 0.06);
+  }
+  50% {
+    box-shadow: 0 8px 25px -5px rgba(239, 68, 68, 0.15), 0 4px 6px -2px rgba(239, 68, 68, 0.1);
+  }
+}
+
+@keyframes dot-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+// Improved dropdown styling
+.dropdown-menu {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  .dropdown-item {
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: rgba(245, 158, 11, 0.1);
+      transform: translateX(2px);
+    }
+  }
+}
+
 // Animation for dashboard transitions
 .dashboard-fade-in {
   animation: fadeIn 0.5s ease-in-out;

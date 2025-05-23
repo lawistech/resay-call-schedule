@@ -17,6 +17,7 @@ export class ContactFormComponent implements OnInit {
   @Input() contact: Contact | null = null;
   @Input() isEditing: boolean = false;
   @Input() companies: Company[] = [];
+  @Input() preselectedLeadSource: string = '';
   @Output() closed = new EventEmitter<boolean>();
   @Output() saved = new EventEmitter<Contact>();
 
@@ -108,6 +109,9 @@ export class ContactFormComponent implements OnInit {
   }
 
   initContactForm(): void {
+    // Use preselected lead source if provided, otherwise use contact's lead source or empty
+    const defaultLeadSource = this.preselectedLeadSource || (this.contact?.lead_source || '');
+
     this.contactForm = this.formBuilder.group({
       first_name: ['', Validators.required],
       last_name: ['', Validators.required],
@@ -115,7 +119,7 @@ export class ContactFormComponent implements OnInit {
       phone: [''],
       company_id: [''],
       notes: [''],
-      lead_source: [''] // New field for lead source
+      lead_source: [defaultLeadSource] // Use the determined default lead source
     });
 
     if (this.isEditing && this.contact) {
@@ -126,7 +130,7 @@ export class ContactFormComponent implements OnInit {
         phone: this.contact.phone || '',
         company_id: this.contact.company_id || '',
         notes: this.contact.notes || '',
-        lead_source: this.contact.lead_source || ''
+        lead_source: this.contact.lead_source || defaultLeadSource
       });
 
       // If the contact has a company, set the selectedCompany
@@ -136,6 +140,16 @@ export class ContactFormComponent implements OnInit {
         if (company) {
           this.selectedCompany = company;
         }
+      }
+    } else if (this.preselectedLeadSource) {
+      // If we have a preselected lead source and we're not editing, show a helpful message
+      console.log('Contact form initialized with preselected lead source:', this.preselectedLeadSource);
+
+      // Add a note for SumUp leads
+      if (this.preselectedLeadSource === 'sumup') {
+        this.contactForm.patchValue({
+          notes: 'SumUp lead created on ' + new Date().toLocaleDateString()
+        });
       }
     }
   }

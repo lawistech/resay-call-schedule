@@ -1,5 +1,5 @@
 // src/app/features/dashboard/dashboard.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -37,12 +37,17 @@ export class DashboardComponent implements OnInit {
   selectedCall: Call | null = null;
   postCallInitialAction: 'complete' | 'reschedule' = 'complete';
 
-  // Dashboard view mode (classic or new)
-  dashboardView: 'classic' | 'new' = 'classic'; // Set classic as default
+  // Dashboard view mode (classic, new, or sumup)
+  dashboardView: 'classic' | 'new' | 'sumup' = 'classic'; // Set classic as default
 
   // Call tabs
   activeCallTab: 'all' | 'sumup' = 'all'; // Default to all calls
   sumupLeads: Call[] = []; // Array to store SumUp leads specifically
+
+  // SumUp view state
+  activeMoreActionsCallId: string | null = null;
+  activeNotesCallId: string | null = null;
+  noteText: string = '';
 
   // Quotations data
   activeQuotations: Quotation[] = [];
@@ -68,6 +73,12 @@ export class DashboardComponent implements OnInit {
     private companyService: CompanyService
   ) {}
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    // Close dropdowns when clicking outside
+    this.activeMoreActionsCallId = null;
+  }
+
   ngOnInit(): void {
     this.loadDashboardData();
 
@@ -80,8 +91,8 @@ export class DashboardComponent implements OnInit {
 
     // Load saved dashboard view preference
     const savedView = localStorage.getItem('dashboardView');
-    if (savedView && (savedView === 'classic' || savedView === 'new')) {
-      this.dashboardView = savedView;
+    if (savedView && (savedView === 'classic' || savedView === 'new' || savedView === 'sumup')) {
+      this.dashboardView = savedView as 'classic' | 'new' | 'sumup';
     }
   }
 
@@ -131,14 +142,27 @@ export class DashboardComponent implements OnInit {
         return call;
       });
 
-      // Filter SumUp leads from all calls
+      // Filter SumUp leads from all calls (show all statuses for SumUp leads)
       this.sumupLeads = this.calls.filter(call =>
-        call.lead_source === 'sumup' && call.status === 'scheduled'
+        call.lead_source === 'sumup'
       ).sort((a, b) => {
         // Sort by most recent first for SumUp leads
         return new Date(b.created_at || b.scheduled_at).getTime() -
                new Date(a.created_at || a.scheduled_at).getTime();
       });
+
+      // Debug logging
+      console.log('Total calls loaded:', this.calls.length);
+      console.log('SumUp leads found:', this.sumupLeads.length);
+      console.log('All lead sources in calls:', [...new Set(this.calls.map(call => call.lead_source))]);
+      console.log('All calls with lead sources:', this.calls.map(call => ({ id: call.id, lead_source: call.lead_source, contact: call.contact?.first_name + ' ' + call.contact?.last_name })));
+      if (this.sumupLeads.length > 0) {
+        console.log('SumUp leads:', this.sumupLeads);
+      } else {
+        console.log('No SumUp leads found. Checking if any calls have lead_source = sumup...');
+        const sumupCalls = this.calls.filter(call => call.lead_source === 'sumup');
+        console.log('Calls with lead_source = sumup:', sumupCalls);
+      }
 
       // Add isOverdue property to SumUp leads as well
       this.sumupLeads = this.sumupLeads.map(call => {
@@ -426,10 +450,22 @@ export class DashboardComponent implements OnInit {
   }
 
   /**
-   * Toggle between classic and new dashboard views
+   * Toggle between dashboard views (classic, new, sumup)
    */
-  toggleDashboardView(): void {
-    this.dashboardView = this.dashboardView === 'classic' ? 'new' : 'classic';
+  toggleDashboardView(view?: 'classic' | 'new' | 'sumup'): void {
+    if (view) {
+      // If a specific view is provided, set it directly
+      this.dashboardView = view;
+    } else {
+      // Otherwise cycle through views: classic -> new -> sumup -> classic
+      if (this.dashboardView === 'classic') {
+        this.dashboardView = 'new';
+      } else if (this.dashboardView === 'new') {
+        this.dashboardView = 'sumup';
+      } else {
+        this.dashboardView = 'classic';
+      }
+    }
     // Save preference to localStorage
     localStorage.setItem('dashboardView', this.dashboardView);
   }
@@ -446,7 +482,18 @@ export class DashboardComponent implements OnInit {
    * @param leadSource The lead source to pre-select in the call modal
    */
   createCallWithLeadSource(leadSource: string): void {
-    // Create a temporary contact to open the call modal
+    // For SumUp leads, redirect to contacts page to select a contact to schedule
+    if (leadSource === 'sumup') {
+      this.notificationService.info('Select a SumUp contact to schedule a call with.');
+      this.router.navigate(['/contacts'], {
+        queryParams: {
+          lead_source: 'sumup'
+        }
+      });
+      return;
+    }
+
+    // Create a temporary contact to open the call modal for other lead sources
     const tempContact: Contact = {
       id: '', // This will be filled in by the user selecting a contact
       first_name: '',
@@ -454,20 +501,9 @@ export class DashboardComponent implements OnInit {
       lead_source: leadSource
     };
 
-    // For SumUp leads, set additional default values
-    if (leadSource === 'sumup') {
-      // Show a notification to inform the user
-      this.notificationService.info('Creating a new SumUp lead. Please select a contact and fill in the details.');
-
-      // Switch to the SumUp tab if not already there
-      this.switchCallTab('sumup');
-
-      // Add additional information for SumUp leads
-      tempContact.notes = 'SumUp lead created on ' + new Date().toLocaleDateString();
-    } else if (!leadSource) {
-      // For regular calls (no specific lead source)
+    // For regular calls (no specific lead source)
+    if (!leadSource) {
       this.notificationService.info('Creating a new call. Please select a contact and fill in the details.');
-
       // Switch to the All tab if not already there
       this.switchCallTab('all');
     }
@@ -697,6 +733,44 @@ export class DashboardComponent implements OnInit {
   }
 
   /**
+   * Format date with relative display (Today, Tomorrow, etc.)
+   */
+  formatRelativeDate(dateString?: string): string {
+    if (!dateString) return 'N/A';
+
+    const date = new Date(dateString);
+    const today = new Date();
+
+    // Today
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    }
+
+    // Tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    if (date.toDateString() === tomorrow.toDateString()) {
+      return 'Tomorrow';
+    }
+
+    // Yesterday
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+
+    // This week - use day name
+    const diffInDays = Math.abs((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffInDays <= 7) {
+      return format(date, 'EEEE'); // Day name (Monday, Tuesday, etc.)
+    }
+
+    // Older dates - use short format
+    return format(date, 'dd MMM');
+  }
+
+  /**
    * Add or update notes for a SumUp lead
    * @param data Object containing callId and note
    */
@@ -739,4 +813,136 @@ export class DashboardComponent implements OnInit {
       this.notificationService.error('Failed to update notes: ' + error.message);
     }
   }
+
+  /**
+   * Get the count of completed SumUp calls
+   */
+  getCompletedSumUpCallsCount(): number {
+    if (!this.calls) return 0;
+    return this.calls.filter(call =>
+      call.lead_source === 'sumup' && call.status === 'completed'
+    ).length;
+  }
+
+  /**
+   * Get the count of scheduled SumUp calls
+   */
+  getScheduledSumUpCallsCount(): number {
+    if (!this.calls) return 0;
+    return this.calls.filter(call =>
+      call.lead_source === 'sumup' && call.status === 'scheduled'
+    ).length;
+  }
+
+  /**
+   * Get the completion rate for SumUp calls
+   */
+  getCompletionRate(): number {
+    if (!this.calls || this.sumupLeads.length === 0) return 0;
+    const completedCount = this.getCompletedSumUpCallsCount();
+    const totalCount = this.sumupLeads.length;
+    return Math.round((completedCount / totalCount) * 100);
+  }
+
+  /**
+   * Check if the current dashboard view is SumUp
+   */
+  isSumUpView(): boolean {
+    return this.dashboardView === 'sumup';
+  }
+
+  /**
+   * Toggle more actions dropdown for a specific call
+   */
+  toggleMoreActions(callId: string, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.activeMoreActionsCallId === callId) {
+      this.activeMoreActionsCallId = null;
+    } else {
+      this.activeMoreActionsCallId = callId;
+    }
+  }
+
+  /**
+   * Toggle notes editor for a specific call
+   */
+  toggleNotesEditor(callId: string, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Close more actions dropdown
+    this.activeMoreActionsCallId = null;
+
+    if (this.activeNotesCallId === callId) {
+      this.activeNotesCallId = null;
+      this.noteText = '';
+    } else {
+      this.activeNotesCallId = callId;
+      // Pre-populate with existing notes if available
+      const call = this.sumupLeads.find(c => c.id === callId);
+      this.noteText = call?.notes || '';
+    }
+  }
+
+  /**
+   * Save notes for a call
+   */
+  async saveNotes(callId: string, event: MouseEvent): Promise<void> {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (this.noteText.trim()) {
+      await this.addNoteToSumUpLead({ callId, note: this.noteText });
+    }
+
+    this.activeNotesCallId = null;
+    this.noteText = '';
+  }
+
+  /**
+   * Handle call actions from the simplified view
+   */
+  onViewCallDetails(callId: string, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Close any open dropdowns
+    this.activeMoreActionsCallId = null;
+
+    this.viewCallDetails(callId);
+  }
+
+  onInitiateCall(call: Call, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Close any open dropdowns
+    this.activeMoreActionsCallId = null;
+
+    this.initiateCall(call);
+  }
+
+  onCompleteCall(callId: string, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Close any open dropdowns
+    this.activeMoreActionsCallId = null;
+
+    this.markCallAsCompleted(callId);
+  }
+
+  onRescheduleCall(call: Call, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Close any open dropdowns
+    this.activeMoreActionsCallId = null;
+
+    this.openRescheduleModal(call);
+  }
+
+
 }
