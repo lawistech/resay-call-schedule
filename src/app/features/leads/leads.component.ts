@@ -1,7 +1,7 @@
 // src/app/features/leads/leads.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -64,11 +64,20 @@ export class LeadsComponent implements OnInit, OnDestroy {
 
   constructor(
     private leadService: LeadService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.loadLeads();
+
+    // Check for query parameters to auto-open lead creation wizard
+    this.route.queryParams.subscribe(params => {
+      if (params['action'] === 'create') {
+        // Auto-open the lead wizard
+        this.openLeadWizard();
+      }
+    });
   }
 
   ngOnDestroy(): void {

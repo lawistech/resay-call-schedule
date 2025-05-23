@@ -12,11 +12,11 @@
         </svg>
         {{ viewMode === 'grid' ? 'List View' : 'Grid View' }}
       </button>
-      <button (click)="createCompany()" class="btn-primary flex items-center">
+      <button (click)="createLead()" class="btn-primary flex items-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
         </svg>
-        Add Company
+        Add Lead
       </button>
     </div>
   </div>
@@ -66,8 +66,8 @@
     </svg>
     <h3 class="text-lg font-medium text-gray-900 mb-2">No companies found</h3>
     <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria</p>
-    <button (click)="createCompany()" class="btn-primary">
-      Add New Company
+    <button (click)="createLead()" class="btn-primary">
+      Add New Lead
     </button>
   </div>
 

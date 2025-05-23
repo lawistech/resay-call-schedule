@@ -22,7 +22,7 @@ import { QuotationFormComponent } from '../quotations/quotation-form/quotation-f
 
 const routes: Routes = [
   { path: '', component: CompaniesListComponent },
-  { path: 'new', component: CompanyFormComponent },
+  { path: 'new', redirectTo: '/leads', pathMatch: 'full' },
   { path: ':id', component: CompanyDetailComponent },
   { path: ':id/edit', component: CompanyFormComponent }
 ];

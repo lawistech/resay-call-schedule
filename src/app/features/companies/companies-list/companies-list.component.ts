@@ -122,8 +122,10 @@ export class CompaniesListComponent implements OnInit, OnDestroy {
     }
   }
 
-  createCompany(): void {
-    this.router.navigate(['/companies/new']);
+  createLead(): void {
+    // Navigate to leads page to create a new lead (which includes company creation)
+    // Use query parameter to auto-open the lead wizard
+    this.router.navigate(['/leads'], { queryParams: { action: 'create' } });
   }
 
   toggleViewMode(): void {
