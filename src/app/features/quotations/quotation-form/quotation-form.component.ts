@@ -12,6 +12,7 @@ import { catchError } from 'rxjs/operators';
 import { ProductCatalogService } from '../../ecommerce/services/product-catalog.service';
 import { ProductCatalog } from '../../ecommerce/models/product-catalog.model';
 import { SupabaseService } from '../../../core/services/supabase.service';
+import { MarginCalculatorService } from '../services/margin-calculator.service';
 
 @Component({
   selector: 'app-quotation-form',
@@ -43,6 +44,11 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
 
   // VAT related properties
   defaultVatRate = 20; // Default VAT rate (20%)
+
+  // Margin calculation properties
+  selectedMarginPercentage = 15; // Default margin percentage
+  marginOptions = [10, 12, 15, 18, 20]; // Predefined margin options
+  showMarginCalculator = false; // Toggle for margin calculator visibility
 
   // Company search properties
   companySearchTerm: string = '';
@@ -85,7 +91,8 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
     private router: Router,
     private notificationService: NotificationService,
     private productCatalogService: ProductCatalogService,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    public marginCalculatorService: MarginCalculatorService
   ) {
     this.quotationForm = this.fb.group({
       title: ['', Validators.required],
@@ -100,6 +107,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       vatRate: [this.defaultVatRate, [Validators.required, Validators.min(0), Validators.max(100)]],
       vatAmount: [0],
       totalWithVat: [0],
+      marginPercentage: [this.selectedMarginPercentage, [Validators.min(0), Validators.max(100)]],
       notes: [''],
       products: this.fb.array([])
     });
@@ -264,7 +272,15 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
 
   selectProduct(product: ProductCatalog): void {
     this.selectedProduct = product;
-    this.selectedProductPrice = product.price;
+    // Calculate price based on cost and current margin if cost is available
+    if (product.cost && product.cost > 0 && this.selectedMarginPercentage > 0) {
+      this.selectedProductPrice = this.marginCalculatorService.calculateSellingPrice(
+        product.cost,
+        this.selectedMarginPercentage
+      );
+    } else {
+      this.selectedProductPrice = product.price;
+    }
     this.selectedProductQuantity = 1;
     this.selectedProductNotes = '';
   }
@@ -379,6 +395,65 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       vatAmount: vatAmount,
       totalWithVat: totalWithVat
     });
+  }
+
+  // Margin calculation methods
+  onMarginPercentageChange(marginPercentage: number): void {
+    this.selectedMarginPercentage = marginPercentage;
+    this.quotationForm.patchValue({ marginPercentage: marginPercentage });
+
+    // Recalculate all product prices based on new margin
+    this.recalculateProductPricesWithMargin();
+  }
+
+  recalculateProductPricesWithMargin(): void {
+    // Update prices for all products in the form that have cost information
+    this.productsArray.controls.forEach((control, index) => {
+      const productId = control.get('productId')?.value;
+      const product = this.products.find(p => p.id === productId);
+
+      if (product && product.cost && product.cost > 0) {
+        const newPrice = this.marginCalculatorService.calculateSellingPrice(
+          product.cost,
+          this.selectedMarginPercentage
+        );
+        const quantity = control.get('quantity')?.value || 1;
+        const newTotal = newPrice * quantity;
+
+        control.patchValue({
+          price: newPrice,
+          total: newTotal
+        });
+      }
+    });
+
+    // Update the selected product price if one is selected
+    if (this.selectedProduct && this.selectedProduct.cost && this.selectedProduct.cost > 0) {
+      this.selectedProductPrice = this.marginCalculatorService.calculateSellingPrice(
+        this.selectedProduct.cost,
+        this.selectedMarginPercentage
+      );
+    }
+
+    // Recalculate totals
+    this.updateTotalAmount();
+  }
+
+  toggleMarginCalculator(): void {
+    this.showMarginCalculator = !this.showMarginCalculator;
+  }
+
+  getProductCostInfo(productId: string): { cost: number; hasValidCost: boolean } {
+    const product = this.products.find(p => p.id === productId);
+    const cost = product?.cost || 0;
+    return {
+      cost: cost,
+      hasValidCost: cost > 0
+    };
+  }
+
+  hasValidProductCost(product: ProductCatalog | null): boolean {
+    return !!(product?.cost && product.cost > 0);
   }
 
   // Search for companies
@@ -590,8 +665,14 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       vatRate: quotation.vatRate || this.defaultVatRate,
       vatAmount: quotation.vatAmount || (quotation.total * (quotation.vatRate || this.defaultVatRate) / 100),
       totalWithVat: quotation.totalWithVat || (quotation.total + (quotation.total * (quotation.vatRate || this.defaultVatRate) / 100)),
+      marginPercentage: quotation.marginPercentage || this.selectedMarginPercentage,
       notes: quotation.notes || ''
     });
+
+    // Update the selected margin percentage
+    if (quotation.marginPercentage) {
+      this.selectedMarginPercentage = quotation.marginPercentage;
+    }
 
     // Load contacts for this company
     if (quotation.companyId) {
@@ -633,6 +714,7 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
       vatRate: formValues.vatRate || this.defaultVatRate,
       vatAmount: formValues.vatAmount || 0,
       totalWithVat: formValues.totalWithVat || 0,
+      marginPercentage: formValues.marginPercentage || this.selectedMarginPercentage,
       notes: formValues.notes
     };
 

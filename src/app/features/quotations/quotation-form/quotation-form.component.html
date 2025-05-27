@@ -342,13 +342,77 @@
       <div class="paper-section">
         <div class="flex justify-between items-center mb-3">
           <h3 class="text-lg font-medium text-gray-900">Products</h3>
-          <button type="button" (click)="openProductSelector()"
-                  class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
-            <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
-            Add Product
-          </button>
+          <div class="flex items-center space-x-3">
+            <button type="button" (click)="toggleMarginCalculator()"
+                    class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                    [class.bg-blue-50]="showMarginCalculator"
+                    [class.text-blue-700]="showMarginCalculator"
+                    [class.border-blue-300]="showMarginCalculator">
+              <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H11zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H8zm2 2a1 1 0 011-1h.01a1 1 0 110 2H11a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H11zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd" />
+              </svg>
+              Margin Calculator
+            </button>
+            <button type="button" (click)="openProductSelector()"
+                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
+              <svg class="-ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              Add Product
+            </button>
+          </div>
+        </div>
+
+        <!-- Margin Calculator Section -->
+        <div *ngIf="showMarginCalculator" class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4 slide-in">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-medium text-blue-900 flex items-center">
+              <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H11zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H8zm2 2a1 1 0 011-1h.01a1 1 0 110 2H11a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H11zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1z" clip-rule="evenodd" />
+              </svg>
+              Dynamic Margin Calculator
+            </h4>
+            <span class="text-lg font-bold text-blue-700">{{ selectedMarginPercentage }}%</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex items-center justify-between text-sm text-blue-800">
+              <span>Margin Percentage:</span>
+              <span class="font-medium">{{ selectedMarginPercentage }}% margin</span>
+            </div>
+
+            <!-- Margin Slider -->
+            <div class="relative">
+              <input type="range"
+                     [value]="selectedMarginPercentage"
+                     (input)="onMarginPercentageChange(+($any($event.target).value))"
+                     min="5" max="50" step="1"
+                     class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600 slider">
+
+              <!-- Predefined margin options as clickable markers -->
+              <div class="flex justify-between mt-2 px-1">
+                <button *ngFor="let option of marginOptions"
+                        type="button"
+                        (click)="onMarginPercentageChange(option)"
+                        class="flex flex-col items-center text-xs transition-all duration-200 hover:scale-110"
+                        [class.text-blue-700]="selectedMarginPercentage === option"
+                        [class.font-bold]="selectedMarginPercentage === option"
+                        [class.text-blue-500]="selectedMarginPercentage !== option">
+                  <div class="w-3 h-3 rounded-full border-2 mb-1 transition-all duration-200"
+                       [class.bg-blue-600]="selectedMarginPercentage === option"
+                       [class.border-blue-600]="selectedMarginPercentage === option"
+                       [class.bg-white]="selectedMarginPercentage !== option"
+                       [class.border-blue-300]="selectedMarginPercentage !== option"></div>
+                  <span>{{ option }}%</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="text-xs text-blue-700 bg-blue-100 p-2 rounded">
+              <strong>Formula:</strong> Selling Price = Cost ÷ (1 - Margin%).
+              This calculator automatically updates all product prices based on their cost when you change the margin percentage.
+            </div>
+          </div>
         </div>
 
         <!-- Products List -->
@@ -365,6 +429,17 @@
                   </div>
                   <div class="mt-1 flex items-center text-sm text-gray-500">
                     <span>{{ productForm.get('price')?.value | currency:'GBP':'symbol' }} each</span>
+                    <!-- Show cost and margin info if available -->
+                    <ng-container *ngIf="getProductCostInfo(productForm.get('productId')?.value) as costInfo">
+                      <span *ngIf="costInfo.hasValidCost" class="mx-2">•</span>
+                      <span *ngIf="costInfo.hasValidCost" class="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                        Cost: {{ costInfo.cost | currency:'GBP':'symbol' }}
+                      </span>
+                      <span *ngIf="costInfo.hasValidCost" class="mx-1">•</span>
+                      <span *ngIf="costInfo.hasValidCost" class="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                        {{ marginCalculatorService.calculateMarginPercentage(costInfo.cost, productForm.get('price')?.value) | number:'1.1-1' }}% margin
+                      </span>
+                    </ng-container>
                     <span *ngIf="productForm.get('notes')?.value" class="mx-2">•</span>
                     <span *ngIf="productForm.get('notes')?.value" class="italic">{{ productForm.get('notes')?.value }}</span>
                   </div>
@@ -517,9 +592,17 @@
                   <div class="font-medium text-gray-900 text-sm truncate">{{ product.name }}</div>
                   <div class="text-xs text-gray-500 truncate flex items-center">
                     <span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-xs mr-1">{{ product.sku }}</span>
+                    <span *ngIf="product.cost && product.cost > 0" class="bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-xs mr-1">
+                      Cost: {{ product.cost | currency:'GBP':'symbol' }}
+                    </span>
                   </div>
                 </div>
-                <div class="text-sm font-medium text-blue-600 whitespace-nowrap">{{ product.price | currency:'GBP':'symbol' }}</div>
+                <div class="text-right">
+                  <div class="text-sm font-medium text-blue-600 whitespace-nowrap">{{ product.price | currency:'GBP':'symbol' }}</div>
+                  <div *ngIf="product.cost && product.cost > 0" class="text-xs text-gray-500">
+                    {{ marginCalculatorService.calculateMarginPercentage(product.cost, product.price) | number:'1.1-1' }}% margin
+                  </div>
+                </div>
               </div>
             </li>
           </ul>
@@ -672,9 +755,26 @@
         </div>
 
         <div class="bg-blue-50 p-4 rounded-md border border-blue-100">
-          <div class="flex justify-between items-center">
-            <span class="text-sm font-medium text-gray-700">Total:</span>
-            <span class="text-lg font-bold text-blue-600">{{ selectedProductQuantity * selectedProductPrice | currency:'GBP':'symbol' }}</span>
+          <div class="space-y-2">
+            <!-- Show cost and margin info if available -->
+            <div *ngIf="hasValidProductCost(selectedProduct)" class="flex justify-between items-center text-sm">
+              <span class="text-gray-600">Cost per unit:</span>
+              <span class="font-medium text-gray-700">{{ selectedProduct?.cost | currency:'GBP':'symbol' }}</span>
+            </div>
+            <div *ngIf="hasValidProductCost(selectedProduct)" class="flex justify-between items-center text-sm">
+              <span class="text-gray-600">Margin:</span>
+              <span class="font-medium text-green-600">{{ marginCalculatorService.calculateMarginPercentage(selectedProduct?.cost || 0, selectedProductPrice) | number:'1.1-1' }}%</span>
+            </div>
+            <div *ngIf="hasValidProductCost(selectedProduct)" class="flex justify-between items-center text-sm">
+              <span class="text-gray-600">Profit per unit:</span>
+              <span class="font-medium text-green-600">{{ marginCalculatorService.calculateProfit(selectedProduct?.cost || 0, selectedProductPrice) | currency:'GBP':'symbol' }}</span>
+            </div>
+            <div class="border-t border-blue-200 pt-2">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-gray-700">Total:</span>
+                <span class="text-lg font-bold text-blue-600">{{ selectedProductQuantity * selectedProductPrice | currency:'GBP':'symbol' }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

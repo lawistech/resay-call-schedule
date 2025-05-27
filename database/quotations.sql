@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS quotations (
   title TEXT NOT NULL,
   status TEXT DEFAULT 'draft', -- draft, sent, accepted, rejected, expired
   total DECIMAL(10, 2) DEFAULT 0,
+  margin_percentage DECIMAL(5, 2), -- New field for margin calculation (e.g., 15.00 for 15%)
   valid_until TIMESTAMP WITH TIME ZONE,
   notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -30,39 +31,39 @@ ALTER TABLE quotations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quotation_items ENABLE ROW LEVEL SECURITY;
 
 -- Policy for select
-CREATE POLICY "Users can view quotations" 
-ON quotations FOR SELECT 
+CREATE POLICY "Users can view quotations"
+ON quotations FOR SELECT
 USING (true);
 
-CREATE POLICY "Users can view quotation items" 
-ON quotation_items FOR SELECT 
+CREATE POLICY "Users can view quotation items"
+ON quotation_items FOR SELECT
 USING (true);
 
 -- Policy for insert
-CREATE POLICY "Authenticated users can insert quotations" 
-ON quotations FOR INSERT 
+CREATE POLICY "Authenticated users can insert quotations"
+ON quotations FOR INSERT
 WITH CHECK (auth.role() = 'authenticated');
 
-CREATE POLICY "Authenticated users can insert quotation items" 
-ON quotation_items FOR INSERT 
+CREATE POLICY "Authenticated users can insert quotation items"
+ON quotation_items FOR INSERT
 WITH CHECK (auth.role() = 'authenticated');
 
 -- Policy for update
-CREATE POLICY "Authenticated users can update quotations" 
-ON quotations FOR UPDATE 
+CREATE POLICY "Authenticated users can update quotations"
+ON quotations FOR UPDATE
 USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Authenticated users can update quotation items" 
-ON quotation_items FOR UPDATE 
+CREATE POLICY "Authenticated users can update quotation items"
+ON quotation_items FOR UPDATE
 USING (auth.role() = 'authenticated');
 
 -- Policy for delete
-CREATE POLICY "Authenticated users can delete quotations" 
-ON quotations FOR DELETE 
+CREATE POLICY "Authenticated users can delete quotations"
+ON quotations FOR DELETE
 USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Authenticated users can delete quotation items" 
-ON quotation_items FOR DELETE 
+CREATE POLICY "Authenticated users can delete quotation items"
+ON quotation_items FOR DELETE
 USING (auth.role() = 'authenticated');
 
 -- Add triggers for updated_at

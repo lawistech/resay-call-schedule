@@ -177,6 +177,7 @@ export class QuotationService {
       status: dbStatus,
       total: quotation.total || 0,
       vat_rate: quotation.vatRate || 20, // Default to 20% if not provided
+      margin_percentage: quotation.marginPercentage || null, // New margin percentage field
       notes: quotation.notes || null
     };
 
@@ -377,6 +378,7 @@ export class QuotationService {
       vatRate: data.vat_rate || 20, // Default to 20% if not provided
       vatAmount: data.vat_amount || (data.total * (data.vat_rate || 20) / 100),
       totalWithVat: data.total_with_vat || (data.total + (data.total * (data.vat_rate || 20) / 100)),
+      marginPercentage: data.margin_percentage, // New margin percentage field
       validUntil: data.valid_until,
       notes: data.notes,
       createdAt: data.created_at,

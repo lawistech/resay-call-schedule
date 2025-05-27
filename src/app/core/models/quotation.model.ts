@@ -14,6 +14,7 @@ export interface Quotation {
   vatRate?: number;
   vatAmount?: number;
   totalWithVat?: number;
+  marginPercentage?: number; // New field for margin calculation
   validUntil?: string;
   notes?: string;
   createdAt?: string;
