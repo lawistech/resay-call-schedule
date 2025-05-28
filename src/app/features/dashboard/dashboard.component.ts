@@ -471,6 +471,35 @@ export class DashboardComponent implements OnInit {
   }
 
   /**
+   * Opens the complete call modal for a call
+   * @param callId The ID of the call to be completed
+   */
+  openCompleteCallModal(callId: string): void {
+    // Find the call by ID
+    const call = this.calls.find(c => c.id === callId) || this.scheduledCalls.find(c => c.id === callId);
+
+    if (!call) {
+      this.notificationService.error('Call not found');
+      return;
+    }
+
+    // Store the call in the service
+    this.callStateService.setActiveCall(call);
+
+    // Set the selected call and show the modal
+    this.selectedCall = call;
+    this.showPostCallModal = true;
+
+    // Set the initialAction property to 'complete'
+    // This will be passed to the post-call-modal component
+    this.postCallInitialAction = 'complete';
+
+    console.log('Dashboard: openCompleteCallModal called for call:', call);
+    console.log('Dashboard: showPostCallModal =', this.showPostCallModal);
+    console.log('Dashboard: postCallInitialAction =', this.postCallInitialAction);
+  }
+
+  /**
    * Toggle between dashboard views (classic, new, sumup)
    */
   toggleDashboardView(view?: 'classic' | 'new' | 'sumup'): void {

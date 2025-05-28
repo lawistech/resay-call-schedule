@@ -1,5 +1,5 @@
 // src/app/shared/post-call-modal/post-call-modal.component.ts
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { Call } from '../../core/models/call.model';
@@ -9,13 +9,15 @@ import { NotificationService } from '../../core/services/notification.service';
   selector: 'app-post-call-modal',
   templateUrl: './post-call-modal.component.html'
 })
-export class PostCallModalComponent implements OnInit, OnChanges {
+export class PostCallModalComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() isOpen = false;
   @Input() call: Call | null = null;
   @Output() closed = new EventEmitter<void>();
   @Input() initialAction: 'complete' | 'reschedule' = 'complete';
   @Output() completed = new EventEmitter<{callId: string, notes: string}>();
   @Output() rescheduled = new EventEmitter<{callId: string, scheduledAt: string, notes: string}>();
+
+  @ViewChild('notesField', { static: false }) notesField!: ElementRef<HTMLTextAreaElement>;
 
   postCallForm!: FormGroup;
   selectedAction: 'complete' | 'reschedule' = 'complete';
@@ -26,12 +28,33 @@ export class PostCallModalComponent implements OnInit, OnChanges {
     private notificationService: NotificationService
   ) {}
 
+  // Handle ESC key to close modal
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent): void {
+    if (this.isOpen) {
+      this.close();
+    }
+  }
+
+  ngAfterViewInit(): void {
+    // Focus on notes field when modal opens in complete mode
+    if (this.isOpen && this.selectedAction === 'complete') {
+      this.focusNotesField();
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     console.log('PostCallModal: ngOnChanges called with', changes);
 
     // Handle changes to isOpen
     if (changes['isOpen'] && changes['isOpen'].currentValue) {
       console.log('PostCallModal: Modal is now open');
+      // Focus on notes field when modal opens in complete mode
+      setTimeout(() => {
+        if (this.selectedAction === 'complete') {
+          this.focusNotesField();
+        }
+      }, 100);
     }
 
     // Handle changes to call
@@ -54,6 +77,12 @@ export class PostCallModalComponent implements OnInit, OnChanges {
     if (changes['initialAction'] && changes['initialAction'].currentValue) {
       this.selectedAction = this.initialAction;
       console.log('PostCallModal: selectedAction updated to', this.selectedAction);
+      // Focus on notes field when action is set to complete
+      setTimeout(() => {
+        if (this.selectedAction === 'complete' && this.isOpen) {
+          this.focusNotesField();
+        }
+      }, 100);
     }
   }
 
@@ -91,6 +120,12 @@ export class PostCallModalComponent implements OnInit, OnChanges {
     console.log('PostCallModal: isOpen set to false');
     this.closed.emit();
     console.log('PostCallModal: closed event emitted');
+  }
+
+  private focusNotesField(): void {
+    if (this.notesField && this.notesField.nativeElement) {
+      this.notesField.nativeElement.focus();
+    }
   }
 
   submitForm(): void {

@@ -37,7 +37,8 @@ export class TodaysScheduledCallsComponent implements OnInit {
   onInitiateCall(call: Call, event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    this.initiateCall.emit(call);
+    // Changed to emit complete call event to open completion modal
+    this.completeCall.emit(call.id);
   }
 
   // Method for rescheduling calls
