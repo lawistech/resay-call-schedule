@@ -50,6 +50,9 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
   marginOptions = [10, 12, 15, 18, 20]; // Predefined margin options
   showMarginCalculator = false; // Toggle for margin calculator visibility
 
+  // Probability calculation properties
+  probabilityOptions = [10, 25, 50, 75, 90]; // Predefined probability options
+
   // Company search properties
   companySearchTerm: string = '';
   companySearchResults: any[] = [];
@@ -404,6 +407,11 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
 
     // Recalculate all product prices based on new margin
     this.recalculateProductPricesWithMargin();
+  }
+
+  // Probability calculation methods
+  onProbabilityChange(probability: number): void {
+    this.quotationForm.patchValue({ probability: probability });
   }
 
   recalculateProductPricesWithMargin(): void {

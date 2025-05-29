@@ -31,7 +31,7 @@ export class SupabaseService {
   }
 
   async searchContacts(searchTerm: string) {
-    // Search by name, email, or phone
+    // Search by name, email, phone, or mobile
     const term = searchTerm.toLowerCase().trim();
 
     return this.supabaseClient
@@ -40,13 +40,13 @@ export class SupabaseService {
         *,
         company:companies(*)
       `)
-      .or(`first_name.ilike.%${term}%,last_name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`)
+      .or(`first_name.ilike.%${term}%,last_name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%,mobile.ilike.%${term}%`)
       .order('created_at', { ascending: false });
   }
 
-  async checkDuplicateContact(phone: string, email: string) {
-    // If both phone and email are empty, return empty result
-    if (!phone && !email) {
+  async checkDuplicateContact(phone: string, email: string, mobile?: string) {
+    // If all fields are empty, return empty result
+    if (!phone && !email && !mobile) {
       return { data: [], error: null };
     }
 
@@ -66,6 +66,10 @@ export class SupabaseService {
 
     if (email) {
       conditions.push(`email.eq.${email}`);
+    }
+
+    if (mobile) {
+      conditions.push(`mobile.eq.${mobile}`);
     }
 
     if (conditions.length > 0) {

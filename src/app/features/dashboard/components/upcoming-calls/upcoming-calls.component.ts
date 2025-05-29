@@ -13,7 +13,7 @@ export class UpcomingCallsComponent implements OnInit {
   @Output() completeCall = new EventEmitter<string>();
   @Output() initiateCallEvent = new EventEmitter<Call>();
   @Output() rescheduleCallEvent = new EventEmitter<Call>(); // New output for rescheduling
-  
+
   constructor() {}
 
   ngOnInit(): void {}
@@ -33,19 +33,19 @@ export class UpcomingCallsComponent implements OnInit {
   formatDate(date: string): string {
     const today = new Date();
     const callDate = new Date(date);
-    
+
     // Today
     if (callDate.toDateString() === today.toDateString()) {
       return 'Today';
     }
-    
+
     // Tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
     if (callDate.toDateString() === tomorrow.toDateString()) {
       return 'Tomorrow';
     }
-    
+
     // This week - use day name
     return format(callDate, 'EEEE'); // Day name (Monday, Tuesday, etc.)
   }
@@ -63,5 +63,21 @@ export class UpcomingCallsComponent implements OnInit {
   // New method for rescheduling calls
   rescheduleCall(call: Call): void {
     this.rescheduleCallEvent.emit(call);
+  }
+
+  // Method to get full lead source name for better clarity
+  getLeadSourceFullName(leadSource: string): string {
+    switch (leadSource) {
+      case 'resay':
+        return 'Resay Platform';
+      case 'barcodesforbusiness':
+        return 'Barcodes for Business';
+      case 'androidepos':
+        return 'Android EPOS';
+      case 'sumup':
+        return 'SumUp Payment System';
+      default:
+        return leadSource;
+    }
   }
 }

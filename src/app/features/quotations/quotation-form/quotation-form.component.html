@@ -76,11 +76,7 @@
               <div *ngIf="!showNewCompanyForm" class="relative">
                 <!-- Company Search Input -->
                 <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                    <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                    </svg>
-                  </div>
+
                   <input
                     type="text"
                     id="company_search"
@@ -297,28 +293,48 @@
 
             <!-- Probability -->
             <div class="form-group">
-              <div class="flex justify-between items-center">
-                <label class="block text-sm font-medium text-gray-700">Probability (%)</label>
-                <span class="text-sm font-medium text-blue-600">{{ quotationForm.get('probability')?.value || 0 }}%</span>
+              <div class="flex justify-between items-center mb-2">
+                <label class="block text-sm font-medium text-gray-700">
+                  <svg class="w-4 h-4 inline mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  </svg>
+                  Probability (%)
+                </label>
+                <span class="text-sm font-bold text-blue-600">{{ quotationForm.get('probability')?.value || 0 }}%</span>
               </div>
-              <div class="relative mt-2">
-                <input type="range" formControlName="probability" min="0" max="100" step="5"
-                      class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+
+              <!-- Compact Probability Options -->
+              <div class="flex justify-between gap-1 mb-2">
+                <button *ngFor="let option of probabilityOptions"
+                        type="button"
+                        (click)="onProbabilityChange(option)"
+                        class="flex-1 py-2 px-1 text-xs font-medium rounded border transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        [class.bg-blue-600]="quotationForm.get('probability')?.value === option"
+                        [class.text-white]="quotationForm.get('probability')?.value === option"
+                        [class.border-blue-600]="quotationForm.get('probability')?.value === option"
+                        [class.bg-white]="quotationForm.get('probability')?.value !== option"
+                        [class.text-gray-600]="quotationForm.get('probability')?.value !== option"
+                        [class.border-gray-300]="quotationForm.get('probability')?.value !== option"
+                        [class.hover:bg-gray-50]="quotationForm.get('probability')?.value !== option">
+                  {{ option }}%
+                </button>
               </div>
-              <div class="mt-1 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                <div class="h-full bg-blue-600 probability-bar" [style.width.%]="quotationForm.get('probability')?.value"></div>
+
+              <!-- Compact Gradient Progress Bar -->
+              <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 rounded-full transition-all duration-300 ease-out"
+                     [style.width.%]="quotationForm.get('probability')?.value || 0">
+                </div>
               </div>
+
+              <!-- Hidden input for form control -->
+              <input type="hidden" formControlName="probability">
             </div>
 
             <!-- Expected Close Date -->
             <div class="form-group">
               <label class="block text-sm font-medium text-gray-700 required-field">Valid Until</label>
               <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                  </svg>
-                </div>
                 <input type="date" formControlName="expectedCloseDate"
                       class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-all duration-200 bg-white"
                       [ngClass]="{'border-red-300 focus:border-red-500 focus:ring-red-500': quotationForm.get('expectedCloseDate')?.errors?.['required'] && quotationForm.get('expectedCloseDate')?.touched}">

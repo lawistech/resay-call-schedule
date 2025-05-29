@@ -7,12 +7,13 @@ export interface Contact {
     last_name: string;
     email?: string;
     phone?: string;
+    mobile?: string;
     job_title?: string;
     company_id?: string;
     company?: Company;
     schedule?: string;
     lead_source?: string;
-    
+
     // Additional fields
     chased_date?: string;
     date_received?: string;

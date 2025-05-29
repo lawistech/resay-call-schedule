@@ -123,4 +123,22 @@ export class LeadSourceCallsComponent implements OnInit {
   isSumUpLeadSource(): boolean {
     return this.leadSource === 'sumup';
   }
+
+  /**
+   * Method to get full lead source name for better clarity
+   */
+  getLeadSourceFullName(leadSource: string): string {
+    switch (leadSource) {
+      case 'resay':
+        return 'Resay Platform';
+      case 'barcodesforbusiness':
+        return 'Barcodes for Business';
+      case 'androidepos':
+        return 'Android EPOS';
+      case 'sumup':
+        return 'SumUp Payment System';
+      default:
+        return leadSource;
+    }
+  }
 }

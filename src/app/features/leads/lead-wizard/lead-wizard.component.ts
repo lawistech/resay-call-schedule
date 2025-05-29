@@ -122,14 +122,15 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
       source: ['', [Validators.required]]
     });
 
-    // Contact creation form
+    // Contact creation form with conditional validation
     this.contactForm = this.fb.group({
       full_name: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email, this.customEmailValidator]],
-      phone: ['', [Validators.required, this.phoneValidator]],
+      email: ['', [Validators.email, this.customEmailValidator]],
+      phone: ['', [this.phoneValidator]],
+      mobile: ['', [this.phoneValidator]], // Optional mobile field with same validation as phone
       job_title: [''],
       notes: ['']
-    });
+    }, { validators: this.atLeastOneContactValidator });
   }
 
   setupAutoSearch(): void {
@@ -288,6 +289,7 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
       last_name: lastName,
       email: this.contactForm.get('email')?.value,
       phone: this.contactForm.get('phone')?.value,
+      mobile: this.contactForm.get('mobile')?.value,
       job_title: this.contactForm.get('job_title')?.value,
       notes: this.contactForm.get('notes')?.value,
       company_id: this.selectedCompany.id,
@@ -369,11 +371,25 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
     return '';
   }
 
+  // Check if the form has the "at least one contact" validation error
+  hasContactValidationError(): boolean {
+    return !!(this.contactForm.errors?.['atLeastOneContact'] && this.contactForm.touched);
+  }
+
+  // Get the contact validation error message
+  getContactValidationError(): string {
+    if (this.hasContactValidationError()) {
+      return 'Please provide at least one contact method (email, phone, or mobile)';
+    }
+    return '';
+  }
+
   private getFieldDisplayName(fieldName: string): string {
     const displayNames: { [key: string]: string } = {
       'full_name': 'Full name',
       'email': 'Email',
       'phone': 'Phone number',
+      'mobile': 'Mobile number',
       'job_title': 'Job title',
       'searchTerm': 'Company name',
       'name': 'Company name',
@@ -400,6 +416,24 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
         control.value.includes('@.') ||
         control.value.includes('.@')) {
       return { customEmail: true };
+    }
+
+    return null;
+  }
+
+  // Validator to ensure at least one contact method is provided
+  atLeastOneContactValidator(formGroup: any) {
+    const email = formGroup.get('email')?.value;
+    const phone = formGroup.get('phone')?.value;
+    const mobile = formGroup.get('mobile')?.value;
+
+    // Check if at least one contact field has a value
+    const hasEmail = email && email.trim().length > 0;
+    const hasPhone = phone && phone.trim().length > 0;
+    const hasMobile = mobile && mobile.trim().length > 0;
+
+    if (!hasEmail && !hasPhone && !hasMobile) {
+      return { atLeastOneContact: true };
     }
 
     return null;
@@ -444,6 +478,25 @@ export class LeadWizardComponent implements OnInit, OnDestroy {
 
     // Update the form control value
     this.contactForm.get('phone')?.setValue(value, { emitEvent: false });
+  }
+
+  // Mobile number formatting (same as phone)
+  formatMobileNumber(event: any): void {
+    let value = event.target.value.replace(/\D/g, '');
+
+    if (value.length >= 10) {
+      // Format as (XXX) XXX-XXXX
+      value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+    } else if (value.length >= 6) {
+      // Format as (XXX) XXX-
+      value = value.replace(/(\d{3})(\d{3})/, '($1) $2-');
+    } else if (value.length >= 3) {
+      // Format as (XXX)
+      value = value.replace(/(\d{3})/, '($1) ');
+    }
+
+    // Update the form control value
+    this.contactForm.get('mobile')?.setValue(value, { emitEvent: false });
   }
 
   // State management methods

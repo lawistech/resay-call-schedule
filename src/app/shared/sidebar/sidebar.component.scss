@@ -2,12 +2,12 @@
 
 .sidebar-container {
   @apply bg-white border-r border-stone-200 transition-all duration-300 flex flex-col z-10;
-  
+
   // Fix for the hover issue - ensure proper width transition
   &.w-64 {
     min-width: 16rem;
   }
-  
+
   &.w-20 {
     min-width: 5rem;
     max-width: 5rem;
@@ -18,15 +18,15 @@
 .sidebar-scrollable {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
-  
+
   &::-webkit-scrollbar {
     width: 4px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.05);
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
@@ -36,11 +36,11 @@
 // Navigation item styles - Improved active states
 .nav-item {
   position: relative;
-  
+
   &:hover {
     @apply bg-stone-50;
   }
-  
+
   // Active indicator bar
   &.active, &.bg-stone-100, &.bg-blue-50, &.bg-amber-50, &.bg-purple-50, &.bg-emerald-50 {
     &::before {
@@ -53,30 +53,30 @@
       opacity: 1;
     }
   }
-  
+
   &.bg-stone-100::before {
     @apply bg-stone-800;
   }
-  
+
   &.bg-blue-50::before {
     @apply bg-blue-600;
   }
-  
+
   &.bg-amber-50::before {
     @apply bg-amber-600;
   }
-  
+
   &.bg-purple-50::before {
     @apply bg-purple-600;
   }
-  
+
   &.bg-emerald-50::before {
     @apply bg-emerald-600;
   }
-  
+
   // Smooth transitions
   transition: all 0.2s ease-in-out;
-  
+
   &::before {
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
@@ -101,7 +101,7 @@
   z-index: 50;
   margin-left: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  
+
   // Arrow pointing to the sidebar
   &::before {
     content: '';
@@ -120,6 +120,27 @@
   opacity: 1;
 }
 
+// Search box styles
+.sidebar-container {
+  .relative {
+    // Ensure search icon is always visible
+    .absolute {
+      z-index: 10;
+    }
+
+    input {
+      // Ensure input field doesn't overlap the icon
+      position: relative;
+      z-index: 1;
+
+      &:focus {
+        // Enhance focus state for better UX
+        box-shadow: 0 0 0 3px rgba(120, 113, 108, 0.1);
+      }
+    }
+  }
+}
+
 // User profile section
 .user-profile {
   transition: padding 0.3s ease;
@@ -129,7 +150,7 @@
 .border-l-2 {
   a {
     position: relative;
-    
+
     &.bg-blue-50, &.bg-amber-50, &.bg-purple-50, &.bg-emerald-50, &.bg-indigo-50 {
       &::before {
         content: '';
@@ -141,23 +162,23 @@
         opacity: 1;
       }
     }
-    
+
     &.bg-blue-50::before {
       @apply bg-blue-600;
     }
-    
+
     &.bg-amber-50::before {
       @apply bg-amber-600;
     }
-    
+
     &.bg-purple-50::before {
       @apply bg-purple-600;
     }
-    
+
     &.bg-emerald-50::before {
       @apply bg-emerald-600;
     }
-    
+
     &.bg-indigo-50::before {
       @apply bg-indigo-600;
     }

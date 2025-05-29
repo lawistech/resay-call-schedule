@@ -1,3 +1,114 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Minimalist Design System for CRM Dashboard */
+@layer components {
+  /* Minimalist Card Component */
+  .card {
+    @apply bg-white border border-gray-100 p-6;
+    border-radius: 2px;
+  }
+
+  /* Minimalist Button System */
+  .btn {
+    @apply inline-flex items-center font-medium transition-colors duration-150;
+    border-radius: 2px;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    @apply btn px-4 py-2 bg-gray-900 text-white border-gray-900;
+  }
+
+  .btn-primary:hover {
+    @apply bg-gray-800 border-gray-800;
+  }
+
+  .btn-secondary {
+    @apply btn px-4 py-2 bg-white text-gray-700 border-gray-200;
+  }
+
+  .btn-secondary:hover {
+    @apply bg-gray-50 border-gray-300;
+  }
+
+  .btn-success {
+    @apply btn px-3 py-1.5 bg-white text-green-700 border-green-200 text-sm;
+  }
+
+  .btn-success:hover {
+    @apply bg-green-50 border-green-300;
+  }
+
+  /* Minimalist Typography */
+  .text-primary {
+    @apply text-gray-900;
+  }
+
+  .text-secondary {
+    @apply text-gray-600;
+  }
+
+  .text-muted {
+    @apply text-gray-500;
+  }
+
+  /* Clean Focus States */
+  .btn:focus,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    @apply outline-none ring-1 ring-gray-300;
+  }
+
+  /* Minimalist Status Indicators */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-scheduled {
+    @apply bg-gray-400;
+  }
+
+  .status-completed {
+    @apply bg-gray-600;
+  }
+
+  .status-missed {
+    @apply bg-gray-300;
+  }
+
+  /* Clean Badge System */
+  .badge {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium border;
+    border-radius: 2px;
+  }
+
+  .badge-neutral {
+    @apply badge bg-gray-50 text-gray-700 border-gray-200;
+  }
+
+  .badge-success {
+    @apply badge bg-white text-green-700 border-green-200;
+  }
+
+  .badge-warning {
+    @apply badge bg-white text-amber-700 border-amber-200;
+  }
+
+  /* Remove all animations and transitions for true minimalism */
+  * {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* Exception: Keep essential transitions for usability */
+  .btn,
+  input,
+  select,
+  textarea {
+    transition: border-color 0.15s ease, background-color 0.15s ease !important;
+  }
+}
