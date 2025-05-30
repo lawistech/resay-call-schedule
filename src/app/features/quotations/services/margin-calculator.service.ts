@@ -9,13 +9,17 @@ export class MarginCalculatorService {
   // Predefined margin percentage options
   readonly MARGIN_OPTIONS = [10, 12, 15, 18, 20];
 
+  // Extended margin range for advanced calculations
+  readonly MIN_MARGIN = 5;
+  readonly MAX_MARGIN = 50;
+
   constructor() { }
 
   /**
    * Calculate selling price based on cost and desired margin percentage
    * Formula: Selling Price = Cost / (1 - Margin%)
    * This is the correct margin calculation (not markup)
-   * 
+   *
    * @param cost - The cost price of the product
    * @param marginPercentage - The desired margin percentage (e.g., 15 for 15%)
    * @returns The calculated selling price
@@ -24,14 +28,14 @@ export class MarginCalculatorService {
     if (cost <= 0) {
       return 0;
     }
-    
+
     if (marginPercentage <= 0 || marginPercentage >= 100) {
       return cost; // Return cost if margin is invalid
     }
 
     const marginDecimal = marginPercentage / 100;
     const sellingPrice = cost / (1 - marginDecimal);
-    
+
     // Round to 2 decimal places
     return Math.round(sellingPrice * 100) / 100;
   }
@@ -39,7 +43,7 @@ export class MarginCalculatorService {
   /**
    * Calculate margin percentage from cost and selling price
    * Formula: Margin% = (Selling Price - Cost) / Selling Price * 100
-   * 
+   *
    * @param cost - The cost price of the product
    * @param sellingPrice - The selling price of the product
    * @returns The calculated margin percentage
@@ -50,14 +54,14 @@ export class MarginCalculatorService {
     }
 
     const marginPercentage = ((sellingPrice - cost) / sellingPrice) * 100;
-    
+
     // Round to 2 decimal places
     return Math.round(marginPercentage * 100) / 100;
   }
 
   /**
    * Calculate profit amount from cost and selling price
-   * 
+   *
    * @param cost - The cost price of the product
    * @param sellingPrice - The selling price of the product
    * @returns The profit amount
@@ -68,35 +72,74 @@ export class MarginCalculatorService {
 
   /**
    * Validate if a margin percentage is within acceptable range
-   * 
+   *
    * @param marginPercentage - The margin percentage to validate
    * @returns True if valid, false otherwise
    */
   isValidMarginPercentage(marginPercentage: number): boolean {
+    return marginPercentage >= this.MIN_MARGIN && marginPercentage <= this.MAX_MARGIN;
+  }
+
+  /**
+   * Validate if a margin percentage is within the extended range (for advanced calculations)
+   *
+   * @param marginPercentage - The margin percentage to validate
+   * @returns True if valid, false otherwise
+   */
+  isValidExtendedMarginPercentage(marginPercentage: number): boolean {
     return marginPercentage > 0 && marginPercentage < 100;
   }
 
   /**
    * Get the closest predefined margin option to a given percentage
-   * 
+   *
    * @param marginPercentage - The target margin percentage
    * @returns The closest predefined margin option
    */
   getClosestMarginOption(marginPercentage: number): number {
-    if (!this.isValidMarginPercentage(marginPercentage)) {
+    if (!this.isValidExtendedMarginPercentage(marginPercentage)) {
       return this.MARGIN_OPTIONS[2]; // Default to 15%
     }
 
     return this.MARGIN_OPTIONS.reduce((closest, option) => {
-      return Math.abs(option - marginPercentage) < Math.abs(closest - marginPercentage) 
-        ? option 
+      return Math.abs(option - marginPercentage) < Math.abs(closest - marginPercentage)
+        ? option
         : closest;
     });
   }
 
   /**
+   * Generate a range of margin percentages for advanced calculations
+   *
+   * @param step - The step size between percentages (default: 1)
+   * @returns Array of margin percentages from MIN_MARGIN to MAX_MARGIN
+   */
+  generateMarginRange(step: number = 1): number[] {
+    const range: number[] = [];
+    for (let i = this.MIN_MARGIN; i <= this.MAX_MARGIN; i += step) {
+      range.push(i);
+    }
+    return range;
+  }
+
+  /**
+   * Calculate multiple selling prices for a range of margins
+   *
+   * @param cost - The cost price
+   * @param margins - Array of margin percentages to calculate
+   * @returns Object with margin percentages as keys and selling prices as values
+   */
+  calculateMultipleSellingPrices(cost: number, margins: number[]): { [margin: number]: number } {
+    const results: { [margin: number]: number } = {};
+    margins.forEach(margin => {
+      results[margin] = this.calculateSellingPrice(cost, margin);
+    });
+    return results;
+  }
+
+  /**
    * Apply margin to multiple products
-   * 
+   *
    * @param products - Array of products with cost information
    * @param marginPercentage - The margin percentage to apply
    * @returns Array of products with calculated selling prices

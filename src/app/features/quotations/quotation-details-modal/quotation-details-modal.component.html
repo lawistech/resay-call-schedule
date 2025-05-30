@@ -1,9 +1,6 @@
 <!-- src/app/features/quotations/quotation-details-modal/quotation-details-modal.component.html -->
 <div *ngIf="show" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-    <!-- Background overlay -->
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-
     <!-- Confirmation Dialog for Accepted Status -->
     <app-confirmation-dialog
       [isOpen]="showConfirmationDialog"
@@ -16,9 +13,9 @@
     </app-confirmation-dialog>
 
     <!-- Modal panel -->
-    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full z-50 relative" (click)="$event.stopPropagation()">
       <!-- Loading overlay -->
-      <div *ngIf="isUpdating" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+      <div *ngIf="isUpdating" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
         <div class="flex flex-col items-center">
           <svg class="animate-spin h-10 w-10 text-blue-500 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -93,7 +90,7 @@
 
                 <div
                   *ngIf="showStatusDropdown"
-                  class="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                  class="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-40"
                 >
                   <div class="py-1">
                     <a
@@ -200,17 +197,17 @@
         </button>
       </div>
     </div>
+
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-10 cursor-pointer" aria-hidden="true" (click)="close()"></div>
   </div>
 </div>
 
 <!-- Product Details Modal -->
 <div *ngIf="showProductDetailsModal && selectedProduct" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="product-modal-title" role="dialog" aria-modal="true">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-    <!-- Background overlay -->
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-
     <!-- Modal panel -->
-    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-50 relative" (click)="$event.stopPropagation()">
       <!-- Modal header -->
       <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
         <div class="sm:flex sm:items-start">
@@ -283,5 +280,8 @@
         </button>
       </div>
     </div>
+
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-10 cursor-pointer" aria-hidden="true" (click)="closeProductDetailsModal()"></div>
   </div>
 </div>

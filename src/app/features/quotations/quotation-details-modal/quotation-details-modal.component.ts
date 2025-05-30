@@ -37,10 +37,30 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
   pendingStatusChange: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | null = null;
 
   // Document click handler
-  @HostListener('document:click')
-  onDocumentClick() {
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    // Only close dropdowns when clicking outside, but don't interfere with modal overlay clicks
+    const target = event.target as HTMLElement;
+
+    // Don't handle clicks on the modal overlay (let the template handle those)
+    if (target && target.getAttribute('aria-hidden') === 'true') {
+      return;
+    }
+
     // Close dropdowns when clicking outside
     this.closeAllDropdowns();
+  }
+
+  // ESC key handler to close modal
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent): void {
+    if (this.showProductDetailsModal) {
+      // Close product details modal first if it's open
+      this.closeProductDetailsModal();
+    } else if (this.show) {
+      // Close main modal if no sub-modals are open
+      this.close();
+    }
   }
 
   constructor(
@@ -104,6 +124,7 @@ export class QuotationDetailsModalComponent implements OnChanges, OnInit {
   }
 
   close() {
+    console.log('QuotationDetailsModal: close() method called');
     this.closeEvent.emit(false);
   }
 

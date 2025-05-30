@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { SupabaseService } from './supabase.service';
+import { MarginPanelService } from './margin-panel.service';
 import { User } from '@supabase/supabase-js';
 
 @Injectable({
@@ -14,7 +15,8 @@ export class AuthService {
 
   constructor(
     private supabaseService: SupabaseService,
-    private router: Router
+    private router: Router,
+    private marginPanelService: MarginPanelService
   ) {
     // Initialize the user - with error handling for missing session
     this.loadUser().catch(error => {
@@ -27,8 +29,12 @@ export class AuthService {
     this.supabaseService.supabaseClient.auth.onAuthStateChange((event, session) => {
       if (session) {
         this.currentUserSubject.next(session.user);
+        // Clear margin panel state when user logs in to ensure clean state
+        this.marginPanelService.clearStoredState();
       } else {
         this.currentUserSubject.next(null);
+        // Clear margin panel state when user logs out
+        this.marginPanelService.clearStoredState();
       }
     });
   }
@@ -57,11 +63,14 @@ export class AuthService {
 
       // Update the current user
       this.currentUserSubject.next(data.user);
-      
+
+      // Clear margin panel state on login to ensure clean state
+      this.marginPanelService.clearStoredState();
+
       return { success: true };
     } catch (error: any) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: error.message || 'Failed to sign in'
       };
     }
@@ -84,13 +93,13 @@ export class AuthService {
         throw error;
       }
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         message: 'Registration successful! Please check your email for verification.'
       };
     } catch (error: any) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: error.message || 'Failed to sign up'
       };
     }
@@ -109,13 +118,13 @@ export class AuthService {
         throw error;
       }
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         message: 'Password reset link has been sent to your email'
       };
     } catch (error: any) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: error.message || 'Failed to send password reset email'
       };
     }
@@ -131,13 +140,13 @@ export class AuthService {
         throw error;
       }
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         message: 'Password updated successfully'
       };
     } catch (error: any) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         message: error.message || 'Failed to update password'
       };
     }
@@ -147,6 +156,10 @@ export class AuthService {
     try {
       await this.supabaseService.supabaseClient.auth.signOut();
       this.currentUserSubject.next(null);
+
+      // Clear margin panel state on logout
+      this.marginPanelService.clearStoredState();
+
       this.router.navigate(['/login']);
     } catch (error) {
       console.error('Error signing out:', error);

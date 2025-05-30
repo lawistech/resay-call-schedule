@@ -1,0 +1,421 @@
+/* Margin Calculator Slide-out Panel Styles */
+
+/* Slide-out panel animations */
+.fixed.inset-y-0.right-0 {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Toggle button animations */
+.fixed.top-1\/2.right-0 {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Smooth slide transitions */
+.translate-x-full {
+  transform: translateX(100%);
+}
+
+.translate-x-0 {
+  transform: translateX(0);
+}
+
+.-translate-x-16 {
+  transform: translateX(-4rem);
+}
+
+/* Background overlay fade */
+.bg-black.bg-opacity-50 {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Panel shadow enhancement */
+.shadow-2xl {
+  box-shadow: -10px 0 25px -5px rgba(0, 0, 0, 0.1), -10px 0 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Button styles */
+.btn-primary {
+  @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200;
+}
+
+/* Table styling enhancements */
+.table-container {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Margin column hover effects */
+th[class*="bg-"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Current margin highlighting */
+.ring-2.ring-blue-500 {
+  position: relative;
+}
+
+.ring-2.ring-blue-500::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+  border-radius: 4px;
+  z-index: -1;
+  opacity: 0.1;
+}
+
+/* Product search styling */
+.product-search-container {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+}
+
+/* Toggle button styling */
+.fixed.top-1\/2.right-0 button {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  min-height: 80px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.fixed.top-1\/2.right-0 button:hover {
+  transform: translateX(-2px);
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive behavior */
+@media (max-width: 1024px) {
+  /* Panel takes full width on smaller screens */
+  .fixed.inset-y-0.right-0 {
+    max-width: 100vw;
+  }
+
+  /* Adjust toggle button position */
+  .fixed.top-1\/2.right-0 {
+    right: 0;
+  }
+
+  .overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Smaller toggle button on mobile */
+  .fixed.top-1\/2.right-0 button {
+    padding: 0.5rem;
+    min-height: 60px;
+  }
+
+  .fixed.top-1\/2.right-0 button svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+/* Color scheme for margin columns */
+.bg-orange-50 {
+  background-color: #fff7ed;
+}
+
+.border-orange-200 {
+  border-color: #fed7aa;
+}
+
+.bg-orange-100 {
+  background-color: #ffedd5;
+}
+
+.text-orange-800 {
+  color: #9a3412;
+}
+
+.bg-yellow-50 {
+  background-color: #fefce8;
+}
+
+.border-yellow-200 {
+  border-color: #fde047;
+}
+
+.bg-yellow-100 {
+  background-color: #fef3c7;
+}
+
+.text-yellow-800 {
+  color: #92400e;
+}
+
+.bg-green-50 {
+  background-color: #f0fdf4;
+}
+
+.border-green-200 {
+  border-color: #bbf7d0;
+}
+
+.bg-green-100 {
+  background-color: #dcfce7;
+}
+
+.text-green-800 {
+  color: #166534;
+}
+
+.bg-blue-50 {
+  background-color: #eff6ff;
+}
+
+.border-blue-200 {
+  border-color: #bfdbfe;
+}
+
+.bg-blue-100 {
+  background-color: #dbeafe;
+}
+
+.text-blue-800 {
+  color: #1e40af;
+}
+
+.bg-purple-50 {
+  background-color: #faf5ff;
+}
+
+.border-purple-200 {
+  border-color: #e9d5ff;
+}
+
+.bg-purple-100 {
+  background-color: #f3e8ff;
+}
+
+.text-purple-800 {
+  color: #6b21a8;
+}
+
+/* Bundle row styling */
+.bg-blue-50.border-t-2.border-blue-200 {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  font-weight: 600;
+}
+
+/* Input field enhancements */
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Loading state */
+.loading-spinner {
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Empty state styling */
+.empty-state {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+}
+
+/* Tooltip styles for margin headers */
+.margin-header-tooltip {
+  position: relative;
+}
+
+.margin-header-tooltip:hover::after {
+  content: 'Click to set as current margin';
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus states */
+button:focus,
+input:focus,
+select:focus {
+  outline: none;
+}
+
+/* Hover effects for interactive elements */
+.hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Panel backdrop blur effect */
+.fixed.inset-0.bg-black {
+  backdrop-filter: blur(4px);
+}
+
+/* Z-index management */
+.z-40 {
+  z-index: 40;
+}
+
+.z-50 {
+  z-index: 50;
+}
+
+/* Panel content scrolling */
+.flex-1.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.flex-1.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.flex-1.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+.flex-1.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.flex-1.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Selection Cards Styling */
+.selection-card {
+  transition: all 0.2s ease-in-out;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.selection-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.selection-card:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Icon container animations */
+.selection-card .group-hover\:bg-blue-200 {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.selection-card .group-hover\:bg-green-200 {
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Responsive selection cards */
+@media (max-width: 768px) {
+  .selection-card {
+    padding: 1rem;
+  }
+
+  .selection-card h3 {
+    font-size: 1rem;
+  }
+
+  .selection-card p {
+    font-size: 0.75rem;
+  }
+
+  .selection-card .w-12.h-12 {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .selection-card .h-6.w-6 {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+/* Panel entrance animation enhancement */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Toggle button pulse effect when panel is closed */
+.fixed.top-1\/2.right-0 button:not(.panel-open) {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+}

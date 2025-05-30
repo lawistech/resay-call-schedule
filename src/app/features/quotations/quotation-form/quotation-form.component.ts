@@ -49,6 +49,8 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
   selectedMarginPercentage = 15; // Default margin percentage
   marginOptions = [10, 12, 15, 18, 20]; // Predefined margin options
   showMarginCalculator = false; // Toggle for margin calculator visibility
+  customMarginInput = 15; // For custom margin input
+  showAdvancedMarginOptions = false; // Toggle for advanced margin options
 
   // Probability calculation properties
   probabilityOptions = [10, 25, 50, 75, 90]; // Predefined probability options
@@ -403,10 +405,38 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
   // Margin calculation methods
   onMarginPercentageChange(marginPercentage: number): void {
     this.selectedMarginPercentage = marginPercentage;
+    this.customMarginInput = marginPercentage; // Keep custom input in sync
     this.quotationForm.patchValue({ marginPercentage: marginPercentage });
 
     // Recalculate all product prices based on new margin
     this.recalculateProductPricesWithMargin();
+  }
+
+  onCustomMarginInputChange(marginPercentage: number): void {
+    // Validate the input range
+    if (marginPercentage >= this.marginCalculatorService.MIN_MARGIN &&
+        marginPercentage <= this.marginCalculatorService.MAX_MARGIN) {
+      this.onMarginPercentageChange(marginPercentage);
+    }
+  }
+
+  toggleAdvancedMarginOptions(): void {
+    this.showAdvancedMarginOptions = !this.showAdvancedMarginOptions;
+  }
+
+  getMarginValidationMessage(): string {
+    if (this.customMarginInput < this.marginCalculatorService.MIN_MARGIN) {
+      return `Minimum margin is ${this.marginCalculatorService.MIN_MARGIN}%`;
+    }
+    if (this.customMarginInput > this.marginCalculatorService.MAX_MARGIN) {
+      return `Maximum margin is ${this.marginCalculatorService.MAX_MARGIN}%`;
+    }
+    return '';
+  }
+
+  isCustomMarginValid(): boolean {
+    return this.customMarginInput >= this.marginCalculatorService.MIN_MARGIN &&
+           this.customMarginInput <= this.marginCalculatorService.MAX_MARGIN;
   }
 
   // Probability calculation methods
@@ -450,6 +480,8 @@ export class QuotationFormComponent implements OnInit, OnDestroy {
   toggleMarginCalculator(): void {
     this.showMarginCalculator = !this.showMarginCalculator;
   }
+
+
 
   getProductCostInfo(productId: string): { cost: number; hasValidCost: boolean } {
     const product = this.products.find(p => p.id === productId);

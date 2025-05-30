@@ -11,6 +11,7 @@ import { LeadCreationPageComponent } from './features/leads/lead-creation-page/l
 import { OpportunitiesComponent } from './features/opportunities/opportunities.component';
 import { PipelineKanbanComponent } from './features/opportunities/pipeline-kanban/pipeline-kanban.component';
 import { OpportunityFormPageComponent } from './features/opportunities/opportunity-form-page/opportunity-form-page.component';
+import { TestMarginCalculatorComponent } from './features/test-margin-calculator/test-margin-calculator.component';
 
 export const routes: Routes = [
   {
@@ -136,6 +137,11 @@ export const routes: Routes = [
     path: 'admin',
     canActivate: [AuthGuard],
     loadChildren: () => import('./features/admin/admin.module').then(m => m.AdminModule)
+  },
+  {
+    path: 'test-margin-calculator',
+    component: TestMarginCalculatorComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: '**',

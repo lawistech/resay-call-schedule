@@ -1,0 +1,491 @@
+<!-- Slide-out Panel -->
+<div class="fixed inset-y-0 right-0 z-40 w-full max-w-4xl transform transition-transform duration-300 ease-in-out"
+     [class.translate-x-full]="!isVisible"
+     [class.translate-x-0]="isVisible">
+
+  <!-- Background overlay (only visible when panel is open) -->
+  <div *ngIf="isVisible"
+       class="fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300"
+       (click)="onOverlayClick()"></div>
+
+  <!-- Panel container -->
+  <div class="relative h-full w-full bg-white shadow-2xl flex flex-col" (click)="onPanelClick($event)">
+
+    <!-- Standalone Margin Calculator -->
+    <div class="flex-1 overflow-y-auto">
+      <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Enhanced Margin Calculator</h1>
+            <p class="text-sm text-gray-600 mt-1">Standalone pricing calculator with extended margin range (5% - 50%)</p>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button (click)="toggleCalculationMode()"
+                    class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
+              {{ calculationMode === 'single' ? 'Show Comparison' : calculationMode === 'comparison' ? 'Product Calculator' : 'Single Calculation' }}
+            </button>
+            <button (click)="toggleExtendedView()"
+                    class="px-4 py-2 text-sm border border-blue-300 text-blue-600 rounded-md hover:bg-blue-50 transition-colors duration-200">
+              {{ showExtendedView ? 'Standard View' : 'Extended View' }}
+            </button>
+            <!-- Close Button -->
+            <button (click)="close()"
+                    class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors duration-200"
+                    title="Close Margin Calculator">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+  <!-- Custom Product Form Section (Products Mode) -->
+  <div *ngIf="calculationMode === 'products'" class="mb-6">
+    <!-- Add Product Form -->
+    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Custom Product Calculator</h3>
+        <button
+          (click)="toggleProductForm()"
+          class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Add Product
+        </button>
+      </div>
+
+      <!-- Product Form -->
+      <div *ngIf="showProductForm" class="border-t border-gray-200 pt-4">
+        <form [formGroup]="productForm" (ngSubmit)="addProduct()" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            <!-- Product Name -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Product Name *
+                <span class="text-xs text-gray-500 ml-1" title="Enter a descriptive name for your product">ⓘ</span>
+              </label>
+              <input
+                type="text"
+                formControlName="name"
+                placeholder="e.g., Custom Widget"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                [class.border-red-300]="productForm.get('name')?.invalid && productForm.get('name')?.touched"
+                [class.focus:border-red-500]="productForm.get('name')?.invalid && productForm.get('name')?.touched">
+              <div *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched"
+                   class="text-red-500 text-xs mt-1">
+                Product name is required (min 2 characters)
+              </div>
+            </div>
+
+            <!-- Cost Price -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Cost Price (£) *
+                <span class="text-xs text-gray-500 ml-1" title="Enter the cost price for margin calculations">ⓘ</span>
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-gray-500">£</span>
+                </div>
+                <input
+                  type="number"
+                  formControlName="cost"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  class="pl-8 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  [class.border-red-300]="productForm.get('cost')?.invalid && productForm.get('cost')?.touched"
+                  [class.focus:border-red-500]="productForm.get('cost')?.invalid && productForm.get('cost')?.touched">
+              </div>
+              <div *ngIf="productForm.get('cost')?.invalid && productForm.get('cost')?.touched"
+                   class="text-red-500 text-xs mt-1">
+                Cost must be greater than £0.00
+              </div>
+            </div>
+
+            <!-- Quantity -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Quantity *
+                <span class="text-xs text-gray-500 ml-1" title="Number of units for calculation">ⓘ</span>
+              </label>
+              <input
+                type="number"
+                formControlName="quantity"
+                min="1"
+                placeholder="1"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                [class.border-red-300]="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched"
+                [class.focus:border-red-500]="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched">
+              <div *ngIf="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched"
+                   class="text-red-500 text-xs mt-1">
+                Quantity must be at least 1
+              </div>
+            </div>
+
+            <!-- Description (Optional) -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Description
+                <span class="text-xs text-gray-500 ml-1" title="Optional product description">ⓘ</span>
+              </label>
+              <input
+                type="text"
+                formControlName="description"
+                placeholder="Optional description"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              (click)="toggleProductForm()"
+              class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors duration-200">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="productForm.invalid"
+              class="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
+              Add Product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Section (Single/Comparison Mode) -->
+  <div *ngIf="calculationMode !== 'products'" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Cost Price Input -->
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Cost Price (£)</label>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <span class="text-gray-500">£</span>
+        </div>
+        <input type="number"
+               [(ngModel)]="costPrice"
+               (ngModelChange)="onCostPriceChange()"
+               min="0"
+               step="0.01"
+               class="pl-8 w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+               placeholder="0.00">
+      </div>
+    </div>
+
+    <!-- Quantity Input -->
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+      <input type="number"
+             [(ngModel)]="quantity"
+             (ngModelChange)="onQuantityChange()"
+             min="1"
+             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+             placeholder="1">
+    </div>
+
+    <!-- Custom Margin Input -->
+    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+      <label class="block text-sm font-medium text-blue-800 mb-2">Custom Margin (%)</label>
+      <div class="flex items-center space-x-2">
+        <div class="relative flex-1">
+          <input type="number"
+                 [(ngModel)]="customMarginInput"
+                 (ngModelChange)="onCustomMarginChange()"
+                 min="1"
+                 max="99"
+                 step="0.1"
+                 class="w-full px-3 py-2 text-sm border border-blue-300 rounded-md focus:border-blue-500 focus:ring-blue-500 transition-all duration-200"
+                 [class.border-red-300]="!isValidCustomMargin()"
+                 [class.focus:border-red-500]="!isValidCustomMargin()"
+                 [class.focus:ring-red-500]="!isValidCustomMargin()"
+                 placeholder="Enter margin %">
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <span class="text-blue-600 text-sm">%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Validation Message -->
+      <div *ngIf="!isValidCustomMargin() && customMarginInput" class="text-red-500 text-xs mt-1 flex items-center">
+        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+        </svg>
+        {{ getCustomMarginValidationMessage() }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Select Margin Buttons -->
+  <div class="mb-6">
+    <label class="block text-sm font-medium text-gray-700 mb-3">Quick Select Margin Percentages</label>
+    <div class="flex flex-wrap gap-2">
+      <button *ngFor="let option of marginOptions"
+              type="button"
+              (click)="onMarginChange(option)"
+              class="px-4 py-2 text-sm font-medium rounded-md border transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              [class.bg-blue-600]="currentMarginPercentage === option"
+              [class.text-white]="currentMarginPercentage === option"
+              [class.border-blue-600]="currentMarginPercentage === option"
+              [class.bg-white]="currentMarginPercentage !== option"
+              [class.text-blue-600]="currentMarginPercentage !== option"
+              [class.border-blue-300]="currentMarginPercentage !== option"
+              [class.hover:bg-blue-50]="currentMarginPercentage !== option">
+        {{ option }}%
+      </button>
+    </div>
+  </div>
+
+  <!-- Product Calculation Table (Products Mode) -->
+  <div *ngIf="calculationMode === 'products'" class="mb-6">
+    <!-- Products Table -->
+    <div *ngIf="productCalculationRows.length > 0" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <!-- Table Header -->
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
+              <th *ngFor="let margin of getActiveMarginOptions()"
+                  [class.bg-blue-100]="isCurrentMargin(margin)"
+                  [class.text-blue-800]="isCurrentMargin(margin)"
+                  [class.bg-gray-50]="!isCurrentMargin(margin)"
+                  [class.text-gray-500]="!isCurrentMargin(margin)"
+                  [class.ring-2]="isCurrentMargin(margin)"
+                  [class.ring-blue-500]="isCurrentMargin(margin)"
+                  class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider cursor-pointer transition-all"
+                  (click)="onMarginChange(margin)">
+                {{ margin }}%
+                <div *ngIf="isCurrentMargin(margin)" class="text-xs mt-1 font-normal">Current</div>
+              </th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+
+          <!-- Table Body -->
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let row of productCalculationRows; let i = index" class="hover:bg-gray-50 transition-colors duration-150">
+
+              <!-- Product Info -->
+              <td class="px-4 py-4">
+                <div class="text-sm font-medium text-gray-900">{{ row.product.name }}</div>
+                <div *ngIf="row.product.description" class="text-sm text-gray-500">{{ row.product.description }}</div>
+              </td>
+
+              <!-- Quantity -->
+              <td class="px-4 py-4">
+                <input
+                  type="number"
+                  [value]="row.quantity"
+                  (change)="updateProductQuantity(i, +$any($event.target).value)"
+                  min="1"
+                  class="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+              </td>
+
+              <!-- Cost Price -->
+              <td class="px-4 py-4 text-sm text-gray-900 font-medium">
+                £{{ (row.costPrice * row.quantity) | number:'1.2-2' }}
+              </td>
+
+              <!-- Margin Columns -->
+              <td *ngFor="let margin of getActiveMarginOptions()"
+                  [class.bg-blue-50]="isCurrentMargin(margin)"
+                  [class.border-blue-200]="isCurrentMargin(margin)"
+                  [class.bg-white]="!isCurrentMargin(margin)"
+                  [class.border-gray-200]="!isCurrentMargin(margin)"
+                  [class.ring-2]="isCurrentMargin(margin)"
+                  [class.ring-blue-500]="isCurrentMargin(margin)"
+                  class="px-4 py-4 text-center border-l border-r transition-all">
+                <div class="text-sm font-medium"
+                     [class.text-green-600]="isCurrentMargin(margin)"
+                     [class.text-gray-900]="!isCurrentMargin(margin)">
+                  £{{ (row.sellingPrices[margin] * row.quantity) | number:'1.2-2' }}
+                </div>
+                <div class="text-xs mt-1"
+                     [class.text-purple-600]="isCurrentMargin(margin)"
+                     [class.text-gray-600]="!isCurrentMargin(margin)">
+                  Profit: £{{ (row.profits[margin] * row.quantity) | number:'1.2-2' }}
+                </div>
+              </td>
+
+              <!-- Actions -->
+              <td class="px-4 py-4 text-center">
+                <button
+                  (click)="removeProduct(i)"
+                  class="text-red-600 hover:text-red-800 transition-colors duration-200"
+                  title="Remove product">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Total Row -->
+            <tr *ngIf="productCalculationRows.length > 1" class="bg-blue-50 border-t-2 border-blue-200">
+              <td class="px-4 py-4 text-sm font-bold text-blue-900" colspan="2">TOTAL</td>
+              <td class="px-4 py-4 text-sm font-bold text-blue-900">£{{ getProductTotalCost() | number:'1.2-2' }}</td>
+              <td *ngFor="let margin of getActiveMarginOptions()"
+                  [class.bg-blue-100]="isCurrentMargin(margin)"
+                  [class.border-blue-300]="isCurrentMargin(margin)"
+                  [class.bg-blue-50]="!isCurrentMargin(margin)"
+                  [class.border-blue-200]="!isCurrentMargin(margin)"
+                  [class.ring-2]="isCurrentMargin(margin)"
+                  [class.ring-blue-500]="isCurrentMargin(margin)"
+                  class="px-4 py-4 text-center font-bold text-blue-900 border-l border-r">
+                <div class="text-sm">£{{ getProductTotalSellingPrice(margin) | number:'1.2-2' }}</div>
+                <div class="text-xs mt-1">Profit: £{{ getProductTotalProfit(margin) | number:'1.2-2' }}</div>
+              </td>
+              <td class="px-4 py-4"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Empty State for Products -->
+    <div *ngIf="productCalculationRows.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      </svg>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No Products Added</h3>
+      <p class="text-gray-600 mb-4">Add custom products to see margin calculations and pricing comparisons.</p>
+      <button
+        (click)="toggleProductForm()"
+        class="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
+        Add Your First Product
+      </button>
+    </div>
+  </div>
+
+  <!-- Single Calculation Result -->
+  <div *ngIf="calculationMode === 'single' && singleResult && costPrice > 0" class="mb-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Calculation Result</h3>
+    <div class="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="text-center">
+          <div class="text-sm text-gray-600">Cost Price</div>
+          <div class="text-lg font-bold text-gray-900">£{{ (singleResult.cost * quantity) | number:'1.2-2' }}</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-gray-600">Margin</div>
+          <div class="text-lg font-bold text-blue-600">{{ singleResult.marginPercentage }}%</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-gray-600">Selling Price</div>
+          <div class="text-lg font-bold text-green-600">£{{ getTotalSellingPrice(singleResult) | number:'1.2-2' }}</div>
+        </div>
+        <div class="text-center">
+          <div class="text-sm text-gray-600">Total Profit</div>
+          <div class="text-lg font-bold text-purple-600">£{{ getTotalProfit(singleResult) | number:'1.2-2' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Table -->
+  <div *ngIf="calculationMode === 'comparison' && calculationResults.length > 0" class="mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-medium text-gray-900">Margin Comparison Table</h3>
+      <div class="text-sm text-gray-600">
+        Showing {{ showExtendedView ? 'Extended' : 'Standard' }} view
+        ({{ getActiveMarginOptions().length }} margin options)
+      </div>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Margin %</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Cost</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Profit</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cost</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Price</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Profit</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let result of calculationResults"
+                class="hover:bg-gray-50 transition-colors duration-150"
+                [class.bg-blue-50]="isCurrentMargin(result.marginPercentage)"
+                [class.ring-2]="isCurrentMargin(result.marginPercentage)"
+                [class.ring-blue-500]="isCurrentMargin(result.marginPercentage)">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="text-sm font-medium"
+                        [class.text-blue-600]="isCurrentMargin(result.marginPercentage)"
+                        [class.text-gray-900]="!isCurrentMargin(result.marginPercentage)">
+                    {{ result.marginPercentage }}%
+                  </span>
+                  <span *ngIf="isCurrentMargin(result.marginPercentage)"
+                        class="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                    Current
+                  </span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                £{{ result.cost | number:'1.2-2' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                £{{ result.sellingPrice | number:'1.2-2' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600">
+                £{{ result.profit | number:'1.2-2' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                £{{ getTotalCost() | number:'1.2-2' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                £{{ getTotalSellingPrice(result) | number:'1.2-2' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-purple-600">
+                £{{ getTotalProfit(result) | number:'1.2-2' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State (Single/Comparison Mode) -->
+  <div *ngIf="calculationMode !== 'products' && costPrice <= 0" class="text-center py-12 bg-gray-50 rounded-lg">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+    </svg>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Enter Cost Price to Begin</h3>
+    <p class="text-gray-600 mb-4">Enter a cost price above to see margin calculations and pricing comparisons.</p>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+    <div class="text-sm text-gray-600">
+      <strong>Formula:</strong> Selling Price = Cost ÷ (1 - Margin%)
+    </div>
+    <div class="flex space-x-3">
+      <button (click)="clearInputs()"
+              class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors duration-200">
+        Clear All
+      </button>
+      <button (click)="exportResults()"
+              [disabled]="calculationResults.length === 0 && !singleResult && productCalculationRows.length === 0"
+              class="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
+        Export Results
+      </button>
+    </div>
+  </div>
+      </div>
+    </div>
+  </div>
+</div>

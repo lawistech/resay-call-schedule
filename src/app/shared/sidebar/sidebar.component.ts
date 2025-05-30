@@ -37,6 +37,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   collapseTimer: any = null;
   currentRoute = '';
 
+  // Track which contacts button was last clicked to determine active state
+  lastContactsContext: 'main' | 'submenu' | null = null;
+
   constructor(
     public authService: AuthService,
     private router: Router,
@@ -89,9 +92,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.expandedSection = null;
 
     // Check for more specific paths first to avoid incorrect matches
-    if (route.includes('/schedule') || route.includes('/call-history') ||
-        route.includes('/contacts') || route.includes('/reports')) {
+    if (route.includes('/schedule') || route.includes('/call-history') || route.includes('/reports')) {
       this.expandedSection = 'calls';
+      // If navigating to contacts from call management context, set the context
+      if (route.includes('/contacts')) {
+        this.lastContactsContext = 'submenu';
+      }
     } else if (route.includes('/leads') || route.includes('/opportunities') ||
                route.includes('/pipeline') || route.includes('/quotations')) {
       this.expandedSection = 'sales';
@@ -105,10 +111,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.expandedSection = 'ecommerce';
     } else if (route.includes('/admin')) {
       this.expandedSection = 'admin';
+    } else if (route.includes('/contacts')) {
+      // If navigating directly to contacts (not from call management), set main context
+      this.lastContactsContext = 'main';
     }
 
     // Store the active section in localStorage for persistence
     localStorage.setItem('expandedSection', this.expandedSection || '');
+    localStorage.setItem('lastContactsContext', this.lastContactsContext || '');
   }
 
   // Helper method to check if a route is currently active
@@ -140,6 +150,30 @@ export class SidebarComponent implements OnInit, OnDestroy {
     return this.currentRoute.includes(routePath);
   }
 
+  // Helper method to check if main navigation contacts should be active
+  // Only active when on contacts page AND last clicked from main navigation
+  isMainContactsActive(): boolean {
+    return this.currentRoute.includes('/contacts') && this.lastContactsContext === 'main';
+  }
+
+  // Helper method to check if submenu contacts should be active
+  // Only active when on contacts page AND last clicked from call management submenu
+  isSubmenuContactsActive(): boolean {
+    return this.currentRoute.includes('/contacts') && this.lastContactsContext === 'submenu';
+  }
+
+  // Method to set main contacts context and persist to localStorage
+  setMainContactsContext(): void {
+    this.lastContactsContext = 'main';
+    localStorage.setItem('lastContactsContext', this.lastContactsContext);
+  }
+
+  // Method to set submenu contacts context and persist to localStorage
+  setSubmenuContactsContext(): void {
+    this.lastContactsContext = 'submenu';
+    localStorage.setItem('lastContactsContext', this.lastContactsContext);
+  }
+
   // Toggle sidebar expanded/collapsed state
   toggleSidebar(): void {
     this.expanded = !this.expanded;
@@ -168,6 +202,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
     const savedSection = localStorage.getItem('expandedSection');
     if (savedSection) {
       this.expandedSection = savedSection;
+    }
+
+    const savedContactsContext = localStorage.getItem('lastContactsContext');
+    if (savedContactsContext) {
+      this.lastContactsContext = savedContactsContext as 'main' | 'submenu';
     }
   }
 

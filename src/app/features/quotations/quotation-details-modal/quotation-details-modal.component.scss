@@ -1,2 +1,28 @@
 // src/app/features/quotations/quotation-details-modal/quotation-details-modal.component.scss
-// Component-specific styles can be added here
+
+// Ensure modal overlay is properly positioned and clickable
+.fixed.inset-0 {
+  cursor: pointer;
+}
+
+// Ensure modal content doesn't inherit cursor pointer
+.inline-block {
+  cursor: default;
+}
+
+// Smooth transitions for modal appearance
+.transition-opacity {
+  transition: opacity 0.3s ease-out;
+}
+
+// Ensure proper z-index stacking
+.z-50 {
+  z-index: 50;
+}
+
+// Prevent body scroll when modal is open
+:host {
+  &.modal-open {
+    overflow: hidden;
+  }
+}
