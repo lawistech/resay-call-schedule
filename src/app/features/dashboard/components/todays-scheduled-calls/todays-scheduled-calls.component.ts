@@ -37,7 +37,13 @@ export class TodaysScheduledCallsComponent implements OnInit {
   onInitiateCall(call: Call, event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    // Changed to emit complete call event to open completion modal
+
+    // First, initiate the actual phone call if phone number is available
+    if (call.contact?.phone) {
+      window.location.href = `tel:${call.contact.phone}`;
+    }
+
+    // Then open the complete call modal
     this.completeCall.emit(call.id);
   }
 

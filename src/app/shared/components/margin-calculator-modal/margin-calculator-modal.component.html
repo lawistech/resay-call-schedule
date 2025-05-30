@@ -361,10 +361,14 @@
                       [class.text-gray-500]="!isCurrentMargin(margin)"
                       [class.ring-2]="isCurrentMargin(margin)"
                       [class.ring-blue-500]="isCurrentMargin(margin)"
+                      [class.bg-amber-50]="!isCurrentMargin(margin) && isCustomMargin(margin)"
+                      [class.text-amber-800]="!isCurrentMargin(margin) && isCustomMargin(margin)"
+                      [class.border-amber-300]="!isCurrentMargin(margin) && isCustomMargin(margin)"
                       class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider cursor-pointer transition-all"
                       (click)="selectMarginPercentage(margin)">
-                    {{ margin }}.00%
+                    {{ margin }}%
                     <div *ngIf="isCurrentMargin(margin)" class="text-xs mt-1 font-normal">Current</div>
+                    <div *ngIf="!isCurrentMargin(margin) && isCustomMargin(margin)" class="text-xs mt-1 font-normal">Custom</div>
                   </th>
                   <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -399,19 +403,23 @@
                   <td *ngFor="let margin of getActiveMarginOptions()"
                       [class.bg-blue-50]="isCurrentMargin(margin)"
                       [class.border-blue-200]="isCurrentMargin(margin)"
-                      [class.bg-white]="!isCurrentMargin(margin)"
-                      [class.border-gray-200]="!isCurrentMargin(margin)"
+                      [class.bg-amber-50]="!isCurrentMargin(margin) && isCustomMargin(margin)"
+                      [class.border-amber-200]="!isCurrentMargin(margin) && isCustomMargin(margin)"
+                      [class.bg-white]="!isCurrentMargin(margin) && !isCustomMargin(margin)"
+                      [class.border-gray-200]="!isCurrentMargin(margin) && !isCustomMargin(margin)"
                       [class.ring-2]="isCurrentMargin(margin)"
                       [class.ring-blue-500]="isCurrentMargin(margin)"
                       class="px-4 py-4 text-center border-l border-r transition-all">
                     <div class="text-sm font-medium"
                          [class.text-green-600]="isCurrentMargin(margin)"
-                         [class.text-gray-900]="!isCurrentMargin(margin)">
+                         [class.text-amber-700]="!isCurrentMargin(margin) && isCustomMargin(margin)"
+                         [class.text-gray-900]="!isCurrentMargin(margin) && !isCustomMargin(margin)">
                       £{{ (row.sellingPrices[margin] * row.quantity) | number:'1.2-2' }}
                     </div>
                     <div class="text-xs mt-1"
                          [class.text-purple-600]="isCurrentMargin(margin)"
-                         [class.text-gray-600]="!isCurrentMargin(margin)">
+                         [class.text-amber-600]="!isCurrentMargin(margin) && isCustomMargin(margin)"
+                         [class.text-gray-600]="!isCurrentMargin(margin) && !isCustomMargin(margin)">
                       Profit: £{{ (row.profits[margin] * row.quantity) | number:'1.2-2' }}
                     </div>
                   </td>
@@ -435,11 +443,15 @@
                   <td *ngFor="let margin of getActiveMarginOptions()"
                       [class.bg-blue-100]="isCurrentMargin(margin)"
                       [class.border-blue-300]="isCurrentMargin(margin)"
-                      [class.bg-blue-50]="!isCurrentMargin(margin)"
-                      [class.border-blue-200]="!isCurrentMargin(margin)"
+                      [class.bg-amber-100]="!isCurrentMargin(margin) && isCustomMargin(margin)"
+                      [class.border-amber-300]="!isCurrentMargin(margin) && isCustomMargin(margin)"
+                      [class.bg-blue-50]="!isCurrentMargin(margin) && !isCustomMargin(margin)"
+                      [class.border-blue-200]="!isCurrentMargin(margin) && !isCustomMargin(margin)"
                       [class.ring-2]="isCurrentMargin(margin)"
                       [class.ring-blue-500]="isCurrentMargin(margin)"
-                      class="px-4 py-4 text-center font-bold text-blue-900 border-l border-r">
+                      class="px-4 py-4 text-center font-bold border-l border-r"
+                      [class.text-blue-900]="!isCustomMargin(margin)"
+                      [class.text-amber-900]="isCustomMargin(margin)">
                     £{{ bundleMarginPrices[margin] | number:'1.2-2' }}
                   </td>
                   <td class="px-4 py-4"></td>

@@ -353,11 +353,21 @@ export class MarginCalculatorModalComponent implements OnInit, OnDestroy {
   onCustomMarginChange(margin: number): void {
     if (this.marginCalculatorService.isValidExtendedMarginPercentage(margin)) {
       this.marginStateService.setMarginPercentage(margin);
+      // Force recalculation of all products to include the new custom margin
+      this.recalculateAllPrices();
     }
   }
 
   getActiveMarginOptions(): number[] {
-    return this.showExtendedView ? this.extendedMarginOptions : this.marginOptions;
+    const baseOptions = this.showExtendedView ? this.extendedMarginOptions : this.marginOptions;
+
+    // If current margin is not in the base options, add it
+    if (!baseOptions.includes(this.currentMarginPercentage)) {
+      const optionsWithCustom = [...baseOptions, this.currentMarginPercentage];
+      return optionsWithCustom.sort((a, b) => a - b);
+    }
+
+    return baseOptions;
   }
 
   isValidCustomMargin(): boolean {
@@ -376,6 +386,10 @@ export class MarginCalculatorModalComponent implements OnInit, OnDestroy {
 
   isCurrentMargin(margin: number): boolean {
     return margin === this.currentMarginPercentage;
+  }
+
+  isCustomMargin(margin: number): boolean {
+    return !this.marginOptions.includes(margin);
   }
 
   toggle(): void {

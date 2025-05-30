@@ -26,7 +26,10 @@
   }
 
   .btn-secondary {
-    @apply btn px-4 py-2 bg-white text-gray-700 border-gray-200;
+    @apply btn px-4 py-2 bg-white text-gray-700 border-gray-200 cursor-pointer;
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
   }
 
   .btn-secondary:hover {
@@ -34,7 +37,10 @@
   }
 
   .btn-success {
-    @apply btn px-3 py-1.5 bg-white text-green-700 border-green-200 text-sm;
+    @apply btn px-3 py-1.5 bg-white text-green-700 border-green-200 text-sm cursor-pointer;
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
   }
 
   .btn-success:hover {
@@ -98,10 +104,15 @@
   }
 
   /* Remove all animations and transitions for true minimalism */
-  * {
+  /* Exclude buttons and interactive elements from transform restrictions */
+  *:not(button):not(.btn):not([role="button"]):not(input):not(select):not(textarea) {
     transition: none !important;
     animation: none !important;
-    transform: none !important;
+  }
+
+  /* Allow transforms for interactive elements but disable animations */
+  button, .btn, [role="button"], input, select, textarea {
+    animation: none !important;
   }
 
   /* Exception: Keep essential transitions for usability */

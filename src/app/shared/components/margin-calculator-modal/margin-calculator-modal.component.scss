@@ -419,3 +419,62 @@ select:focus {
     box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
   }
 }
+
+/* Custom margin column styling */
+.bg-amber-50 {
+  background-color: #fffbeb;
+}
+
+.border-amber-200 {
+  border-color: #fde68a;
+}
+
+.border-amber-300 {
+  border-color: #fcd34d;
+}
+
+.bg-amber-100 {
+  background-color: #fef3c7;
+}
+
+.text-amber-700 {
+  color: #b45309;
+}
+
+.text-amber-800 {
+  color: #92400e;
+}
+
+.text-amber-900 {
+  color: #78350f;
+}
+
+.text-amber-600 {
+  color: #d97706;
+}
+
+/* Custom margin header animation */
+th.bg-amber-50 {
+  position: relative;
+  overflow: hidden;
+}
+
+th.bg-amber-50::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.2), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
